@@ -1,0 +1,59 @@
+/*Style the div that holds the table*/
+.scheduleSectionContainer {
+    width: 75em; /* Set width same as .scheduleTitle */
+    margin: 2em auto auto auto; /* Adjust margin to bring the table closer to the title */
+    background-color: #FFFFFF;
+    border-radius: 1.5em;
+    border-style: solid;
+}
+
+/*Style the table*/
+.scheduleSectionTable {
+    border-collapse: collapse;
+    width: 100%; /* Set width to fill the container */
+    border: 1px solid transparent; /* Set border to transparent */
+    height: 50vh;
+}
+
+/*Style the table header*/
+.scheduleSectionTable th {
+    background-color: #C0D7D8; /* Set background color */
+    border-radius: 20px; /* Set border radius */
+    padding: 0.5em;
+    text-align: center;
+}
+
+/*Style the table data*/
+.scheduleSectionTable td {
+    padding: 0.5em;
+    text-align: center;
+}
+
+/*.scheduleSectionContainer {*/
+/*    width: 75em; !* Set width same as .scheduleTitle *!*/
+/*    margin: 2em auto auto auto; !* Adjust margin to bring the table closer to the title *!*/
+/*    background-color: #FFFFFF;*/
+/*    border-radius: 1.5em;*/
+/*    overflow: hidden; !* Ensure border-radius doesn't overflow *!*/
+/*    border-style: solid;*/
+/*}*/
+
+/*.scheduleSectionTable {*/
+/*    border-collapse: collapse;*/
+/*    width: 100%; !* Set width to fill the container *!*/
+/*    border-radius: 1.5em; !* Set border radius *!*/
+/*    border: 1px solid #C0D7D8; !* Set border color to match table header background *!*/
+/*    height: 50vh;*/
+/*}*/
+
+/*.scheduleSectionTable th {*/
+/*    background-color: #C0D7D8; !* Set background color *!*/
+/*    padding: 0.5em;*/
+/*    text-align: center;*/
+/*}*/
+
+/*.scheduleSectionTable td {*/
+/*    padding: 0.5em;*/
+/*    text-align: center;*/
+/*}*/
+
