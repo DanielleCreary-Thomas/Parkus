@@ -1,6 +1,6 @@
 import './App.css';
-import AppTitle from "./components/AppTitle/AppTitle";
-import Navbar from "./components/Navbar/Navbar"; // Assuming you have a CSS file for styling
+import AppTitle from "./components/SideNav/AppTitle/AppTitle";
+import Navbar from "./components/SideNav/Navbar/Navbar"; // Assuming you have a CSS file for styling
 import {Route, Routes} from "react-router-dom"
 import Home from "./pages/Home";
 import UpdateSchedule from "./pages/UpdateSchedule";

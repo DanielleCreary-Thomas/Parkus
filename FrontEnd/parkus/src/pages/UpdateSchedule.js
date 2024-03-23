@@ -1,6 +1,6 @@
-import ScheduleTitle from "../components/ScheduleTitle/ScheduleTitle";
-import ScheduleSection from "../components/ScheduleSection/ScheduleSection";
-import AddTimeBlockSection from "../components/AddTimeBlockSection/AddTimeBlockSection";
+import ScheduleTitle from "../components/Schedule/ScheduleTitle/ScheduleTitle";
+import ScheduleSection from "../components/Schedule/ScheduleSection/ScheduleSection";
+import AddTimeBlockSection from "../components/Schedule/AddTimeBlockSection/AddTimeBlockSection";
 import {Stack} from "@mui/material";
 
 function UpdateSchedule() {
