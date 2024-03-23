@@ -1,0 +1,19 @@
+.app-container {
+  display: flex;
+  height: 100vh;
+}
+
+.left-panel {
+  flex: 0 0 0;
+  height: 100%;
+  padding: 0; /* Remove any padding */
+  margin: 0; /* Remove any margin */
+}
+
+.right-panel {
+  flex: 1;
+  background-color: #84B5D3;
+  height: 100%;
+  padding: 0; /* Remove any padding */
+  margin: 0; /* Remove any margin */
+}

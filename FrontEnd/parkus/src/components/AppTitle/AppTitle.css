@@ -1,0 +1,13 @@
+@font-face {
+    font-family: 'Orelega One';
+    src: url('https://fonts.google.com/specimen/Orelega+One') format('truetype'); /* Replace 'path/to/OrelegaOne-Regular.ttf' with the actual path to the font file */
+}
+
+.appTitle {
+    color: #1D3557;
+    font-size: 8em;
+    margin-top: 0.1em;
+    text-align: center;
+    font-family: 'Orelega One', sans-serif;
+}
+
