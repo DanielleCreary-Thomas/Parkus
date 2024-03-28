@@ -1,19 +1,31 @@
 ##Controller
 # Http Endpoints
+import requests
+import data_store
+import flask
+from flask import render_template, send_from_directory
+from flask import Flask, request
+from flask_cors import CORS
 
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+app = Flask(__name__)
+CORS(app)
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+# GET Endpoints
+
+@app.route('/groups/<id>', methods=['GET', 'OPTIONS'])
+def group(id):
+    """
+    Sends the data for a single group with the given id
+    :param id: the selected group's id
+    :return: return data for the given group in the form of a dictionary
+    """
+    assert id == request.view_args['id']
+    returnData = {
+        'selectedGroup': data_store.get_group_by_id(id)
+    }
+    return returnData
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    app.run()
