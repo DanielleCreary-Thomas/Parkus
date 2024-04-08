@@ -1,7 +1,8 @@
 ## business logic
 # actual code of making things work
 import bridge
-
+import json
+import time
 
 class User:
     def __init__(self, id):
@@ -14,7 +15,15 @@ class User:
     def get_schedule_for_userid(self):
         user_schedule = bridge.schedule_blocks_for_user(self.id)
         for block in user_schedule:
-            self.add_schedule(Schedule(block[0], block[1], block[2], block[3]))
+            self.add_schedule(Schedule(block[0], block[1], block[2].strftime("%H:%M"), block[3].strftime("%H:%M")))
+
+    def compare_schedules(self, member):
+        for userBlock in self.schedule:
+            for memBlock in member.schedule:
+                return userBlock.compare_times(memBlock) != 0
+
+    # def toJSON(self):
+    #     return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
 class Schedule:
@@ -25,8 +34,17 @@ class Schedule:
         self.end_time = end
 
     def compare_times(self, member_time):
-        comparison = max(0, min(self.end_time, member_time.end_time) - max(self.start_time, member_time.start_time))
+        """
+        compares the time between the two schedule blocks checking for overlap
+        :param member_time: the schedule block of a User
+        :return: the amount overlap in hours between the schedule blocks
+        """
+        comparison = max(0, min(int(self.end_time.split(":")[0]), int(member_time.end_time.split(":")[0]))
+                         - max(int(self.start_time.split(":")[0]), int(member_time.start_time.split(":")[0])))
         return comparison == 0
+
+    # def toJson(self):
+    #     return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 class Group:
     def __init__(self, groupid):
@@ -44,6 +62,19 @@ class Group:
                 member.get_schedule_for_userid()
                 self.add_member(member)
 
+    def validate_group(self, potential_member):
+        valid = True
+        checked_members = 0
+        while valid and checked_members < len(self.members):
+            for member in self.members:
+                if not potential_member.compare_schedules(member):
+                    valid = False
+                checked_members += 1
+        if valid:
+            return self
+
+    # def toJSON(self):
+    #     return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
 def get_group_by_id(id):
@@ -69,3 +100,17 @@ def complete_matchmaking(userid):
         for group in available_groups:
             curr_group = Group(group[0])
             curr_group.populate_group()
+            group_option = curr_group.validate_group(curr_user)
+            if group_option:
+                group_options.append(group_option)
+    return group_options
+
+def validate_no_group(userid):
+    result = bridge.validate_no_group(userid)
+    ##valid
+    return result is not None
+
+if __name__ == '__main__':
+    groups = complete_matchmaking(5)
+    # test = groups['members'][0]['schedule'][0]['start_time']
+    print(groups)

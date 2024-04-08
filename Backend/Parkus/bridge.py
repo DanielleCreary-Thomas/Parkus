@@ -1,6 +1,7 @@
 ##Bridge
 # Communicating with the database
 import psycopg2
+import time
 
 ##Database connection & cursor
 # connect to db
@@ -37,7 +38,7 @@ def member_userid_for_group(groupid):
         SELECT u.userid
         FROM users u
         WHERE u.groupid = %s
-        ''', groupid)
+        ''', str(groupid))
         members = cur.fetchall()
         return members
 
@@ -53,7 +54,7 @@ def member_count_by_groupid(groupid):
                         INNER JOIN users u ON u.groupid = g.groupid
                         WHERE g.groupid = %s
                         GROUP BY g.groupid
-                        ORDER BY g.groupid''', groupid)
+                        ORDER BY g.groupid''', str(groupid))
         member_count = cur.fetchone()[0]
         return member_count
 
@@ -100,12 +101,20 @@ def schedule_blocks_for_user(userid):
     :return: the list of schedule blocks
     """
     with conn.cursor() as cur:
-        cur.execute('''
+        cur.execute("""
         SELECT s.scheduleid, s.dow, s.start_time, s.end_time 
         FROM schedule_blocks s
         WHERE s.userid = %s
-        ORDER BY dow
-        ''', userid)
-    schedule = cur.fetchall()
-    return schedule
+        ORDER BY dow;
+        """, (userid,))
+        schedule = cur.fetchall()
+        return schedule
 
+def validate_no_group(userid):
+    with conn.cursor() as cur:
+        cur.execute("""
+        SELECT *
+        FROM users u
+        WHERE u.userid = %s AND u.groupid is null""",
+                    (userid,))
+        return cur.fetchone()

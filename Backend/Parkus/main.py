@@ -26,6 +26,21 @@ def group(id):
     }
     return returnData
 
+@app.route('/groups/matchmake/<id>', methods=['GET', 'OPTIONS'])
+def matchmake(id):
+    """
+    Matches the given user with the available groups
+    :param id: given userID
+    :return: the groups that match the user's schedule
+    """
+    assert id == request.view_args['id']
+    if data_store.validate_no_group(id):
+        returnData = {
+            'availableGroups': data_store.complete_matchmaking(id)
+        }
+    else:
+        returnData = {}
+    return returnData
 
 if __name__ == '__main__':
     app.run()
