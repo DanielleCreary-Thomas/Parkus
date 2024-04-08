@@ -1,6 +1,5 @@
 ##Controller
 # Http Endpoints
-import requests
 import data_store
 import flask
 from flask import render_template, send_from_directory

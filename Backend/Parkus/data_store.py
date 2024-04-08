@@ -110,7 +110,7 @@ def validate_no_group(userid):
     ##valid
     return result is not None
 
-if __name__ == '__main__':
-    groups = complete_matchmaking(5)
-    # test = groups['members'][0]['schedule'][0]['start_time']
-    print(groups)
+# if __name__ == '__main__':
+#     groups = complete_matchmaking(5)
+#     # test = groups['members'][0]['schedule'][0]['start_time']
+#     print(groups)
