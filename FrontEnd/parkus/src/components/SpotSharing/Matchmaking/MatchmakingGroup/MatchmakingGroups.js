@@ -17,6 +17,7 @@ export type GroupMetaData = {
 }
 export default function MatchmakingGroups(){
 
+
     const GroupDisplay = ({groupData, handleGroupClick})=>{
         return (
             <Card
