@@ -7,7 +7,6 @@ BEGIN;
 		studentID INTEGER,
 		phone_number VARCHAR(20),
 		email VARCHAR(255),
-		user_password VARCHAR(255),
 		license_plate_number VARCHAR(20)
 	);
 
@@ -62,18 +61,18 @@ BEGIN;
 
 
 
-	INSERT INTO users (first_name, last_name, studentID, phone_number, email, user_password, license_plate_number)
+	INSERT INTO users (first_name, last_name, studentID, phone_number, email, license_plate_number)
 	VALUES
-		('John', 'Doe', '123456', '555-1234', 'john@example.com', 'password123', 'ABC123'),
-		('Jane', 'Smith', '654321', '555-5678', 'jane@example.com', 'password456', 'DEF456'),
-		('Alice', 'Johnson', '987654', '555-9876', 'alice@example.com', 'password789', 'GHI789'),
-		('Bob', 'Williams', '456789', '555-4321', 'bob@example.com', 'passwordabc', 'JKL012'),
-		('Emily', 'Brown', '789012', '555-8765', 'emily@example.com', 'passworddef', 'MNO345'),
-		('Michael', 'Jones', '321654', '555-2109', 'michael@example.com', 'passwordghi', 'PQR678'),
-		('Samantha', 'Davis', '456123', '555-6789', 'samantha@example.com', 'passwordjkl', 'STU901'),
-		('David', 'Wilson', '987123', '555-3456', 'david@example.com', 'passwordmno', 'VWX234'),
-		('Sarah', 'Martinez', '654987', '555-7890', 'sarah@example.com', 'passwordpqr', 'YZA567'),
-		('Matthew', 'Garcia', '789456', '555-2345', 'matthew@example.com', 'passwordstu', 'BCD890');
+		('John', 'Doe', '123456', '555-1234', 'john@example.com', 'ABC123'),
+		('Jane', 'Smith', '654321', '555-5678', 'jane@example.com', 'DEF456'),
+		('Alice', 'Johnson', '987654', '555-9876', 'alice@example.com', 'GHI789'),
+		('Bob', 'Williams', '456789', '555-4321', 'bob@example.com', 'JKL012'),
+		('Emily', 'Brown', '789012', '555-8765', 'emily@example.com', 'MNO345'),
+		('Michael', 'Jones', '321654', '555-2109', 'michael@example.com', 'PQR678'),
+		('Samantha', 'Davis', '456123', '555-6789', 'samantha@example.com', 'STU901'),
+		('David', 'Wilson', '987123', '555-3456', 'david@example.com', 'VWX234'),
+		('Sarah', 'Martinez', '654987', '555-7890', 'sarah@example.com', 'YZA567'),
+		('Matthew', 'Garcia', '789456', '555-2345', 'matthew@example.com', 'BCD890');
 
 	INSERT INTO parking_permits(userID, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location)
 	VALUES
