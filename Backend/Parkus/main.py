@@ -1,19 +1,23 @@
-##Controller
-# Http Endpoints
+# main.py
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+import data_store
 
-# This is a sample Python script.
+app = Flask(__name__)
+CORS(app)
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+@app.route('/api/users/<int:userid>/schedule', methods=['GET'])
+def api_get_user_schedule(userid):
+    """
+    Get user schedule from database using user id
+    :param userid:
+    :return: json with user schedule
+    """
+    if not userid:
+        return jsonify({'error': 'User ID must be provided'}), 400
 
+    schedule = data_store.get_user_schedule_service(userid)
+    return jsonify(schedule)
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    app.run(debug=True)

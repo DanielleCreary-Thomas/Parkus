@@ -1,0 +1,61 @@
+/* SignUp.css */
+.sign-up-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    background: linear-gradient(135deg, #4a90e2, #dfe6e9); /* Gradient background to match the sign-in style */
+}
+
+.sign-up-card {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1); /* Similar card style with shadow */
+    text-align: center;
+    width: 400px;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+.sign-up-button {
+    background-color: #1976d2; /* Same button color as the sign-in button */
+    color: white;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.sign-up-button:hover {
+    background-color: #1565c0;
+}
+
+.sign-in-link {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.sign-in-link a {
+    color: #1976d2;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.sign-in-link a:hover {
+    text-decoration: underline;
+}
+
+
+/* Adjustments for smaller screens */
+@media (max-width: 768px) {
+    .sign-up-card {
+        width: 90%;
+    }
+
+    h1 {
+        font-size: 1.75rem;
+    }
+}
+

@@ -1,0 +1,22 @@
+/*.savedTimeBlocksTable {*/
+/*    min-height: 30rem;*/
+/*}*/
+
+.savedTimeBlocksTable th {
+    background-color: #C0D7D8; /* Set background color */
+    border-radius: 20px; /* Set border radius */
+    padding: 0.5em;
+    text-align: center;
+    width: 100vh;
+}
+
+.savedTimeBlocksTable td {
+    padding: 0.5em;
+    text-align: center;
+}
+
+.timeBlocks {
+    padding: 0.5em;
+    text-align: center;
+    border-style: ridge;
+}

@@ -1,12 +1,27 @@
-// ScheduleTitle.js
-
-import './ScheduleTitle.css';
+import React from 'react';
+import { Box, Typography } from '@mui/material';
+// import './ScheduleTitle.css';
 
 function ScheduleTitle() {
     return (
-        <div className="scheduleTitle">
-            <h1>Schedule</h1>
-        </div>
+        <Box
+            className={"scheduleTitle"}
+            bgcolor={"#FFFFFF"}
+            maxWidth={"75rem"}
+
+            sx={{
+                border:"3px solid black",
+                borderRadius: 7,
+                alignItems:"center",
+                display:"flex",
+                justifyContent:"center",
+                margin:"2rem",
+            }}
+        >
+
+                <Typography variant="h1" fontFamily={"Orelega One"}>Schedule</Typography>
+
+        </Box>
     );
 }
 
