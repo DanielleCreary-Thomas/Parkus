@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Button, TextField, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { supabase } from '../utils/supabase.ts';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify'; // Import react-toastify
+import 'react-toastify/dist/ReactToastify.css'; // Import the CSS for toastify
 import './styles/SignUp.css'; // Import your CSS for this page
 
 const SignUp = () => {
@@ -15,36 +17,71 @@ const SignUp = () => {
     const [openDialog, setOpenDialog] = useState(false); // State to control dialog visibility
     const navigate = useNavigate();
 
-    const handleSignUp = async () => {
-        const { data, error } = await supabase.auth.signUp({ email, password });
+    const handleSignUp = async (e) => {
+        e.preventDefault();
 
-        if (error) {
-            alert('Error signing up: ' + error.message);
-        } else {
-            const { user } = data;
+        // Proceed with sign-up, Supabase will handle checking for duplicate emails
+        try {
+            // Sign up user using Supabase Auth
+            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        first_name: firstName,
+                        last_name: lastName,
+                        studentid: studentID,
+                        phone_number: phoneNumber,
+                        license_plate_number: licensePlateNumber,
+                    },
+                },
+            });
+
+            console.log('Supabase response:', { signUpData, signUpError });
+
+            if (signUpError) {
+                console.error('Sign-up error:', signUpError);
+                if (signUpError.message.includes("already registered")) {
+                    toast.error("Email already exists. Please use a different email."); // Show error toast
+                } else {
+                    toast.error(signUpError.message); // Show other error toasts
+                }
+                return;
+            }
+
+            // Insert additional user information into your custom `users` table
             const { error: insertError } = await supabase
-                .from('users')
+                .from('users') // Make sure the table name is correct
                 .insert([{
-                    userid: user.id,
+                    userid: signUpData.user.id, // Use the user ID from auth sign-up
                     first_name: firstName,
                     last_name: lastName,
+                    email: signUpData.user.email,
                     studentid: studentID,
                     phone_number: phoneNumber,
-                    email: email,
-                    license_plate_number: licensePlateNumber
+                    license_plate_number: licensePlateNumber,
                 }]);
 
             if (insertError) {
-                alert('Error inserting user data: ' + insertError.message);
-            } else {
-                setOpenDialog(true);
+                console.error('Error inserting user data:', insertError);
+                toast.error('Failed to store user details. Please try again.'); // Show error toast
+                return;
             }
+
+            // Show dialog if sign-up and insertion succeed
+            if (signUpData?.user) {
+                setOpenDialog(true); // Show success dialog
+            }
+
+        } catch (err) {
+            console.error('Unexpected error:', err); // Log the unexpected error
+            toast.error('An unexpected error occurred. Please try again.'); // Show unexpected error toast
         }
     };
 
     const handleCloseDialog = () => {
         setOpenDialog(false);
-        navigate('/signin');
+        navigate('/signin'); // Navigate to sign-in page after closing modal
     };
 
     return (
@@ -52,6 +89,7 @@ const SignUp = () => {
             <CssBaseline />
             <div className="sign-up-card">
                 <h1>Sign Up for Parkus</h1>
+
                 <TextField
                     label="First Name"
                     variant="outlined"
@@ -125,24 +163,70 @@ const SignUp = () => {
                 </div>
             </div>
 
+            {/* Customized Success Dialog */}
             <Dialog
                 open={openDialog}
                 onClose={handleCloseDialog}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
+                PaperProps={{
+                    sx: {
+                        backgroundColor: '#f5f5f5',
+                        boxShadow: '0 0 20px rgba(0, 0, 0, 0.2)',
+                        borderRadius: '12px',
+                    }
+                }}
             >
-                <DialogTitle id="alert-dialog-title">{"Registration Successful"}</DialogTitle>
-                <DialogContent>
-                    <DialogContentText id="alert-dialog-description">
-                        You have successfully registered! Please check your email to confirm your address.
+                <DialogTitle 
+                    sx={{
+                        color: '#333',
+                        fontSize: '24px',
+                        textAlign: 'center',
+                        fontWeight: 'bold',
+                    }}
+                    id="alert-dialog-title"
+                >
+                    {"Registration Successful"}
+                </DialogTitle>
+                <DialogContent
+                    sx={{
+                        padding: '16px 24px',
+                    }}
+                >
+                    <DialogContentText 
+                        sx={{
+                            color: '#666',
+                            textAlign: 'center',
+                            fontSize: '18px',
+                        }}
+                        id="alert-dialog-description"
+                    >
+                        You have successfully registered!
                     </DialogContentText>
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseDialog} color="primary" autoFocus>
+                <DialogActions
+                    sx={{
+                        justifyContent: 'center',
+                    }}
+                >
+                    <Button
+                        sx={{
+                            backgroundColor: '#1976d2',
+                            color: '#fff',
+                            '&:hover': {
+                                backgroundColor: '#155a9b',
+                            },
+                            borderRadius: '8px',
+                            padding: '6px 16px',
+                        }}
+                        onClick={handleCloseDialog}
+                        autoFocus
+                    >
                         OK
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Toast Container for notifications */}
+            <ToastContainer position="top-right" autoClose={5000} hideProgressBar />
         </div>
     );
 };
