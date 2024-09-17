@@ -97,6 +97,7 @@ const SignUp = () => {
                     margin="normal"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
+                    required
                 />
                 <TextField
                     label="Last Name"
@@ -105,6 +106,7 @@ const SignUp = () => {
                     margin="normal"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
+                    required
                 />
                 <TextField
                     label="Student ID"
@@ -113,6 +115,7 @@ const SignUp = () => {
                     margin="normal"
                     value={studentID}
                     onChange={(e) => setStudentID(e.target.value)}
+                    required
                 />
                 <TextField
                     label="Phone Number"
@@ -129,6 +132,7 @@ const SignUp = () => {
                     margin="normal"
                     value={licensePlateNumber}
                     onChange={(e) => setLicensePlateNumber(e.target.value)}
+                    required
                 />
                 <TextField
                     label="Email"
@@ -137,6 +141,7 @@ const SignUp = () => {
                     margin="normal"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    required
                 />
                 <TextField
                     label="Password"
@@ -146,6 +151,7 @@ const SignUp = () => {
                     margin="normal"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    required
                 />
                 <Button
                     variant="contained"
