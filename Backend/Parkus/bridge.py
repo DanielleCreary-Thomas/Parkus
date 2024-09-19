@@ -35,7 +35,7 @@ def member_userid_for_group(groupid):
     """
     with conn.cursor() as cur:
         cur.execute('''
-        SELECT u.userid
+        SELECT u.userid, u.first_name, u.last_name
         FROM users u
         WHERE u.groupid = %s
         ''', str(groupid))

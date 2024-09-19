@@ -5,8 +5,9 @@ import json
 import time
 
 class User:
-    def __init__(self, id):
+    def __init__(self, id, name):
         self.id = id
+        self.name = name
         self.schedule = []
 
     def add_schedule(self, schedule_block):
@@ -22,6 +23,12 @@ class User:
             for memBlock in member.schedule:
                 return userBlock.compare_times(memBlock) != 0
 
+    def to_json(self):
+        return {
+            'user_id': self.id,
+            'name': self.name,
+            'schedule': [item.to_json() for item in self.schedule]
+        }
     # def toJSON(self):
     #     return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
@@ -42,7 +49,13 @@ class Schedule:
         comparison = max(0, min(int(self.end_time.split(":")[0]), int(member_time.end_time.split(":")[0]))
                          - max(int(self.start_time.split(":")[0]), int(member_time.start_time.split(":")[0])))
         return comparison == 0
-
+    def to_json(self):
+        return {
+            'schedule_id': self.id,
+            'dow': self.dow,
+            'start_time': self.start_time,
+            'end_time': self.end_time
+        }
     # def toJson(self):
     #     return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
@@ -57,8 +70,9 @@ class Group:
     def populate_group(self):
         members = bridge.member_userid_for_group(self.id)
         if len(members) != 0:
-            for userid in members:
-                member = User(userid)
+            for user in members:
+                member = User(user[0],'')
+                member.name = f"{user[1]} {user[2]}"
                 member.get_schedule_for_userid()
                 self.add_member(member)
 
@@ -73,6 +87,11 @@ class Group:
         if valid:
             return self
 
+    def to_json(self):
+        return {
+            'group_id': self.id,
+            'members': [item.to_json() for item in self.members]
+        }
     # def toJSON(self):
     #     return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
@@ -91,7 +110,7 @@ def get_group_by_id(id):
 
 
 def complete_matchmaking(userid):
-    curr_user = User(userid)
+    curr_user = User(userid,'testname')
     curr_user.get_schedule_for_userid()
     group_options = []
     available_groups = bridge.groups_with_vacancies()
@@ -103,7 +122,7 @@ def complete_matchmaking(userid):
             group_option = curr_group.validate_group(curr_user)
             if group_option:
                 group_options.append(group_option)
-    return group_options
+    return [item.to_json() for item in group_options]
 
 def validate_no_group(userid):
     result = bridge.validate_no_group(userid)

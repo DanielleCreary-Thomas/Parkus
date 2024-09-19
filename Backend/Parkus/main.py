@@ -32,6 +32,7 @@ def matchmake(id):
     :param id: given userID
     :return: the groups that match the user's schedule
     """
+    # test = request.args.get('id')
     assert id == request.view_args['id']
     if data_store.validate_no_group(id):
         returnData = {
