@@ -1,4 +1,4 @@
-import {Avatar, Button, Card, CardActions, CardContent, CardHeader, Chip, Stack, Typography} from "@mui/material";
+import {Avatar, Box, Button, Card, CardActions, CardContent, CardHeader, Chip, Stack, Typography} from "@mui/material";
 
 class user {
     id:number
@@ -15,10 +15,27 @@ export type GroupMetaData = {
     id:number,
     members:user[],
 }
-export default function MatchmakingGroups(){
+export default function MatchmakingGroups({data}){
+    console.log(data)
+
+    const GroupCard = ({groupData, handleGroupClick})=>{
+        const MembersList = () => {
+            console.log(groupData.members)
+            if (groupData.members.length === 0){return}
+            return groupData.members.map(member => (
+                <Chip avatar={<Avatar sx={{bgcolor:"#A7C957"}}>{member.name[0]}</Avatar>}
+                      label={member.name}
+                      key={member.user_id}
+                      sx={{
+                          width:"50",
+                          marginLeft:"10px"
+                      }}
+                />
+
+            ))
+        }
 
 
-    const GroupDisplay = ({groupData, handleGroupClick})=>{
         return (
             <Card
                 sx={{
@@ -26,21 +43,17 @@ export default function MatchmakingGroups(){
                     backgroundColor:"#C0D7D8",
                     margin:"2rem"
                 }}
+                key={groupData.group_id}
             >
                 <CardHeader
-                    title={"Group #: 5"}
+                    title={"Group #: " + groupData.group_id}
                     titleTypographyProps={{variant:'h3', fontFamily:"Orelega One"}}
                 >
                     <Typography variant={"h3"} fontFamily={"Orelega One"}>
-                        Group #: 5</Typography>
+                        {"Group #: " + groupData.group_id}</Typography>
                 </CardHeader>
                 <CardContent>
-                    <Chip avatar={<Avatar sx={{bgcolor:"#A7C957"}}>H</Avatar>}
-                          label="Harper Manning"
-                          sx={{
-                              width:"50"
-                          }}
-                    />
+                    <MembersList/>
 
                 </CardContent>
                 <CardActions>
@@ -54,16 +67,28 @@ export default function MatchmakingGroups(){
                             color: "#FFFFFF",
                             borderRadius:"20px"
                         }}
+                        onClick={()=>(handleGroupClick(groupData.group_id))}
                     >View</Button>
                 </CardActions>
             </Card>
         )
     }
 
+    const GroupsList = () => {
+        if (!data){
+            return
+        }
+        return data.map(group => (
+            <Box key={group.group_id}>
+                <GroupCard groupData={group}></GroupCard>
+            </Box>
+
+        ))
+    }
 
     return(
         <Stack>
-            <GroupDisplay></GroupDisplay>
+            <GroupsList></GroupsList>
         </Stack>
     )
 }
