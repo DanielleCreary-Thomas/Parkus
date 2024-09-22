@@ -1,20 +1,60 @@
-import React, { useState } from 'react';
-import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, Stack, TextField, MenuItem } from "@mui/material";
+import React, { useState, useEffect } from 'react';
+import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, Stack, TextField, MenuItem, Typography } from "@mui/material";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { supabase } from '../../../utils/supabase.ts';
 
-const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModalOpen, closeModal, existingDescription, isEdit }) => {
-    const [description, setDescription] = useState(existingDescription || '');
+const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModalOpen, closeModal, isEdit, scheduleid }) => {
+    const [description, setDescription] = useState('');
     const [endTime, setEndTime] = useState('');
-    const [selectedColor, setSelectedColor] = useState('#FF5733'); // Default color
+    const [selectedColor, setSelectedColor] = useState('#FF5733');
+    const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+    const [startTime, setStartTime] = useState('');
+    const [dayOfWeek, setDayOfWeek] = useState('');
 
     const colorOptions = [
         '#FF5733', '#33FF57', '#3357FF', '#F1C40F',
         '#8E44AD', '#E67E22', '#1ABC9C', '#2C3E50'
     ];
 
-    // Generate time options from 07:00 to 22:00
+    useEffect(() => {
+        if (isModalOpen) {
+            if (isEdit && scheduleid) {
+                // Load existing schedule data when editing
+                const fetchScheduleData = async () => {
+                    const { data, error } = await supabase
+                        .from('schedule_blocks')
+                        .select('*')
+                        .eq('scheduleid', scheduleid)
+                        .single();
+
+                    if (error) {
+                        toast.error('Error fetching schedule data: ' + error.message);
+                        return;
+                    }
+
+                    if (data) {
+                        // Pre-load existing data
+                        setDescription(data.description);
+                        setDayOfWeek(data.dow);
+                        setStartTime(data.start_time ? data.start_time.toString() : ''); // Ensure it matches dropdown format
+                        setEndTime(data.end_time ? data.end_time.toString() : ''); // Ensure it matches dropdown format
+                        setSelectedColor(data.block_color);
+                    }
+                };
+
+                fetchScheduleData();
+            } else {
+                // Reset fields for adding a new schedule
+                setDescription('');
+                setStartTime(selectedTime || ''); // Set start time from props
+                setEndTime('');
+                setDayOfWeek(selectedDay || '');
+                setSelectedColor('#FF5733');
+            }
+        }
+    }, [isModalOpen, selectedTime, selectedDay, isEdit, scheduleid]);
+
     const generateTimeOptions = () => {
         const timeOptions = [];
         for (let hour = 7; hour <= 22; hour++) {
@@ -25,159 +65,387 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
     };
 
     const handleSave = async () => {
-        if (!description || !selectedTime || !endTime || !selectedDay) {
+        if (!description || !startTime || !endTime || !dayOfWeek) {
             toast.error('Please provide all details.');
             return;
         }
-
-        if (endTime <= selectedTime) {
+    
+        if (endTime <= startTime) {
             toast.error('End time must be after start time.');
             return;
         }
-
+    
         const { data: { user }, error } = await supabase.auth.getUser();
         if (error) {
             toast.error('Error fetching user information.');
             return;
         }
-
+    
         const userId = user.id;
+    
+        try {
+            // Fetch existing schedule blocks for the same day of the week
+            const { data: existingBlocks, error: fetchError } = await supabase
+                .from('schedule_blocks')
+                .select('*')
+                .eq('userid', userId)
+                .eq('dow', dayOfWeek);
+    
+            if (fetchError) {
+                toast.error('Error fetching existing schedule blocks: ' + fetchError.message);
+                return;
+            }
+    
+            // Convert times to Date objects for accurate comparison
+            const newStartTime = new Date(`1970-01-01T${startTime}:00Z`);
+            const newEndTime = new Date(`1970-01-01T${endTime}:00Z`);
+    
+            const hasOverlap = existingBlocks.some(block => {
+                // Skip current block if editing
+                if (block.scheduleid === scheduleid) return false;
+    
+                // Convert existing times to Date objects
+                const existingStart = new Date(`1970-01-01T${block.start_time}Z`);
+                const existingEnd = new Date(`1970-01-01T${block.end_time}Z`);
+    
+                // Check if the new time block overlaps with any existing block
+                return (
+                    (newStartTime < existingEnd && newEndTime > existingStart)
+                );
+            });
+    
+            if (hasOverlap) {
+                toast.error('The selected time overlaps with an existing block.');
+                return;
+            }
+    
+            let supabaseResponse;
+            if (isEdit && scheduleid) {
+                // Update existing schedule block
+                supabaseResponse = await supabase
+                    .from('schedule_blocks')
+                    .update({
+                        description,
+                        dow: dayOfWeek,
+                        start_time: startTime,
+                        end_time: endTime,
+                        block_color: selectedColor
+                    })
+                    .eq('scheduleid', scheduleid);
+            } else {
+                // Insert new schedule block
+                supabaseResponse = await supabase
+                    .from('schedule_blocks')
+                    .insert([{
+                        userid: userId,
+                        description,
+                        dow: dayOfWeek,
+                        start_time: startTime,
+                        end_time: endTime,
+                        block_color: selectedColor
+                    }]);
+            }
+    
+            const { error: supabaseError } = supabaseResponse;
+    
+            if (supabaseError) {
+                toast.error('Error saving schedule block: ' + supabaseError.message);
+                return;
+            }
+    
+            toast.success(isEdit ? 'Schedule block updated successfully!' : 'Schedule block added successfully!');
+            onSave({ description, startTime, endTime, day: dayOfWeek, color: selectedColor });
+    
+            // Close the modal
+            closeModal();
+        } catch (error) {
+            toast.error('An error occurred: ' + error.message);
+        }
+    };
+    
+
+    const handleDelete = async () => {
+        if (!scheduleid) {
+            toast.error('Error: Schedule ID not found.');
+            return;
+        }
 
         try {
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from('schedule_blocks')
-                .insert([{
-                    userid: userId,
-                    description,
-                    dow: selectedDay,
-                    start_time: selectedTime,
-                    end_time: endTime,
-                    block_color: selectedColor // Store the selected color
-                }]);
+                .delete()
+                .eq('scheduleid', scheduleid);
 
             if (error) {
-                toast.error('Error inserting schedule block: ' + error.message);
+                toast.error('Error deleting schedule block: ' + error.message);
                 return;
             }
 
-            toast.success('Schedule block added successfully!');
-            onSave({ description, startTime: selectedTime, endTime, day: selectedDay, color: selectedColor });
-
-            // Reset the form fields after saving
-            setDescription('');
-            setEndTime('');
-            setSelectedColor('#FF5733'); // Reset to default color
+            toast.success('Schedule block deleted successfully!');
+            setIsConfirmDeleteOpen(false);
+            closeModal();
+            onDelete();
         } catch (error) {
             toast.error('An error occurred: ' + error.message);
         }
     };
 
+    const formatTime = (time) => {
+        if (time && time.length === 8) { // Assuming format is always 'hh:mm:ss'
+            return time.slice(0, 5); // Take the first 5 characters (hh:mm)
+        }
+        return time;
+    };
+
     return (
         <Box>
             <ToastContainer />
-            <Dialog open={isModalOpen} onClose={closeModal}>
-                <DialogTitle>{isEdit ? "Edit or Delete Schedule" : "Add Schedule"}</DialogTitle>
+            {isEdit ? (
+                <Dialog open={isModalOpen} onClose={closeModal}>
+                    <DialogTitle>
+                        <Typography variant="h6" align="center">
+                            Edit or Delete Schedule
+                        </Typography>
+                    </DialogTitle>
+                    <DialogContent>
+                        <Stack direction="column" spacing={2}>
+                            {/* <TextField
+                                label="Schedule ID"
+                                fullWidth
+                                variant="outlined"
+                                value={scheduleid || 'N/A'}
+                                InputProps={{
+                                    readOnly: true,
+                                }}
+                                InputLabelProps={{
+                                    style: { paddingTop: '0.5rem', fontSize: '1rem' }
+                                }}
+                            /> */}
+                            <TextField
+                                label="Description"
+                                fullWidth
+                                variant="outlined"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                InputLabelProps={{
+                                    style: { paddingTop: '0.5rem', fontSize: '1rem' }
+                                }}
+                            />
+                            <TextField
+                                label="Day of the Week"
+                                fullWidth
+                                variant="outlined"
+                                value={dayOfWeek}
+                                onChange={(e) => setDayOfWeek(e.target.value)}
+                                InputLabelProps={{
+                                    style: { paddingTop: '0.5rem', fontSize: '1rem' }
+                                }}
+                            />
+                            <TextField
+                                label="Start Time"
+                                fullWidth
+                                variant="outlined"
+                                select
+                                value={formatTime(startTime)}
+                                onChange={(e) => setStartTime(e.target.value)}
+                                SelectProps={{
+                                    MenuProps: {
+                                        sx: {
+                                            '.MuiMenuItem-root': {
+                                                fontSize: '1rem',
+                                            },
+                                        },
+                                    },
+                                }}
+                                InputLabelProps={{
+                                    shrink: true,
+                                    style: { paddingTop: '0.5rem', fontSize: '1rem' }
+                                }}
+                            >
+                                {generateTimeOptions().map(time => (
+                                    <MenuItem key={time} value={time}>
+                                        {time}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                            <TextField
+                                label="End Time"
+                                fullWidth
+                                variant="outlined"
+                                select
+                                value={formatTime(endTime)}
+                                onChange={(e) => setEndTime(e.target.value)}
+                                SelectProps={{
+                                    MenuProps: {
+                                        sx: {
+                                            '.MuiMenuItem-root': {
+                                                fontSize: '1rem',
+                                            },
+                                        },
+                                    },
+                                }}
+                                InputLabelProps={{
+                                    shrink: true,
+                                    style: { paddingTop: '0.5rem', fontSize: '1rem' }
+                                }}
+                            >
+                                {generateTimeOptions().map(time => (
+                                    <MenuItem key={time} value={time}>
+                                        {time}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2 }}>
+                                {colorOptions.map(color => (
+                                    <Box
+                                        key={color}
+                                        sx={{
+                                            width: 30,
+                                            height: 30,
+                                            backgroundColor: color,
+                                            borderRadius: '50%',
+                                            cursor: 'pointer',
+                                            border: selectedColor === color ? '3px solid black' : 'none'
+                                        }}
+                                        onClick={() => setSelectedColor(color)}
+                                    />
+                                ))}
+                            </Box>
+                        </Stack>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setIsConfirmDeleteOpen(true)} color="secondary" variant="contained">
+                            Delete
+                        </Button>
+                        <Button onClick={handleSave} color="primary" variant="contained">
+                            Edit
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            ) : (
+                <Dialog open={isModalOpen} onClose={closeModal}>
+                    <DialogTitle>
+                        <Typography variant="h6" align="center">
+                            Add Schedule
+                        </Typography>
+                    </DialogTitle>
+                    <DialogContent>
+                        <Stack direction="column" spacing={2}>
+                            <TextField
+                                label="Description"
+                                fullWidth
+                                variant="outlined"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                InputLabelProps={{
+                                    style: { paddingTop: '0.5rem', fontSize: '1rem' }
+                                }}
+                            />
+                            <TextField
+                                label="Day of the Week"
+                                fullWidth
+                                variant="outlined"
+                                value={dayOfWeek}
+                                onChange={(e) => setDayOfWeek(e.target.value)}
+                                InputLabelProps={{
+                                    style: { paddingTop: '0.5rem', fontSize: '1rem' }
+                                }}
+                            />
+                            <TextField
+                                label="Start Time"
+                                fullWidth
+                                variant="outlined"
+                                select
+                                value={startTime}
+                                onChange={(e) => setStartTime(e.target.value)}
+                                SelectProps={{
+                                    MenuProps: {
+                                        sx: {
+                                            '.MuiMenuItem-root': {
+                                                fontSize: '1rem',
+                                            },
+                                        },
+                                    },
+                                }}
+                                InputLabelProps={{
+                                    shrink: true,
+                                    style: { paddingTop: '0.5rem', fontSize: '1rem' }
+                                }}
+                            >
+                                {generateTimeOptions().map(time => (
+                                    <MenuItem key={time} value={time}>
+                                        {time}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                            <TextField
+                                label="End Time"
+                                fullWidth
+                                variant="outlined"
+                                select
+                                value={endTime}
+                                onChange={(e) => setEndTime(e.target.value)}
+                                SelectProps={{
+                                    MenuProps: {
+                                        sx: {
+                                            '.MuiMenuItem-root': {
+                                                fontSize: '1rem',
+                                            },
+                                        },
+                                    },
+                                }}
+                                InputLabelProps={{
+                                    shrink: true,
+                                    style: { paddingTop: '0.5rem', fontSize: '1rem' }
+                                }}
+                            >
+                                {generateTimeOptions().map(time => (
+                                    <MenuItem key={time} value={time}>
+                                        {time}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2 }}>
+                                {colorOptions.map(color => (
+                                    <Box
+                                        key={color}
+                                        sx={{
+                                            width: 30,
+                                            height: 30,
+                                            backgroundColor: color,
+                                            borderRadius: '50%',
+                                            cursor: 'pointer',
+                                            border: selectedColor === color ? '3px solid black' : 'none'
+                                        }}
+                                        onClick={() => setSelectedColor(color)}
+                                    />
+                                ))}
+                            </Box>
+                        </Stack>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={closeModal} color="secondary">
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSave} color="primary" variant="contained">
+                            Save
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            )}
+
+            <Dialog open={isConfirmDeleteOpen} onClose={() => setIsConfirmDeleteOpen(false)}>
+                <DialogTitle>Confirm Delete</DialogTitle>
                 <DialogContent>
-                    <Stack direction="column" spacing={2}>
-                        {/* Description */}
-                        <TextField
-                            label="Description"
-                            fullWidth
-                            variant="outlined"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            InputLabelProps={{
-                                style: { paddingTop: '0.5rem', fontSize: '1rem' } // Adjust the padding and font size
-                            }}
-                        />
-
-                        {!isEdit && (
-                            <>
-                                {/* Day of the Week */}
-                                <TextField
-                                    label="Day of the Week"
-                                    fullWidth
-                                    variant="outlined"
-                                    value={selectedDay}
-                                    onChange={(e) => e.target.value} // Keep this editable if necessary
-                                    InputLabelProps={{
-                                        style: { paddingTop: '0.5rem', fontSize: '1rem' }
-                                    }}
-                                />
-
-                                {/* Start Time */}
-                                <TextField
-                                    label="Start Time"
-                                    fullWidth
-                                    variant="outlined"
-                                    value={selectedTime}
-                                    onChange={(e) => e.target.value} // Keep this editable if necessary
-                                    InputLabelProps={{
-                                        style: { paddingTop: '0.5rem', fontSize: '1rem' }
-                                    }}
-                                />
-
-                                {/* End Time */}
-                                <TextField
-                                    label="End Time"
-                                    fullWidth
-                                    variant="outlined"
-                                    select
-                                    value={endTime}
-                                    onChange={(e) => setEndTime(e.target.value)}
-                                    InputLabelProps={{
-                                        style: { paddingTop: '0.5rem', fontSize: '1rem' }
-                                    }}
-                                >
-                                    {generateTimeOptions().map(time => (
-                                        <MenuItem key={time} value={time}>
-                                            {time}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-
-                                {/* Pick a Color */}
-                                <TextField
-                                    label="Pick a Color"
-                                    fullWidth
-                                    variant="outlined"
-                                    select
-                                    value={selectedColor}
-                                    onChange={(e) => setSelectedColor(e.target.value)}
-                                    InputLabelProps={{
-                                        style: { paddingTop: '0.5rem', fontSize: '1rem' }
-                                    }}
-                                >
-                                    {colorOptions.map(color => (
-                                        <MenuItem key={color} value={color}>
-                                            <div style={{
-                                                width: '20px',
-                                                height: '20px',
-                                                backgroundColor: color,
-                                                display: 'inline-block',
-                                                marginRight: '10px',
-                                                borderRadius: '4px'
-                                            }} />
-                                            {color}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                            </>
-                        )}
-                    </Stack>
+                    <Typography>Are you sure you want to delete this schedule block?</Typography>
                 </DialogContent>
                 <DialogActions>
-                    {isEdit ? (
-                        <>
-                            <Button onClick={onDelete} color="secondary" variant="contained">Delete</Button>
-                            <Button onClick={handleSave} color="primary" variant="contained">Edit</Button>
-                        </>
-                    ) : (
-                        <>
-                            <Button onClick={closeModal} color="secondary">Cancel</Button>
-                            <Button onClick={handleSave} color="primary" variant="contained">Save</Button>
-                        </>
-                    )}
+                    <Button onClick={() => setIsConfirmDeleteOpen(false)} color="secondary">
+                        No
+                    </Button>
+                    <Button onClick={handleDelete} color="primary" variant="contained">
+                        Yes, Delete
+                    </Button>
                 </DialogActions>
             </Dialog>
         </Box>
