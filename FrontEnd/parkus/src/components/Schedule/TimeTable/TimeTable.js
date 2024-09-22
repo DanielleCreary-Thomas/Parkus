@@ -240,7 +240,7 @@ const TimeTable = () => {
                     closeModal={() => setIsModalOpen(false)}
                     isEdit={isEdit}
                     scheduleid={currentScheduleId}
-                    refreshSchedule={fetchScheduleData}
+                    refreshSchedule={fetchScheduleData} //refresh after time block changes
                 />
             )}
         </Box>
