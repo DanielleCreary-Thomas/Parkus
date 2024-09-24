@@ -1,19 +1,47 @@
 ##Controller
 # Http Endpoints
-
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+import data_store
+import flask
+from flask import render_template, send_from_directory
+from flask import Flask, request
+from flask_cors import CORS
 
 
-# Press the green button in the gutter to run the script.
+app = Flask(__name__)
+CORS(app)
+
+
+# GET Endpoints
+
+@app.route('/groups/<id>', methods=['GET', 'OPTIONS'])
+def group(id):
+    """
+    Sends the data for a single group with the given id
+    :param id: the selected group's id
+    :return: return data for the given group in the form of a dictionary
+    """
+    assert id == request.view_args['id']
+    returnData = {
+        'selectedGroup': data_store.get_group_by_id(id)
+    }
+    return returnData
+
+@app.route('/groups/matchmake/<id>', methods=['GET', 'OPTIONS'])
+def matchmake(id):
+    """
+    Matches the given user with the available groups
+    :param id: given userID
+    :return: the groups that match the user's schedule
+    """
+    # test = request.args.get('id')
+    assert id == request.view_args['id']
+    if data_store.validate_no_group(id):
+        returnData = {
+            'availableGroups': data_store.complete_matchmaking(id)
+        }
+    else:
+        returnData = {}
+    return returnData
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    app.run()

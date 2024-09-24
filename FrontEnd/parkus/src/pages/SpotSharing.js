@@ -56,6 +56,7 @@ function SpotSharing() {
     }
 
     return content
+
 }
 
 export default SpotSharing;

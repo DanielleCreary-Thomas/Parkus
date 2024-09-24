@@ -1,0 +1,31 @@
+.time-table-container {
+    width: 100%;
+    max-width: 75rem; /* Match the max-width of the ScheduleTitle */
+    margin: 0 auto;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+}
+
+.time-cell {
+    background-color: #f9f9f9;
+    font-size: 1em;
+    text-align: center;
+    padding: 0.5rem;
+    width: 100px;
+}
+
+.header-cell {
+    background-color: #C0D7D8;
+    font-weight: bold;
+    text-align: center;
+    padding: 1rem;
+}
+
+.time-block {
+    background-color: #d3f9d8;
+    border: 1px solid #c8e6c9;
+    border-radius: 5px;
+    font-size: 1rem;
+    padding: 0.5rem;
+    text-align: center;
+}

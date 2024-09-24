@@ -1,19 +1,101 @@
 .app-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr; /* One block on the left, one on the right */
   height: 100vh;
 }
 
 .left-panel {
-  flex: 0 0 0;
+  background-color: #FFFFFF; /* Example background color */
   height: 100%;
   padding: 0; /* Remove any padding */
   margin: 0; /* Remove any margin */
 }
 
 .right-panel {
-  flex: 1;
   background-color: #84B5D3;
   height: 100%;
   padding: 0; /* Remove any padding */
   margin: 0; /* Remove any margin */
+}
+
+/* Fullscreen landing page styling */
+.landing-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full viewport height */
+  width: 100vw;  /* Full viewport width */
+  background: #84B5D3; /* Add a nice gradient background */
+  color: #fff;
+  font-family: 'Roboto', sans-serif; /* Use a clean modern font */
+}
+
+.content {
+  text-align: center;
+  background: white; /* Slightly transparent background for the content */
+  padding: 50px;
+  border-radius: 10px;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+}
+
+h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  color: black;
+}
+
+.button-group {
+  display: flex;
+  gap: 20px; /* Add space between the buttons */
+  justify-content: center;
+}
+
+.sign-in-btn {
+  background-color: #2ecc71;
+  color: white;
+  font-size: 1.2rem;
+  padding: 0.75rem 2rem;
+  border-radius: 5px;
+}
+
+.sign-in-btn:hover {
+  background-color: #27ae60;
+}
+
+.sign-up-btn {
+  font-size: 1.2rem;
+  padding: 0.75rem 2rem;
+  border-radius: 5px;
+  color: #fff;
+  border-color: #fff;
+}
+
+.sign-up-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2); /* Subtle hover effect for sign up */
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2.5rem;
+  }
+
+  p {
+    font-size: 1.1rem;
+  }
+
+  .sign-in-btn, .sign-up-btn {
+    font-size: 1rem;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 10px; /* Adjust gap for small screens */
+  }
 }
