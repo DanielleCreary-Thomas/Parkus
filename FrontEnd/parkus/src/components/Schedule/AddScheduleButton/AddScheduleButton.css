@@ -1,0 +1,18 @@
+.formcontrol{
+    align-items: center;
+}
+
+.addTimeBlockSection h1{
+    margin: 0; /* Reset any default margin */
+    font-family: 'Orelega One', sans-serif;
+    font-size: 2.5em;
+    padding-left: 1em;
+}
+
+.deleteTimeBlockSection h1{
+    margin: 0; /* Reset any default margin */
+    font-family: 'Orelega One', sans-serif;
+    font-size: 2.25em;
+    padding-left: 1em;
+}
+

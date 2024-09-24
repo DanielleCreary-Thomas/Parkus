@@ -1,28 +1,34 @@
 import './App.css';
-import AppTitle from "./components/AppTitle/AppTitle";
-import Navbar from "./components/Navbar/Navbar"; // Assuming you have a CSS file for styling
-import {Route, Routes} from "react-router-dom"
-import Home from "./pages/Home";
+import { Route, Routes } from 'react-router-dom';
+import Home from './pages/Home';
+import SignIn from './pages/SignIn';
+import SignUp from './pages/SignUp';
+import LandingPage from './pages/LandingPage';
 import UpdateSchedule from "./pages/UpdateSchedule";
 import SpotSharing from "./pages/SpotSharing";
 import Payment from "./pages/Payment";
-import {Button, CssBaseline} from "@mui/material";
+import Layout from './components/Layout'; // Import the layout component
 
-export default function App() {
+function App() {
     return (
+        <div>
+            <Routes>
+                {/* Define all your routes here */}
+                <Route path="/" element={<LandingPage />} /> {/* Landing page route */}
+                <Route path="/signin" element={<SignIn />} /> {/* Sign In page */}
+                <Route path="/signup" element={<SignUp />} /> {/* Sign Up page */}
 
-        <div className="app-container">
-            <div className="left-panel">
-                <Navbar/>
-            </div>
-            <div className="right-panel">
-                <Routes>
-                    <Route path="/" element={<Home/>}></Route>
-                    <Route path="/updateSchedule" element={<UpdateSchedule/>}></Route>
-                    <Route path="/spotSharing" element={<SpotSharing/>}></Route>
-                    <Route path="/payment" element={<Payment/>}></Route>
-                </Routes>
-            </div>
+                {/* Routes that require Navbar (authenticated routes) */}
+                <Route element={<Layout />}>
+                    {/* All these routes will have Navbar visible */}
+                    <Route path="/home" element={<Home />} />
+                    <Route path="/updateSchedule" element={<UpdateSchedule />} />
+                    <Route path="/spotSharing" element={<SpotSharing />} />
+                    <Route path="/payment" element={<Payment />} />
+                </Route>
+            </Routes>
         </div>
-    )
+    );
 }
+
+export default App;

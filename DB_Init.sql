@@ -7,7 +7,6 @@ BEGIN;
 		studentID INTEGER,
 		phone_number VARCHAR(20),
 		email VARCHAR(255),
-		user_password VARCHAR(255),
 		license_plate_number VARCHAR(20)
 	);
 
@@ -62,18 +61,18 @@ BEGIN;
 
 
 
-	INSERT INTO users (first_name, last_name, studentID, phone_number, email, user_password, license_plate_number)
+	INSERT INTO users (first_name, last_name, studentID, phone_number, email, license_plate_number)
 	VALUES
-		('John', 'Doe', '123456', '555-1234', 'john@example.com', 'password123', 'ABC123'),
-		('Jane', 'Smith', '654321', '555-5678', 'jane@example.com', 'password456', 'DEF456'),
-		('Alice', 'Johnson', '987654', '555-9876', 'alice@example.com', 'password789', 'GHI789'),
-		('Bob', 'Williams', '456789', '555-4321', 'bob@example.com', 'passwordabc', 'JKL012'),
-		('Emily', 'Brown', '789012', '555-8765', 'emily@example.com', 'passworddef', 'MNO345'),
-		('Michael', 'Jones', '321654', '555-2109', 'michael@example.com', 'passwordghi', 'PQR678'),
-		('Samantha', 'Davis', '456123', '555-6789', 'samantha@example.com', 'passwordjkl', 'STU901'),
-		('David', 'Wilson', '987123', '555-3456', 'david@example.com', 'passwordmno', 'VWX234'),
-		('Sarah', 'Martinez', '654987', '555-7890', 'sarah@example.com', 'passwordpqr', 'YZA567'),
-		('Matthew', 'Garcia', '789456', '555-2345', 'matthew@example.com', 'passwordstu', 'BCD890');
+		('John', 'Doe', '123456', '555-1234', 'john@example.com', 'ABC123'),
+		('Jane', 'Smith', '654321', '555-5678', 'jane@example.com', 'DEF456'),
+		('Alice', 'Johnson', '987654', '555-9876', 'alice@example.com', 'GHI789'),
+		('Bob', 'Williams', '456789', '555-4321', 'bob@example.com', 'JKL012'),
+		('Emily', 'Brown', '789012', '555-8765', 'emily@example.com', 'MNO345'),
+		('Michael', 'Jones', '321654', '555-2109', 'michael@example.com', 'PQR678'),
+		('Samantha', 'Davis', '456123', '555-6789', 'samantha@example.com', 'STU901'),
+		('David', 'Wilson', '987123', '555-3456', 'david@example.com', 'VWX234'),
+		('Sarah', 'Martinez', '654987', '555-7890', 'sarah@example.com', 'YZA567'),
+		('Matthew', 'Garcia', '789456', '555-2345', 'matthew@example.com', 'BCD890');
 
 	INSERT INTO parking_permits(userID, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location)
 	VALUES
@@ -84,65 +83,65 @@ BEGIN;
 
 	INSERT INTO schedule_blocks(userID, description, dow, start_time, end_time)
 	VALUES
-		(1, 'Class 1', 1, '09:00:00', '12:00:00'),
-		(1, 'Class 2', 3, '13:00:00', '15:00:00'),
-		(1, 'Study Group', 5, '10:00:00', '12:00:00'),
-		(1, 'Office Hours', 2, '14:00:00', '16:00:00'),
-		(1, 'Meeting', 4, '11:00:00', '12:00:00'),
-
-		(2, 'Lab Session', 0, '09:00:00', '11:00:00'),
-		(2, 'Class 3', 2, '13:00:00', '15:00:00'),
-		(2, 'Study Session', 4, '10:00:00', '12:00:00'),
-		(2, 'Office Hours', 1, '14:00:00', '16:00:00'),
-		(2, 'Discussion Group', 3, '11:00:00', '12:00:00'),
-
-		(3, 'Class 4', 3, '09:00:00', '12:00:00'),
-		(3, 'Class 5', 5, '13:00:00', '15:00:00'),
-		(3, 'Group Project Meeting', 1, '10:00:00', '12:00:00'),
-		(3, 'Office Hours', 4, '14:00:00', '16:00:00'),
-		(3, 'Presentation Practice', 2, '11:00:00', '12:00:00'),
-
-		(4, 'Class 6', 2, '09:00:00', '12:00:00'),
-		(4, 'Class 7', 4, '13:00:00', '15:00:00'),
-		(4, 'Study Session', 6, '10:00:00', '12:00:00'),
-		(4, 'Office Hours', 0, '14:00:00', '16:00:00'),
-		(4, 'Discussion Group', 3, '11:00:00', '12:00:00'),
-
-		(5, 'Class 8', 4, '09:00:00', '12:00:00'),
-		(5, 'Class 9', 1, '13:00:00', '15:00:00'),
-		(5, 'Study Session', 3, '10:00:00', '12:00:00'),
-		(5, 'Office Hours', 5, '14:00:00', '16:00:00'),
-		(5, 'Group Meeting', 2, '11:00:00', '12:00:00'),
-
-		(6, 'Class 10', 1, '09:00:00', '12:00:00'),
-		(6, 'Class 11', 3, '13:00:00', '15:00:00'),
-		(6, 'Study Session', 5, '10:00:00', '12:00:00'),
-		(6, 'Office Hours', 2, '14:00:00', '16:00:00'),
-		(6, 'Discussion Group', 4, '11:00:00', '12:00:00'),
-
-		(7, 'Class 12', 0, '09:00:00', '12:00:00'),
-		(7, 'Class 13', 2, '13:00:00', '15:00:00'),
-		(7, 'Study Group', 4, '10:00:00', '12:00:00'),
-		(7, 'Office Hours', 1, '14:00:00', '16:00:00'),
-		(7, 'Presentation Practice', 3, '11:00:00', '12:00:00'),
-
-		(8, 'Class 14', 3, '09:00:00', '12:00:00'),
-		(8, 'Class 15', 5, '13:00:00', '15:00:00'),
-		(8, 'Group Meeting', 1, '10:00:00', '12:00:00'),
-		(8, 'Office Hours', 4, '14:00:00', '16:00:00'),
-		(8, 'Discussion Group', 2, '11:00:00', '12:00:00'),
-
-		(9, 'Class 16', 2, '09:00:00', '12:00:00'),
-		(9, 'Class 17', 4, '13:00:00', '15:00:00'),
-		(9, 'Study Session', 6, '10:00:00', '12:00:00'),
-		(9, 'Office Hours', 0, '14:00:00', '16:00:00'),
-		(9, 'Presentation Practice', 3, '11:00:00', '12:00:00'),
-
-		(10, 'Class 18', 4, '09:00:00', '12:00:00'),
-		(10, 'Class 19', 1, '13:00:00', '15:00:00'),
-		(10, 'Group Meeting', 3, '10:00:00', '12:00:00'),
-		(10, 'Office Hours', 5, '14:00:00', '16:00:00'),
-		(10, 'Discussion Group', 2, '11:00:00', '12:00:00');
+	    (1, 'Class 1', 1, '12:00:00', '14:00:00'),
+	    (1, 'Class 2', 3, '13:00:00', '15:00:00'),
+	    (1, 'Study Group', 5, '10:00:00', '12:00:00'),
+	    (1, 'Meeting', 2, '16:00:00', '18:00:00'),
+	    (1, 'Workout', 4, '18:00:00', '19:00:00'),
+	    
+	    (2, 'Lecture', 0, '10:00:00', '12:00:00'),
+	    (2, 'Lab Session', 2, '14:00:00', '16:00:00'),
+	    (2, 'Study Time', 4, '09:00:00', '11:00:00'),
+	    (2, 'Group Project', 1, '13:00:00', '16:00:00'),
+	    (2, 'Seminar', 3, '15:00:00', '18:00:00'),
+	
+	    (3, 'Meeting', 2, '13:00:00', '15:00:00'),
+	    (3, 'Presentation', 4, '14:00:00', '16:00:00'),
+	    (3, 'Workshop', 0, '09:00:00', '12:00:00'),
+	    (3, 'Study Time', 1, '14:00:00', '17:00:00'),
+	    (3, 'Office Hours', 3, '10:00:00', '12:00:00'),
+	
+	    (4, 'Discussion', 3, '13:00:00', '15:00:00'),
+	    (4, 'Lab Session', 5, '10:00:00', '12:00:00'),
+	    (4, 'Group Study', 1, '16:00:00', '18:00:00'),
+	    (4, 'Meeting', 4, '15:00:00', '17:00:00'),
+	    (4, 'Lecture', 2, '09:00:00', '11:00:00'),
+	
+	    (5, 'Seminar', 2, '15:00:00', '17:00:00'),
+	    (5, 'Discussion', 4, '13:00:00', '15:00:00'),
+	    (5, 'Study Group', 0, '10:00:00', '12:00:00'),
+	    (5, 'Workshop', 1, '14:00:00', '16:00:00'),
+	    (5, 'Meeting', 3, '16:00:00', '18:00:00'),
+	
+	    (6, 'Class', 1, '08:00:00', '10:00:00'),
+	    (6, 'Office Hours', 3, '11:00:00', '13:00:00'),
+	    (6, 'Discussion', 5, '14:00:00', '16:00:00'),
+	    (6, 'Lab Session', 2, '14:00:00', '16:00:00'),
+	    (6, 'Seminar', 4, '10:00:00', '12:00:00'),
+	
+	    (7, 'Meeting', 3, '13:00:00', '15:00:00'),
+	    (7, 'Group Study', 5, '10:00:00', '12:00:00'),
+	    (7, 'Lecture', 0, '13:00:00', '15:00:00'),
+	    (7, 'Workshop', 2, '16:00:00', '18:00:00'),
+	    (7, 'Discussion', 4, '11:00:00', '14:00:00'),
+	
+	    (8, 'Lab Session', 2, '10:00:00', '12:00:00'),
+	    (8, 'Seminar', 4, '13:00:00', '15:00:00'),
+	    (8, 'Group Study', 6, '14:00:00', '16:00:00'),
+	    (8, 'Meeting', 1, '09:00:00', '11:00:00'),
+	    (8, 'Discussion', 3, '12:00:00', '14:00:00'),
+	
+	    (9, 'Lecture', 1, '14:00:00', '16:00:00'),
+	    (9, 'Discussion', 3, '16:00:00', '18:00:00'),
+	    (9, 'Seminar', 5, '09:00:00', '11:00:00'),
+	    (9, 'Office Hours', 0, '13:00:00', '15:00:00'),
+	    (9, 'Meeting', 2, '11:00:00', '13:00:00'),
+	
+	    (10, 'Workshop', 4, '14:00:00', '16:00:00'),
+	    (10, 'Group Study', 6, '09:00:00', '11:00:00'),
+	    (10, 'Lab Session', 2, '12:00:00', '14:00:00'),
+	    (10, 'Lecture', 0, '15:00:00', '17:00:00'),
+	    (10, 'Discussion', 1, '10:00:00', '12:00:00');
 
 	INSERT INTO parking_groups(permitID, fully_paid)
 	VALUES
