@@ -160,6 +160,14 @@ def schedule_blocks_for_user(userid):
     :param userid: selected user's id
     :return: the list of schedule blocks
     """
+    response = (
+        supabase.table("schedule_blocks")
+            .select("scheduleid", "dow", "start_time", "end_time")
+            .eq("userid", userid)
+            .order("dow")
+            .execute()
+    )
+    return response.data
     # with conn.cursor() as cur:
     #     cur.execute("""
     #     SELECT s.scheduleid, s.dow, s.start_time, s.end_time
@@ -176,6 +184,15 @@ def validate_no_group(userid):
     :param userid: user's id
     :return: bool
     """
+    response = (
+        supabase.table("users")
+        .select("*")
+        .eq("userid", userid)
+        .eq("groupid", None)
+        .execute()
+    )
+
+    return response.data
     # with conn.cursor() as cur:
     #     cur.execute("""
     #     SELECT *
@@ -184,16 +201,96 @@ def validate_no_group(userid):
     #                 (userid,))
     #     return cur.fetchone()
 
+def get_group_leader(groupid):
+    """
+    Returns the leader's userid for the given group
+    :param groupid:
+    :return: userid for group leader
+    """
+    permitid_response = (
+        supabase.table("parking_groups")
+        .select("permitid")
+        .eq("groupid", groupid)
+        .execute()
+    )
+    print(permitid_response.data[0])
+
+    if len(permitid_response.data)>0:
+        userid_response = (
+            supabase.table("parking_permits")
+            .select("userid")
+            .eq("permitid", permitid_response.data[0]['permitid'])
+            .execute()
+        )
+        return userid_response.data[0]
+
+    return None
+
+def paid_member(userid):
+    """
+    Checks if the given user is paid
+    :param userid: given user's id
+    :return: True if the user is paid, False otherwise
+    """
+    response =(
+        supabase.table("users")
+        .select("*")
+        .neq("eTransferProof", None)
+        .execute()
+    )
+    return response.count > 0
+
+
+
+"""
+Validation functions
+"""
+def validate_userid(userid):
+    response = (
+        supabase.table("users")
+        .select("*")
+        .eq("userid", userid)
+        .execute()
+    )
+    return response.count > 0
+
+def validate_groupid(groupid):
+    response = (
+        supabase.table("parking_groups")
+        .select("*")
+        .eq("groupid", groupid)
+        .execute()
+    )
+    return response.count > 0
+
+def validate_permitid(permitiid):
+    response = (
+        supabase.table("parking_permits")
+        .select("*")
+        .eq("permitid", permitiid)
+        .execute()
+    )
+    return response.count > 0
+
+def validate_scheduleid(scheduleid):
+    response = (
+        supabase.table("schedule_blocks")
+        .select("*")
+        .eq("scheduleid", scheduleid)
+        .execute()
+    )
+    return response.count > 0
 
 if __name__ == "__main__":
-    group1 = member_userid_for_group(1)
-    group1num = member_count_by_groupid(1)
-    for member in group1:
-        print(member['userid'])
-
-    for member in group1:
-        print(member)
-
-    print(group1num)
-    print(group_by_groupid(1))
-    print(groups_with_vacancies())
+    print(get_group_leader("1"))
+    # group1 = member_userid_for_group(1)
+    # group1num = member_count_by_groupid(1)
+    # for member in group1:
+    #     print(member['userid'])
+    #
+    # for member in group1:
+    #     print(member)
+    #
+    # print(group1num)
+    # print(group_by_groupid(1))
+    # print(groups_with_vacancies())

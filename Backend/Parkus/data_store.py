@@ -104,6 +104,16 @@ def get_group_by_id(id):
     """
     return bridge.group_by_id(id)
 
+def get_group_leader(groupid):
+    if bridge.validate_groupid(groupid):
+        return bridge.get_group_leader(groupid)
+
+
+def check_paid_member(userid):
+    if bridge.validate_userid(userid):
+        return check_paid_member(userid)
+
+
 
 
 

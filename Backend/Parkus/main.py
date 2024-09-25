@@ -43,5 +43,25 @@ def matchmake(id):
         returnData = {}
     return returnData
 
+@app.route('/permits/userid/<id>', methods=['GET', 'OPTIONS'])
+def get_group_leader(groupid):
+    """
+    Returns the userid for the leader of a given group
+    :param groupid: the given group's id'
+    :return: the userid for the group leader
+    """
+    assert groupid == request.view_args['id']
+    return data_store.get_group_leader(groupid)
+
+@app.route('/users/paid/<id>', methods=['GET', 'OPTIONS'])
+def check_paid_member(userid):
+    """
+        Returns whether the given user has paid the group leader
+        :param id: the user's id
+        :return: Boolean value indicating whether the user is paid or not
+    """
+    assert userid == request.view_args['id']
+    return data_store.check_paid_member(userid)
+
 if __name__ == '__main__':
     app.run()
