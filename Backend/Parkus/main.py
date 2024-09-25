@@ -1,23 +1,47 @@
-# main.py
-from flask import Flask, jsonify, request
-from flask_cors import CORS
+##Controller
+# Http Endpoints
 import data_store
+import flask
+from flask import render_template, send_from_directory
+from flask import Flask, request
+from flask_cors import CORS
+
 
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/api/users/<int:userid>/schedule', methods=['GET'])
-def api_get_user_schedule(userid):
-    """
-    Get user schedule from database using user id
-    :param userid:
-    :return: json with user schedule
-    """
-    if not userid:
-        return jsonify({'error': 'User ID must be provided'}), 400
 
-    schedule = data_store.get_user_schedule_service(userid)
-    return jsonify(schedule)
+# GET Endpoints
+
+@app.route('/groups/<id>', methods=['GET', 'OPTIONS'])
+def group(id):
+    """
+    Sends the data for a single group with the given id
+    :param id: the selected group's id
+    :return: return data for the given group in the form of a dictionary
+    """
+    assert id == request.view_args['id']
+    returnData = {
+        'selectedGroup': data_store.get_group_by_id(id)
+    }
+    return returnData
+
+@app.route('/groups/matchmake/<id>', methods=['GET', 'OPTIONS'])
+def matchmake(id):
+    """
+    Matches the given user with the available groups
+    :param id: given userID
+    :return: the groups that match the user's schedule
+    """
+    # test = request.args.get('id')
+    assert id == request.view_args['id']
+    if data_store.validate_no_group(id):
+        returnData = {
+            'availableGroups': data_store.complete_matchmaking(id)
+        }
+    else:
+        returnData = {}
+    return returnData
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()

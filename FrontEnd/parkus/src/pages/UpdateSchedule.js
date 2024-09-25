@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import ScheduleTitle from "../components/Schedule/ScheduleTitle/ScheduleTitle";
-import SavedTimeBlocks from "../components/Schedule/SavedTimeBlocks/SavedTimeBlocks";
-import AddTimeBlock from "../components/Schedule/AddTimeBlock/AddTimeBlock";
-import {Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography} from "@mui/material";
-import Navbar from "../components/SideNav/Navbar/Navbar";
+import TimeTable from "../components/Schedule/TimeTable/TimeTable";
+import AddScheduleButton from "../components/Schedule/AddScheduleButton/AddScheduleButton";
+import {Dialog, DialogTitle, DialogContent, DialogActions, Button} from "@mui/material";
 
 function UpdateSchedule() {
     const [timeBlocks, setTimeBlocks] = useState([]);
@@ -11,14 +10,12 @@ function UpdateSchedule() {
 
     const handleSaveTimeBlock = (newTimeBlock) => {
         setTimeBlocks(prevTimeBlocks => {
-            // Check for duplicate time blocks
             const isDuplicate = prevTimeBlocks.some(block =>
                 block.day === newTimeBlock.day &&
                 block.startTime === newTimeBlock.startTime &&
                 block.endTime === newTimeBlock.endTime
             );
 
-            // Check for overlapping time blocks
             const isOverlap = prevTimeBlocks.some(block =>
                 block.day === newTimeBlock.day &&
                 ((newTimeBlock.startTime >= block.startTime && newTimeBlock.startTime < block.endTime) ||
@@ -39,22 +36,21 @@ function UpdateSchedule() {
     };
 
     return (
-
         <div className="app-container">
             <div className="left-panel">
             </div>
             <div className="right-panel">
-                <ScheduleTitle/>
-                <SavedTimeBlocks timeBlocks={timeBlocks}/>
-                <AddTimeBlock onSave={handleSaveTimeBlock}/>
+                <ScheduleTitle />
+                <TimeTable timeBlocks={timeBlocks} />
+                <AddScheduleButton onSave={handleSaveTimeBlock} />
 
                 {/* Dialog for warning */}
                 <Dialog open={showWarning} onClose={handleCloseWarning}>
                     <DialogTitle>Adding Time Block Failed</DialogTitle>
                     <DialogContent>
                         <p>
-                            This time block already exists <br/>
-                            or the time block has overlapping <br/>
+                            This time block already exists <br />
+                            or the time block has overlapping <br />
                             try another time block.
                         </p>
                     </DialogContent>
@@ -66,8 +62,7 @@ function UpdateSchedule() {
                 </Dialog>
             </div>
         </div>
-    )
-
+    );
 }
 
 export default UpdateSchedule;
