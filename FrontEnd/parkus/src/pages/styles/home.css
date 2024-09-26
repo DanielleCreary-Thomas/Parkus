@@ -1,0 +1,59 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;600&family=Montserrat:wght@600;700&family=Roboto:wght@400&display=swap');
+
+/* Base Typography */
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Headings */
+.heading {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    color: #333;
+}
+
+.subheading {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    color: #1976d2;
+}
+
+/* Table Styles */
+.tableHeader {
+    font-family: 'Lato', sans-serif;
+    font-weight: 600;
+}
+
+.tableCell {
+    font-family: 'Lato', sans-serif;
+}
+
+/* Special Styles for Specific Sections */
+.highlight {
+    background-color: #ffeb3b;
+}
+
+.dim {
+    background-color: #e0e0e0;
+}
+
+.dim:hover {
+    background-color: #cfcfcf;
+}
+
+/* Loading Style */
+.loading {
+    color: #555;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* Notification Styles */
+.notification {
+    margin-left: 20px;
+    color: #000000; /* Red color for visibility */
+    cursor: pointer; /* Suggests it's clickable */
+}

@@ -14,13 +14,19 @@ import {
   Box,
   Container
 } from "@mui/material";
+import IconButton from '@mui/material/IconButton';
+import Badge from '@mui/material/Badge';
+import NotificationsIcon from '@mui/icons-material/Notifications'; // Ensure this is also imported if it's not already
+
 import { supabase } from '../utils/supabase.ts';
+import './styles/home.css';
 
 function Dashboard() {
     const [groupMembers, setGroupMembers] = useState([]);
     const [schedule, setSchedule] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState(null);
+    const [notificationCount, setNotificationCount] = useState(0); 
 
     useEffect(() => {
         const fetchGroupData = async () => {
@@ -75,21 +81,38 @@ function Dashboard() {
                 }
             }
             setLoading(false);
+            setNotificationCount(2);
         };
     
         fetchGroupData();
     }, []);
 
-    if (loading) return <Typography>Loading...</Typography>;
+    if (loading) return (
+        <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+            <Paper elevation={3} sx={{ p: 5, backgroundColor: '#f5f5f5', minHeight: '80vh' }} className="loading">
+                <Typography variant="h5">Loading...</Typography>
+            </Paper>
+        </Container>
+    );
 
     return (
         <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
             <Paper elevation={3} sx={{ p: 5, backgroundColor: '#f5f5f5', minHeight: '80vh' }}>
-                <Typography variant="h4" gutterBottom align="center">Welcome, {userData?.first_name + ' ' + userData?.last_name || "User"}</Typography>
+            <Typography variant="h4" gutterBottom align="center" className="heading">
+             Welcome, {userData?.first_name + ' ' + userData?.last_name || "User"}
+                 <IconButton aria-label="notifications" color="default" className="notification">
+                 <Badge badgeContent={notificationCount} color="primary">
+                 <NotificationsIcon />
+                 </Badge>
+             </IconButton>
+            </Typography>
+
                 <Box sx={{ mt: 5, mb: 4 }}>
                     <Card raised sx={{ mb: 5 }}>
                         <CardContent>
-                            <Typography variant="h5" gutterBottom align="center">Permit Group</Typography>
+                            <Typography variant="h5" gutterBottom align="center" className="subheading">
+                                Permit Group
+                            </Typography>
                             {groupMembers.map((member, index) => (
                                 <Typography key={index} sx={{ my: 3, textAlign: 'center' }}>{member.first_name + ' ' + member.last_name}</Typography>
                             ))}
@@ -97,22 +120,24 @@ function Dashboard() {
                     </Card>
                     <Card raised>
                         <CardContent>
-                            <Typography variant="h5" gutterBottom align="center">Today's Schedule</Typography>
+                            <Typography variant="h5" gutterBottom align="center" className="subheading">
+                                Today's Schedule
+                            </Typography>
                             <TableContainer component={Paper}>
                                 <Table>
                                     <TableHead>
                                         <TableRow>
-                                            <TableCell>Time</TableCell>
-                                            <TableCell>Course</TableCell>
-                                            <TableCell>Member</TableCell>
+                                            <TableCell className="tableHeader">Time</TableCell>
+                                            <TableCell className="tableHeader">Course</TableCell>
+                                            <TableCell className="tableHeader">Member</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
                                         {schedule.map((item, index) => (
-                                            <TableRow key={index} sx={{ backgroundColor: item.isCurrentUser ? '#ffeb3b' : '#e0e0e0' }}>
-                                                <TableCell>{`${item.start_time} - ${item.end_time}`}</TableCell>
-                                                <TableCell>{item.description}</TableCell>
-                                                <TableCell>{item.memberName}</TableCell>
+                                            <TableRow key={index} className={item.isCurrentUser ? 'highlight' : 'dim'}>
+                                                <TableCell className="tableCell">{item.start_time} - {item.end_time}</TableCell>
+                                                <TableCell className="tableCell">{item.description}</TableCell>
+                                                <TableCell className="tableCell">{item.memberName}</TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
