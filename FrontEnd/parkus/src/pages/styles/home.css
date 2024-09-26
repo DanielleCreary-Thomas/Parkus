@@ -54,6 +54,6 @@ body {
 /* Notification Styles */
 .notification {
     margin-left: 20px;
-    color: #000000; /* Red color for visibility */
-    cursor: pointer; /* Suggests it's clickable */
+    color: #000000; 
+    cursor: pointer; 
 }
