@@ -8,6 +8,7 @@ import UpdateSchedule from "./pages/UpdateSchedule";
 import SpotSharing from "./pages/SpotSharing";
 import Payment from "./pages/Payment";
 import Layout from './components/Layout'; // Import the layout component
+import GroupSchedule from './components/GroupSchedule/GroupSchedule'; // Import the GroupSchedule component
 
 function App() {
     return (
@@ -25,6 +26,7 @@ function App() {
                     <Route path="/updateSchedule" element={<UpdateSchedule />} />
                     <Route path="/spotSharing" element={<SpotSharing />} />
                     <Route path="/payment" element={<Payment />} />
+                    <Route path="/spotSharing/GroupSchedule" element={<GroupSchedule />} /> {/* Add the new GroupSchedule route */}
                 </Route>
             </Routes>
         </div>
