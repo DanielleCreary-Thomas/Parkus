@@ -16,7 +16,10 @@ class User:
     def get_schedule_for_userid(self):
         user_schedule = bridge.schedule_blocks_for_user(self.id)
         for block in user_schedule:
-            self.add_schedule(Schedule(block[0], block[1], block[2].strftime("%H:%M"), block[3].strftime("%H:%M")))
+            self.add_schedule(Schedule(block['scheduleid'],
+                                       block['dow'],
+                                       block['start_time'][0:-3],
+                                       block['end_time'][0:-3]))
 
     def compare_schedules(self, member):
         for userBlock in self.schedule:
@@ -71,8 +74,8 @@ class Group:
         members = bridge.member_userid_for_group(self.id)
         if len(members) != 0:
             for user in members:
-                member = User(user[0],'')
-                member.name = f"{user[1]} {user[2]}"
+                member = User(user['userid'], f"{user['first_name']} {user['last_name']}")
+                # member.name =
                 member.get_schedule_for_userid()
                 self.add_member(member)
 
@@ -96,6 +99,23 @@ class Group:
     #     return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
+def groups_with_vacancies():
+    """
+    returns a list of groups with vacancies(less than 3 members)
+    :return: list of groupids
+    """
+    groups = bridge.get_all_groupids()
+    available_groups =[]
+    for group in groups:
+        permit = bridge.get_permit_by_groupid(group['groupid'])
+        if len(permit['permitid']) > 0:
+            if bridge.active_permit(permit['permitid']):
+                group_size = bridge.get_group_size(group['groupid'])
+                if group_size < 3:
+                    available_groups.append(group['groupid'])
+
+    return available_groups
+
 def get_group_by_id(id):
     """
     returns the group with matching id
@@ -103,6 +123,17 @@ def get_group_by_id(id):
     :return: group data in the form of a dictionary
     """
     return bridge.group_by_id(id)
+
+
+def get_group_leader(groupid):
+    if bridge.validate_groupid(groupid):
+        return bridge.get_group_leader(groupid)
+
+
+def check_paid_member(userid):
+    if bridge.validate_userid(userid):
+        return check_paid_member(userid)
+
 
 
 
@@ -113,11 +144,11 @@ def complete_matchmaking(userid):
     curr_user = User(userid,'testname')
     curr_user.get_schedule_for_userid()
     group_options = []
-    available_groups = bridge.groups_with_vacancies()
+    available_groups = groups_with_vacancies()
 
     if len(available_groups) != 0:
         for group in available_groups:
-            curr_group = Group(group[0])
+            curr_group = Group(group)
             curr_group.populate_group()
             group_option = curr_group.validate_group(curr_user)
             if group_option:
@@ -129,8 +160,17 @@ def validate_no_group(userid):
     ##valid
     return result is not None
 
-# if __name__ == '__main__':
-#     groups = complete_matchmaking(5)
-#     # test = groups['members'][0]['schedule'][0]['start_time']
-#     print(groups)
+def upload_etransfer_image(image, userid):
+    if bridge.validate_userid(userid):
+        result = bridge.upload_etransfer_image(image, userid)
+        return result
+    return None
+
+if __name__ == '__main__':
+    groups = complete_matchmaking('7ce19f4c-9d60-4539-8217-cfb3967f99ca')
+    # test = groups['members'][0]['schedule'][0]['start_time']
+    for group in groups:
+        print(group)
+
+
 
