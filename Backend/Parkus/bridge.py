@@ -73,7 +73,7 @@ def member_count_by_groupid(groupid):
         .execute()
     )
 
-    return response.count
+    return len(response.data)
 
     # with conn.cursor() as cur:
     #     cur.execute('''SELECT COUNT(u.userid) as members, g.groupid
@@ -111,49 +111,64 @@ def group_by_groupid(groupid):
     #     }
     #     return group_dict
 
-
-def groups_with_vacancies():
+###Vacancy Queries
+def get_all_groupids():
     """
-    Returns the group IDs of groups with less than 3 members
-    :return: a list of tuples with groupids at 0 and their member count at 1
+    Returns a dictionary(json) of all groupids
+    :return:
     """
-    # raw_query = """
-    # SELECT COUNT(u.userid) as members, g.groupid
-    # FROM parking_groups g
-    # INNER JOIN users u ON u.groupid = g.groupid
-    # GROUP BY g.groupid
-    # HAVING COUNT(u.userid) < 3
-    # ORDER BY g.groupid;
-    # """
-    # response = (
-    #     supabase
-    #     .rpc(raw_query)
-    #     .execute()
-    # )
     response = (
-        supabase.from_('parking_groups')
-            .select('groupid, COUNT(users.userid) as members')
-            .inner_join('users', 'users.groupid', 'parking_groups.groupid')
-            .group_by('groupid')
-            .having('COUNT(users.userid)', '<', 3)
-            .order('groupid')
-            .execute()
+        supabase.table("parking_groups")
+        .select('groupid')
+        .execute()
+    )
+    return response.data
+
+def active_permit(permitid):
+    """
+    Returns a bool indicating whether the given group has an active permit
+    :param groupid:
+    :return:
+    """
+    response = (
+        supabase.table("parking_permits")
+        .select('permitid')
+        .eq('permitid', permitid)
+        .eq('active_status', True)
+        .execute()
+    )
+    return len(response.data) > 0
+
+def get_group_size(groupid):
+    """
+    Returns the size of the group
+    :param groupid:
+    :return:
+    """
+    response = (
+        supabase.table('users')
+        .select('userid')
+        .eq("groupid", groupid)
+        .execute()
     )
 
-    return response.data
-    # with conn.cursor() as cur:
-    #     cur.execute('''
-    #     SELECT COUNT(u.userid) as members, g.groupid
-    #     FROM parking_groups g
-    #     INNER JOIN users u ON u.groupid = g.groupid
-    #     GROUP BY g.groupid
-    #     HAVING COUNT(u.userid) < 5
-    #     ORDER BY g.groupid;
-    #     ''')
-    #     groups_and_memebers = cur.fetchall()
-    #     return groups_and_memebers
+    return len(response.data)
 
+def get_permit_by_groupid(groupid):
+    """
+    Returns the permit of the given group
+    :param groupid:
+    :return:
+    """
+    response = (
+        supabase.table('parking_groups')
+        .select('permitid')
+        .eq("groupid", groupid)
+        .execute()
+    )
+    return response.data[0]
 
+## User Schedule
 def schedule_blocks_for_user(userid):
     """
     returns the schedule blocks for the given user in the form of a list of tuples
@@ -187,12 +202,12 @@ def validate_no_group(userid):
     response = (
         supabase.table("users")
         .select("*")
+        .is_("groupid", "null")
         .eq("userid", userid)
-        .eq("groupid", None)
         .execute()
     )
 
-    return response.data
+    return len(response.data) > 0
     # with conn.cursor() as cur:
     #     cur.execute("""
     #     SELECT *
@@ -203,7 +218,7 @@ def validate_no_group(userid):
 
 def get_group_leader(groupid):
     """
-    Returns the leader's userid for the given group
+    Returns the leader's userid for the given groupid
     :param groupid:
     :return: userid for group leader
     """
@@ -215,7 +230,7 @@ def get_group_leader(groupid):
     )
     print(permitid_response.data[0])
 
-    if len(permitid_response.data)>0:
+    if len(permitid_response.data)==1:
         userid_response = (
             supabase.table("parking_permits")
             .select("userid")
@@ -238,8 +253,17 @@ def paid_member(userid):
         .neq("eTransferProof", None)
         .execute()
     )
-    return response.count > 0
+    return len(response.data) > 0
 
+
+def upload_etransfer_image(image, userid):
+    response = (
+        supabase.table("users")
+        .update({"eTransferProof": image})
+        .eq("userid", userid)
+        .execute()
+    )
+    return len(response.data[0]) > 0
 
 
 """
@@ -252,7 +276,7 @@ def validate_userid(userid):
         .eq("userid", userid)
         .execute()
     )
-    return response.count > 0
+    return len(response.data) > 0
 
 def validate_groupid(groupid):
     response = (
@@ -261,7 +285,7 @@ def validate_groupid(groupid):
         .eq("groupid", groupid)
         .execute()
     )
-    return response.count > 0
+    return len(response.data) > 0
 
 def validate_permitid(permitiid):
     response = (
@@ -270,7 +294,7 @@ def validate_permitid(permitiid):
         .eq("permitid", permitiid)
         .execute()
     )
-    return response.count > 0
+    return len(response.data) > 0
 
 def validate_scheduleid(scheduleid):
     response = (
@@ -279,10 +303,19 @@ def validate_scheduleid(scheduleid):
         .eq("scheduleid", scheduleid)
         .execute()
     )
-    return response.count > 0
+    return len(response.data) > 0
+
+
+
+
+
 
 if __name__ == "__main__":
-    print(get_group_leader("1"))
+    print(get_group_leader('44966fd0-2c0f-416d-baf8-80bfeb4ba075'))
+    blocks = schedule_blocks_for_user('7ce19f4c-9d60-4539-8217-cfb3967f99ca')  # 5th user emily
+    print(blocks)
+    for block in blocks:
+        print(block)
     # group1 = member_userid_for_group(1)
     # group1num = member_count_by_groupid(1)
     # for member in group1:
@@ -294,3 +327,5 @@ if __name__ == "__main__":
     # print(group1num)
     # print(group_by_groupid(1))
     # print(groups_with_vacancies())
+
+

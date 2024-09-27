@@ -43,25 +43,38 @@ def matchmake(id):
         returnData = {}
     return returnData
 
-@app.route('/permits/userid/<id>', methods=['GET', 'OPTIONS'])
+@app.route('/permits/userid/<group_id>', methods=['GET', 'OPTIONS'])
 def get_group_leader(groupid):
     """
     Returns the userid for the leader of a given group
     :param groupid: the given group's id'
     :return: the userid for the group leader
     """
-    assert groupid == request.view_args['id']
+    assert groupid == request.view_args['group_id']
     return data_store.get_group_leader(groupid)
 
-@app.route('/users/paid/<id>', methods=['GET', 'OPTIONS'])
+@app.route('/users/paid/<user_id>', methods=['GET', 'OPTIONS'])
 def check_paid_member(userid):
     """
         Returns whether the given user has paid the group leader
         :param id: the user's id
         :return: Boolean value indicating whether the user is paid or not
     """
-    assert userid == request.view_args['id']
+    assert userid == request.view_args['user_id']
     return data_store.check_paid_member(userid)
+
+@app.route('/users/etransfer', methods=['POST'])
+def etransfer_image():
+    """uploads a user's etransfer image
+    :param image: the user's etransfer image
+    :return: the user's etransfer image
+    """
+    #assert formData == request.form
+    print(request.data)
+    image = request.data['proofImage']#need to correct
+    userid = request.form['userid']
+
+    return data_store.upload_etransfer_image(image, userid)
 
 if __name__ == '__main__':
     app.run()
