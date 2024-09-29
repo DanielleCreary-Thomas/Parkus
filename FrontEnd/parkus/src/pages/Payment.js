@@ -43,12 +43,15 @@ function Payment() {
     }
 
     async function uploadProof(file) {
-        const { data, error } = await supabase.storage.from('payment_proof').upload(file.name, file)
+        let { data, error } =
+            await supabase.storage.from('payment_proof').upload(file.name, file)
         if (error) {
             // Handle error
             console.log(error)
         } else {
             // Handle success
+            setUploadImageUrl(supabase.storage.from('payment_proof').getPublicUrl(file.name))
+
             console.log('upload successful');
         }
     }
@@ -62,7 +65,7 @@ function Payment() {
         await uploadProof(selectedImage);
 
         const formData = new FormData();
-        formData.append('proofImage', selectedImage);
+        formData.append('proofImageUrl', uploadImageUrl);
         formData.append('userid', await getCurrUser())
         try{
             const response = await uploadETransfer(formData);
@@ -84,6 +87,7 @@ function Payment() {
         }
     };
 
+    const [uploadImageUrl, setUploadImageUrl] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
     const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
 
