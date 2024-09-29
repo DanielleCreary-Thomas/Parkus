@@ -241,6 +241,49 @@ def get_group_leader(groupid):
 
     return None
 
+def get_group_id(userid):
+    """
+    Returns the group id for the given userid
+    :param userid:
+    :return:
+    """
+    response = (
+        supabase.table("users")
+        .select("groupid")
+        .eq("userid", userid)
+        .execute()
+    )
+    return response.data[0]
+
+def get_group_members(groupid):
+    """
+    Returns the userid, first name, last name, license plate number,
+     email, and image url for each member of the given group
+    :param groupid:
+    :return:
+    """
+    response = (
+        supabase.table("users")
+        .select("userid", "first_name", "last_name", "license_plate_number", "email", "image_proof_url")
+        .eq("groupid", groupid)
+        .execute()
+    )
+    return response.data
+
+def get_car_info(platenum):
+    """
+    Returns the car info for the given platenum
+    :param platenum:
+    :return:
+    """
+    response = (
+        supabase.table("cars")
+        .select("*")
+        .eq("license_plate_number", platenum)
+        .execute()
+    )
+    return response.data[0]
+
 def paid_member(userid):
     """
     Checks if the given user is paid
@@ -256,10 +299,16 @@ def paid_member(userid):
     return len(response.data) > 0
 
 
-def upload_etransfer_image(image, userid):
+def upload_etransfer_image(imageUrl, userid):
+    """
+    Updates the given user's eTransfer Proof image url
+    :param imageUrl: Url of the eTransfer Proof image
+    :param userid: user's id
+    :return: True if the user is uploaded, False otherwise
+    """
     response = (
         supabase.table("users")
-        .update({"eTransferProof": image})
+        .update({"image_proof_url": imageUrl})
         .eq("userid", userid)
         .execute()
     )
@@ -305,13 +354,32 @@ def validate_scheduleid(scheduleid):
     )
     return len(response.data) > 0
 
-
-
+def validate_license_plate_number(license_plate_number):
+    """
+    Checks if the given license plate number is valid
+    :param license_plate_number:
+    :return:
+    """
+    response =(
+        supabase.table("cars")
+        .select("*")
+        .eq("license_plate_number", license_plate_number)
+        .execute()
+    )
+    return len(response.data) > 0
 
 
 
 if __name__ == "__main__":
-    print(get_group_leader('44966fd0-2c0f-416d-baf8-80bfeb4ba075'))
+    ##Testing Get Car info
+    print(get_car_info('ABC123'))
+
+    ##Testing for get group members, leader, id
+    print(get_group_members('44966fd0-2c0f-416d-baf8-80bfeb4ba075')) ##John, Michael, Matthew
+    print(get_group_id('33d6127f-3a9e-4681-83a2-92c98db0881c'))## given john -> '44966fd0-2c0f-416d-baf8-80bfeb4ba075'
+    print(get_group_leader('44966fd0-2c0f-416d-baf8-80bfeb4ba075'))##John
+
+    ##Testing for matchmaking
     blocks = schedule_blocks_for_user('7ce19f4c-9d60-4539-8217-cfb3967f99ca')  # 5th user emily
     print(blocks)
     for block in blocks:
