@@ -116,6 +116,8 @@ def groups_with_vacancies():
 
     return available_groups
 
+
+
 def get_group_by_id(id):
     """
     returns the group with matching id
@@ -126,8 +128,37 @@ def get_group_by_id(id):
 
 
 def get_group_leader(groupid):
+    """
+    Returns the userid of the leader for the group with the matching id
+    :param groupid:
+    :return: leader's user id
+    """
     if bridge.validate_groupid(groupid):
         return bridge.get_group_leader(groupid)
+
+def get_group_id(userid):
+    """
+    returns the group id for the matching user id
+    :param userid:
+    :return: group id
+    """
+    if bridge.validate_userid(userid):
+        if not bridge.validate_no_group():
+            return bridge.get_group_id(userid)
+
+def get_group_members(groupid):
+    """
+    Returns the member info for the group with the matching id
+    :param groupid:
+    :return:
+    """
+    if bridge.validate_groupid(groupid):
+        members = bridge.get_group_members(groupid)
+        for member in members:
+            platenum = member['license_plate_number']
+            if bridge.validate_license_plate_number(platenum):
+                member['car'] = bridge.get_car_info(platenum)
+        return members
 
 
 def check_paid_member(userid):
@@ -160,13 +191,18 @@ def validate_no_group(userid):
     ##valid
     return result is not None
 
-def upload_etransfer_image(image, userid):
+def upload_etransfer_image(imageUrl, userid):
     if bridge.validate_userid(userid):
-        result = bridge.upload_etransfer_image(image, userid)
+        result = bridge.upload_etransfer_image(imageUrl, userid)
         return result
     return None
 
 if __name__ == '__main__':
+    ##Test get members
+    members = get_group_members('44966fd0-2c0f-416d-baf8-80bfeb4ba075')
+    for member in members:
+        print(member)
+
     groups = complete_matchmaking('7ce19f4c-9d60-4539-8217-cfb3967f99ca')
     # test = groups['members'][0]['schedule'][0]['start_time']
     for group in groups:

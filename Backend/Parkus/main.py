@@ -26,6 +26,7 @@ def group(id):
     }
     return returnData
 
+
 @app.route('/groups/matchmake/<id>', methods=['GET', 'OPTIONS'])
 def matchmake(id):
     """
@@ -43,6 +44,7 @@ def matchmake(id):
         returnData = {}
     return returnData
 
+
 @app.route('/permits/userid/<group_id>', methods=['GET', 'OPTIONS'])
 def get_group_leader(groupid):
     """
@@ -52,6 +54,30 @@ def get_group_leader(groupid):
     """
     assert groupid == request.view_args['group_id']
     return data_store.get_group_leader(groupid)
+
+
+@app.route('/users/groupid/<user_id>', methods=['GET', 'OPTIONS'])
+def get_group_id(userid):
+    """
+    Returns the group id for the given user
+    :param userid: the user id for the user
+    :return: group id
+    """
+    assert userid == request.view_args['user_id']
+    return data_store.get_group_id(userid)
+
+
+@app.route('/users/group/<group_id>', methods=['GET', 'OPTIONS'])
+def get_group_members(groupid):
+    """
+    Returns the userid, first name, last name, car info,
+     email, and image url for each member of the given group
+    :param groupid:
+    :return:
+    """
+    assert groupid == request.view_args['group_id']
+    return data_store.get_group_members(groupid)
+
 
 @app.route('/users/paid/<user_id>', methods=['GET', 'OPTIONS'])
 def check_paid_member(userid):
@@ -63,18 +89,19 @@ def check_paid_member(userid):
     assert userid == request.view_args['user_id']
     return data_store.check_paid_member(userid)
 
+##POST Endpoints
 @app.route('/users/etransfer', methods=['POST'])
 def etransfer_image():
     """uploads a user's etransfer image
-    :param image: the user's etransfer image
     :return: the user's etransfer image
     """
     #assert formData == request.form
     print(request.data)
-    image = request.data['proofImage']#need to correct
+    imageUrl = request.data['proofImageUrl']#need to correct
     userid = request.form['userid']
 
-    return data_store.upload_etransfer_image(image, userid)
+    return data_store.upload_etransfer_image(imageUrl, userid)
+
 
 if __name__ == '__main__':
     app.run()
