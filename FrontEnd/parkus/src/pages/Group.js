@@ -1,62 +1,79 @@
-import React from "react";
+import React, {useEffect} from "react";
 import {Typography} from "@mui/material";
-import {getCurrUser, getGroupId, getGroupLeader} from "../services/requests";
+import {
+    getCurrUser,
+    getGroupId,
+    getGroupLeader,
+    getGroupMember,
+    getGroupMembers, getGroupPermit,
+    hasMemberPaid
+} from "../services/requests.js";
 import LeaderCard from "../components/Group/LeaderCard/LeaderCard";
+import PaidMemberCard from "../components/Group/MemberCard/PaidMemberCard";
+import UnpaidMemberCard from "../components/Group/MemberCard/UnpaidMemberCard";
 
-function Group(){
-    const [groupLeader, setGroupLeader] = React.useState(null);
-    const [unpaidMember, setGroupMember] = React.useState(null);
-    const [paidMember, setPaidMember] = React.useState(null);
-    const [userid, setUserid] = React.useState(null);
-    setUserid(getCurrUser());
-
-    const [groupId, setGroupId] = React.useState(null);
-
-    const [permitImageUrl, setPermitImageUrl] = React.useState(null);
-    const [eTransferImageUrl, setETransferImageUrl] = React.useState(null);
-
-    async function checkGroupLeader() {
-        setGroupId(await getGroupId(userid));
-        setGroupLeader(await getGroupLeader(groupId));
-        return groupLeader === userid;
+function MemberView({members, userInfoGroup, permitImageUrl, isGroupLeader, isPaidMember}){
+    if (isGroupLeader){
+        return (<LeaderCard data={members}/>)
     }
-
-    async function checkPaidMember() {
-        const paid = await checkPaidMember(userid)
-        return paid
-    }
-
-    async function leaderView(){
-        const members = await getGroupMembers(groupId);
-        return LeaderCard({members})
-    }
-
-    function paidMemberView(){
-        const view  = <section>
-
-        </section>
-        return view
-    }
-
-    function unpaidMemberView(){
-        const view  = <section>
-
-        </section>
-        return view
-    }
-
-    function checkViewType(){
-        if (groupLeader != null){
-            return <leaderView/>
+    else{
+        if(isPaidMember){
+            return (<PaidMemberCard memberData={userInfoGroup} permitData={permitImageUrl}/>)
         }
         else{
-            if(paidMember != null){
-                return <paidMemberView/>
-            }
-            else{
-                return <unpaidMemberView/>
-            }
+            return (<UnpaidMemberCard/>)
         }
+    }
+}
+
+
+export default function Group(){
+    const [groupLeader, setGroupLeader] = React.useState(null);
+    const [isMemberPaid, setIsMemberPaid] = React.useState(null);
+    const [userid, setUserid] = React.useState(null);
+    const [groupId, setGroupId] = React.useState(null);
+    const [permitImageUrl, setPermitImageUrl] = React.useState(null);
+    const [members, setMembers] = React.useState(null);
+    const [userInfoGroup, setUserInfoGroup] = React.useState(null);
+
+    //runs once on page load
+    useEffect(() => {
+        async function init(){
+            console.log("------INIT USEFFECT START-----");
+            var userid = await getCurrUser();
+            setUserid(userid);
+            console.log(userid);
+
+            var groupId = await getGroupId(userid);
+            setGroupId(groupId);
+            console.log(groupId);
+
+            if(groupId !== 'None'){
+                var groupLeader = await getGroupLeader(groupId)
+                setGroupLeader(groupLeader);
+                console.log(groupLeader);
+
+                setIsMemberPaid( await hasMemberPaid(userid));
+                console.log(isMemberPaid);
+
+                setMembers(await getGroupMembers(groupId));
+                console.log(members);
+
+                setUserInfoGroup(await getGroupMember(userid));
+                console.log(userInfoGroup);
+
+                setPermitImageUrl(await getGroupPermit(groupLeader))
+                console.log(permitImageUrl);
+            }
+
+
+
+        }
+        init();
+    }, []);
+
+    function checkGroupLeader() {
+        return groupLeader === userid;
     }
 
     return(
@@ -76,11 +93,15 @@ function Group(){
                             if not paid; show the payment screen
                     */
                     }
-                    <checkViewType/>
+                    <MemberView
+                                members={members}
+                                userInfoGroup={userInfoGroup}
+                                isGroupLeader={checkGroupLeader()}
+                                isPaidMember={isMemberPaid}
+                                permitImageUrl={permitImageUrl}
+                    />
                 </section>
             </div>
         </div>
     )
 }
-
-export default Group

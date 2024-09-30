@@ -51,21 +51,26 @@ export async function uploadETransfer(formData){
     })
 }
 
-export async function getGroupId(userid){
+export async function getGroupId(user_id){
     /**
      * Returns the group id for the given user id
      */
-    var data = await fetch(`http://127.0.0.1:5000/users/groupid/${userid}`,
+    var data = await fetch(`http://127.0.0.1:5000/users/groupid/${user_id}`,
         {method: "GET"})
         .then(response => response.json())
         .then(data => data)
         .catch(error => console.log(error));
         console.log('getGroupId', data);
-    return data;
+    return data['groupid'];
 
 }
 
 export async function getGroupMembers(groupId){
+    /**
+     * gets the information for each member of the given group
+     * Information: userid, first name, last name, car info,
+     *      email, image url, and car info
+     */
     var data = await fetch(`http://127.0.0.1:5000/users/group/${groupId}`,
         {method: "GET"})
         .then(response => response.json())
@@ -84,10 +89,10 @@ export async function getGroupLeader(group_id){
         .then(data => data)
         .catch(error => console.log(error));
         console.log('get Group Leader', data)
-    return data;
+    return data['userid'];
 }
 
-export async function checkPaidMember(userid){
+export async function hasMemberPaid(userid){
     /**
      * Checks to see if the given user has an eTransfer url on file
      */
@@ -97,5 +102,34 @@ export async function checkPaidMember(userid){
         .then(data => data)
         .catch(error => console.log(error));
         console.log('check Paid Member', data)
+    return data.data;
+}
+
+export async function getGroupMember(userid){
+    /**
+     * Gets the member information for the given user id
+     * Information: userid, first name, last name, car info,
+     *      email, image url, and car info
+     */
+    var data = await fetch(`http://127.0.0.1:5000/group/member/${userid}`,
+        {method: "GET"})
+        .then(response => response.json())
+        .then(data => data)
+        .catch(error => console.log(error));
+        console.log('check Paid Member', data)
     return data;
 }
+
+export async function getGroupPermit(leaderid){
+    /**
+     * Gets the image url for the group's permit
+     */
+    var data = await fetch(`http://127.0.0.1:5000/group/permit/${leaderid}`,
+        {method: "GET"})
+        .then(response => response.json())
+        .then(data => data)
+        .catch(error => console.log(error));
+        console.log('check Paid Member', data)
+    return data
+}
+
