@@ -22,6 +22,7 @@ function Navbar() {
             {/* Using link to replace anchor tag */}
             <AppTitle />
             <Button className="navbutton" onClick={() => { navigate("/home") }}>Home</Button>
+            <Button className="navbutton" onClick={() => { navigate("/profile") }}>Profile</Button>
             <Button className="navbutton" onClick={() => { navigate("/updateSchedule") }}>Schedule</Button>
             <Button className="navbutton" onClick={() => { navigate("/spotSharing") }}>Spotsharing</Button>
             <Button className="navbutton" onClick={() => { navigate("/payment") }}>Payment</Button>
