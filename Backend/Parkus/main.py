@@ -46,48 +46,73 @@ def matchmake(id):
 
 
 @app.route('/permits/userid/<group_id>', methods=['GET', 'OPTIONS'])
-def get_group_leader(groupid):
+def get_group_leader(group_id):
     """
     Returns the userid for the leader of a given group
     :param groupid: the given group's id'
     :return: the userid for the group leader
     """
-    assert groupid == request.view_args['group_id']
-    return data_store.get_group_leader(groupid)
+    assert group_id == request.view_args['group_id']
+    return data_store.get_group_leader(group_id)
 
 
 @app.route('/users/groupid/<user_id>', methods=['GET', 'OPTIONS'])
-def get_group_id(userid):
+def get_group_id(user_id):
     """
     Returns the group id for the given user
     :param userid: the user id for the user
     :return: group id
     """
-    assert userid == request.view_args['user_id']
-    return data_store.get_group_id(userid)
+    assert user_id == request.view_args['user_id']
+    if not data_store.validate_no_group(user_id):
+        return data_store.get_group_id(user_id)
+    return {'groupid': 'None'}
 
 
 @app.route('/users/group/<group_id>', methods=['GET', 'OPTIONS'])
-def get_group_members(groupid):
+def get_group_members(group_id):
     """
-    Returns the userid, first name, last name, car info,
-     email, and image url for each member of the given group
+    Returns the userid, first name, last name, license_plate_number,
+     email, image url, and car info for each member of the given group
     :param groupid:
     :return:
     """
-    assert groupid == request.view_args['group_id']
-    return data_store.get_group_members(groupid)
+    assert group_id == request.view_args['group_id']
+    return data_store.get_group_members(group_id)
 
 
 @app.route('/users/paid/<user_id>', methods=['GET', 'OPTIONS'])
-def check_paid_member(userid):
+def check_paid_member(user_id):
     """
         Returns whether the given user has paid the group leader
         :param id: the user's id
         :return: Boolean value indicating whether the user is paid or not
     """
-    assert userid == request.view_args['user_id']
-    return data_store.check_paid_member(userid)
+    assert user_id == request.view_args['user_id']
+    return data_store.check_paid_member(user_id)
+
+@app.route('/group/member/<user_id>', methods=['GET', 'OPTIONS'])
+def get_group_member(user_id):
+    """
+    Returns the userid, first name, last name,license_plate_number,
+     email, image url, and car info for the given userid
+    :param userid:
+    :return:
+    """
+    assert user_id == request.view_args['user_id']
+    return data_store.get_group_member(user_id)
+
+
+@app.route('/group/permit/<leader_id>', methods=['GET', 'OPTIONS'])
+def get_group_permit(leader_id):
+    """
+    Returns the image of the permit for the given leader's user id
+    :param leader_id:
+    :return:
+    """
+    assert leader_id == request.view_args['leader_id']
+    return data_store.get_group_permit(leader_id)
+
 
 ##POST Endpoints
 @app.route('/users/etransfer', methods=['POST'])

@@ -293,10 +293,42 @@ def paid_member(userid):
     response =(
         supabase.table("users")
         .select("*")
-        .neq("eTransferProof", None)
+        .neq("image_proof_url", None)
         .execute()
     )
     return len(response.data) > 0
+
+
+def get_group_member(userid):
+    """
+    Returns the userid, first name, last name, license_plate_number, email, image url,
+    and car info for the given userid
+    :param userid:
+    :return:
+    """
+    response = (
+        supabase.table("users")
+        .select("userid", "first_name", "last_name", "license_plate_number", "email", "image_proof_url")
+        .eq("userid", userid)
+        .execute()
+    )
+    return response.data[0]
+
+
+def get_group_permit(leaderid):
+    """
+    Returns the imageurl of the permit for the given leader
+    :param leaderid:
+    :return:
+    """
+    response = (
+        supabase.table("users")
+        .select("image_proof_url")
+        .eq("userid", leaderid)
+        .execute()
+    )
+    return response.data[0]
+
 
 
 def upload_etransfer_image(imageUrl, userid):
@@ -371,6 +403,9 @@ def validate_license_plate_number(license_plate_number):
 
 
 if __name__ == "__main__":
+    ##Testing has member paid
+    print(paid_member('33d6127f-3a9e-4681-83a2-92c98db0881c'))
+
     ##Testing Get Car info
     print(get_car_info('ABC123'))
 

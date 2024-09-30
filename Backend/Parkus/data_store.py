@@ -162,12 +162,37 @@ def get_group_members(groupid):
 
 
 def check_paid_member(userid):
+    """
+    returns whether the given user has paid
+    :param userid:
+    :return:
+    """
     if bridge.validate_userid(userid):
         return check_paid_member(userid)
 
 
+def get_group_member(userid):
+    """
+    returns the member info for the member with the matching user id
+    :param userid:
+    :return:
+    """
+    if bridge.validate_userid(userid):
+        member = get_group_member(userid)
+        platenum = member['license_plate_number']
+        if bridge.validate_license_plate_number(platenum):
+            member['car'] = bridge.get_car_info(platenum)
+            return member
 
 
+def get_group_permit(leaderid):
+    """
+    returns the imageurl for the permit of the given leader
+    :param leaderid:
+    :return:
+    """
+    if bridge.validate_userid(leaderid):
+        return bridge.get_group_permit(leaderid)
 
 
 
@@ -185,6 +210,7 @@ def complete_matchmaking(userid):
             if group_option:
                 group_options.append(group_option)
     return [item.to_json() for item in group_options]
+
 
 def validate_no_group(userid):
     result = bridge.validate_no_group(userid)
