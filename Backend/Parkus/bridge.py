@@ -3,6 +3,8 @@
 #import psycopg2
 import time
 import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from supabase import create_client, Client
 
 ##Database connection & cursor
@@ -10,6 +12,9 @@ from supabase import create_client, Client
 url = "https://rtneojaduhodjxqmymlq.supabase.co"
 key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0bmVvamFkdWhvZGp4cW15bWxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjU2NjUxMjQsImV4cCI6MjA0MTI0MTEyNH0.iq-IWDdhTBBcAQcBCC23Li9m2DVjOQDF_2uw8cpHYu0"
 supabase: Client = create_client(url, key)
+
+
+CONNECTION_STRING = "user=postgres.rtneojaduhodjxqmymlq password=NyidWTNcMUDH8Pn5 host=aws-0-ca-central-1.pooler.supabase.com port=6543 dbname=postgres"
 
 ##Database connection & cursor
 # connect to db
@@ -400,6 +405,59 @@ def validate_license_plate_number(license_plate_number):
     )
     return len(response.data) > 0
 
+
+
+
+def fetch_user_by_userid(user_id):
+    """Fetches user data by userid from the Supabase database."""
+    response = (
+        supabase.table("users")
+        .select("*")
+        .eq("userid", user_id)
+        .execute()
+    )
+    if response.data:
+        return response.data[0]
+    else:
+        print("User not found.")
+        return None
+
+def check_parking_permit(user_id):
+    """Checks if the user has a parking permit."""
+    response = (
+        supabase.table("parking_permits")
+        .select("*")
+        .eq("userid", user_id)
+        .execute()
+    )
+    return response.data is not None and len(response.data) > 0
+
+def insert_parking_permit(user_id, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location):
+    """Inserts a new parking permit into the Supabase database."""
+    response = supabase.table("parking_permits").insert({
+        "userid": user_id,
+        "permit_number": permit_number,
+        "active_status": active_status,
+        "permit_type": permit_type,
+        "activate_date": activate_date,
+        "expiration_date": expiration_date,
+        "campus_location": campus_location,
+    }).execute()
+    return response.data is not None and len(response.data) > 0
+
+def fetch_parking_permits_by_userid(user_id):
+    """Fetches all parking permits for a given user ID from the Supabase database."""
+    response = (
+        supabase.table("parking_permits")
+        .select("*")
+        .eq("userid", user_id)
+        .execute()
+    )
+    if response.data:
+        return response.data
+    else:
+        print("No permits found.")
+        return []
 
 
 if __name__ == "__main__":

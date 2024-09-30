@@ -7,10 +7,10 @@ import LandingPage from './pages/LandingPage';
 import UpdateSchedule from "./pages/UpdateSchedule";
 import SpotSharing from "./pages/SpotSharing";
 import Payment from "./pages/Payment";
- // Import the layout component
-import Layout from './components/Layout';
 import Profile from "./pages/Profile"
+import Layout from './components/Layout'; // Import the layout component
 import Group from './pages/Group';
+
 
 function App() {
     return (
