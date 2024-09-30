@@ -7,6 +7,7 @@ import LandingPage from './pages/LandingPage';
 import UpdateSchedule from "./pages/UpdateSchedule";
 import SpotSharing from "./pages/SpotSharing";
 import Payment from "./pages/Payment";
+import Profile from "./pages/Profile"
 import Layout from './components/Layout'; // Import the layout component
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
                 <Route element={<Layout />}>
                     {/* All these routes will have Navbar visible */}
                     <Route path="/home" element={<Home />} />
+                    <Route path="/profile" element={<Profile />} />
                     <Route path="/updateSchedule" element={<UpdateSchedule />} />
                     <Route path="/spotSharing" element={<SpotSharing />} />
                     <Route path="/payment" element={<Payment />} />
