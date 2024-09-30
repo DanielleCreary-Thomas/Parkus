@@ -8,9 +8,7 @@ import {
   Container,
   Grid
 } from "@mui/material";
-import IconButton from '@mui/material/IconButton';
-import Badge from '@mui/material/Badge';
-import NotificationsIcon from '@mui/icons-material/Notifications'; 
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'; // Import the error icon
 import { supabase } from '../utils/supabase.ts';
 import './styles/home.css';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
@@ -24,7 +22,7 @@ function Dashboard() {
     const [schedule, setSchedule] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState(null);
-    const [notificationCount, setNotificationCount] = useState(0); 
+    const [notificationCount, setNotificationCount] = useState(2); // Example count for demo
 
     useEffect(() => {
         const fetchGroupData = async () => {
@@ -92,7 +90,6 @@ function Dashboard() {
                 }
             }
             setLoading(false);
-            setNotificationCount(2);
         };
 
         fetchGroupData();
@@ -104,7 +101,7 @@ function Dashboard() {
     };
 
     if (loading) return (
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4, width: '90%' }}>  {/* Adjust maxWidth and width */}
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4, width: '90%' }}>
             <Paper elevation={3} sx={{ p: 5, backgroundColor: '#f5f5f5', minHeight: '80vh' }} className="loading">
                 <Typography variant="h5">Loading...</Typography>
             </Paper>
@@ -112,16 +109,33 @@ function Dashboard() {
     );
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4, width: '75%' }}>  {/* Adjust maxWidth and width */}
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4, width: '90%' }}>
             <Paper elevation={3} sx={{ p: 5, backgroundColor: '#f5f5f5', minHeight: '80vh' }}>
                 <Typography variant="h4" gutterBottom align="center" className="heading">
                     Welcome, {userData?.first_name + ' ' + userData?.last_name || "User"}
-                    <IconButton aria-label="notifications" color="default" className="notification">
-                        <Badge badgeContent={notificationCount} color="primary">
-                            <NotificationsIcon />
-                        </Badge>
-                    </IconButton>
                 </Typography>
+
+                {/* Notification Content */}
+                {notificationCount > 0 && (
+                    <Box 
+                        sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            border: '1px solid red', 
+                            borderRadius: '50px', 
+                            padding: '8px 16px', 
+                            backgroundColor: '#fff3f3', 
+                            maxWidth: '230px', 
+                            mx: 'auto',
+                            mb: 3
+                        }}
+                    >
+                        <ErrorOutlineIcon sx={{ color: 'red', mr: 1 }} />
+                        <Typography variant="body1" sx={{ color: '#000' }}>
+                            New Spotshare Member
+                        </Typography>
+                    </Box>
+                )}
 
                 <Box sx={{ mt: 5, mb: 4 }}>
                     <Grid container spacing={2}>
