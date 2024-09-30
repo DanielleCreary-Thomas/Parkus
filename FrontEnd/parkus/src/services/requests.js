@@ -11,7 +11,7 @@ export async function matchmake(id) {
 }
 
 export async function checkParkingPermit(userId) {
-    var data = await fetch(`http://127.0.0.1:5000/parking-permit/${userId}`,
+    var data = await fetch(`http://127.0.0.1:5000/parking-permit/${userId}`, 
         { method: 'GET' })
         .then(response => response.json())
         .then(data => data)
