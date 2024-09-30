@@ -12,6 +12,7 @@ import Layout from './components/Layout'; // Import the layout component
 import Group from './pages/Group';
 
 import GroupSchedule from './components/GroupSchedule/GroupSchedule'; // Import the GroupSchedule component
+import AvailableGroups from './components/GroupSchedule/AvailableGroups/AvailableGroups'; // Adjust the import path for AvailableGroups
 
 function App() {
     return (
@@ -30,7 +31,8 @@ function App() {
                     <Route path="/updateSchedule" element={<UpdateSchedule />} />
                     <Route path="/spotSharing" element={<SpotSharing />} />
                     <Route path="/payment" element={<Payment />} />
-                    <Route path="/spotSharing/GroupSchedule" element={<GroupSchedule />} /> {/* Add the new GroupSchedule route */}
+                    <Route path="/groupschedule/:groupId" element={<GroupSchedule />} /> {/* New route for group schedule */}
+                    <Route path="/available-groups" element={<AvailableGroups />} />
                     <Route path="/payment" element={<Payment />}/>
                     <Route path="/group" element={<Group />} />
                 </Route>

@@ -1,24 +1,77 @@
-.group-schedule-container {
-    width: 100%;
-    padding: 20px;
-    background-color: #b0d4e3;
+/* GroupSchedule.css */
+
+/* Apply border-box to include padding and borders within height and width */
+* {
+    box-sizing: border-box;
 }
 
-.schedule-table {
-    width: 100%;
-    border-collapse: collapse;
+.schedule-grid {
+    display: flex;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+}
+
+.time-column, .day-column {
+    flex: 1;
+}
+
+.time-column {
+    flex: 0 0 auto;
+    width: 80px;
+}
+
+.time-header, .day-header {
+    background-color: #e0e0e0;
+    padding: 0;
+    height: 40px;
+    line-height: 40px;
     text-align: center;
+    font-weight: bold;
+    border-bottom: 1px solid #ccc;
 }
 
-.schedule-table th, .schedule-table td {
-    border: 1px solid #333;
-    padding: 10px;
+.time-slot {
+    padding: 0;
+    height: 60px; /* Match this with heightPerHour */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #ccc;
 }
 
-.block {
+.day-column {
+    border-left: 1px solid #ccc;
+}
+
+.day-content {
+    position: relative;
+    height: 960px; /* 16 hours * 60px per hour */
+}
+
+.schedule-block {
+    position: absolute;
+    left: 5px;
+    right: 5px;
+    overflow: hidden;
     padding: 5px;
+    font-size: 0.8em;
     border-radius: 4px;
-    color: white;
-    margin: 2px;
-    text-align: center;
+    /* No need to set background-color here; it will be set inline */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+
+.block-title {
+    font-weight: bold;
+}
+
+.block-time {
+    font-size: 0.9em;
+}
+
+/* Styles for user's own schedule blocks */
+.user-schedule-block {
+    /* Make the block stand out */
+    filter: brightness(85%); /* Make color stronger */
+    border: 2px solid #000;  /* Add a black border */
+    /* You can also adjust other properties like font-weight or add a shadow */
 }

@@ -1,122 +1,216 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../utils/supabase.ts'; // Import Supabase client
+import { supabase } from '../../utils/supabase.ts';
+import { Box, Typography } from '@mui/material';
+import { toast, ToastContainer } from 'react-toastify';
+import { useParams } from 'react-router-dom';
+import 'react-toastify/dist/ReactToastify.css';
+import './GroupSchedule.css';
 
 const GroupSchedule = () => {
-    const [users, setUsers] = useState([]); // To store users in the selected group
-    const [scheduleBlocks, setScheduleBlocks] = useState([]); // To store the fetched schedule blocks for all users
-    const [groupId, setGroupId] = useState(1); // Default permit group ID
+    const { groupId } = useParams(); // Get the groupId from the URL
+    const [scheduleBlocks, setScheduleBlocks] = useState([]);
+    const [userScheduleBlocks, setUserScheduleBlocks] = useState([]); // For user's own schedule
+    const [classColorMap, setClassColorMap] = useState({});
+    const [userId, setUserId] = useState(null); // Store user ID
 
-    // Fetch users for the selected group
+    // Day mappings
+    const dayNameToIndex = {
+        "Sunday": 0,
+        "Monday": 1,
+        "Tuesday": 2,
+        "Wednesday": 3,
+        "Thursday": 4,
+        "Friday": 5,
+        "Saturday": 6,
+    };
+
+    const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
     useEffect(() => {
-        const fetchUsersForGroup = async () => {
-            const { data: usersData, error: usersError } = await supabase
-                .from('users')
-                .select('userid, first_name, last_name')
-                .eq('groupid', groupId);
+        const fetchData = async () => {
+            try {
+                // Fetch the user's session
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-            if (usersError) {
-                console.error('Error fetching users:', usersError);
-            } else {
-                setUsers(usersData);
-
-                // Fetch schedule blocks for all users in the selected group
-                if (usersData.length > 0) {
-                    const userIds = usersData.map(user => user.userid);
-                    const { data: scheduleData, error: scheduleError } = await supabase
-                        .from('schedule_blocks')
-                        .select('*')
-                        .in('userid', userIds); // Fetch schedule blocks for all users in the group
-
-                    if (scheduleError) {
-                        console.error('Error fetching schedule blocks:', scheduleError);
-                    } else {
-                        setScheduleBlocks(scheduleData);
-                    }
-                } else {
-                    setScheduleBlocks([]); // Clear the schedule if no users found
+                if (sessionError || !session) {
+                    toast.error('You need to log in to see your schedule.');
+                    return; // Return if not logged in
                 }
+
+                const currentUserId = session.user.id; // Get the authenticated user's ID
+                setUserId(currentUserId); // Store user ID in state
+
+                // Fetch user's schedule
+                const { data: userScheduleData, error: userScheduleError } = await supabase
+                    .from('schedule_blocks')
+                    .select('*')
+                    .eq('userid', currentUserId);
+
+                if (userScheduleError) {
+                    console.error('Error fetching user schedule:', userScheduleError);
+                    toast.error('Failed to fetch your schedule.');
+                } else {
+                    setUserScheduleBlocks(userScheduleData);
+                }
+
+                // Fetch group members (including the current user)
+                const { data: usersData, error: usersError } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('groupid', groupId);
+
+                if (usersError) {
+                    console.error('Error fetching users:', usersError);
+                    toast.error('Failed to fetch users.');
+                    return;
+                }
+
+                const userIds = usersData.map(user => user.userid);
+
+                // Fetch group's schedule based on users in the group
+                const { data: groupScheduleData, error: groupScheduleError } = await supabase
+                    .from('schedule_blocks')
+                    .select('*')
+                    .in('userid', userIds);
+
+                if (groupScheduleError) {
+                    console.error('Error fetching group schedules:', groupScheduleError);
+                    toast.error('Failed to fetch group schedule blocks.');
+                } else {
+                    setScheduleBlocks(groupScheduleData);
+                }
+
+                // Combine both schedules and generate color map
+                const allScheduleBlocks = [...groupScheduleData, ...userScheduleData];
+                generateClassColorMap(allScheduleBlocks);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                toast.error('An error occurred while fetching data.');
             }
         };
-        fetchUsersForGroup();
+
+        fetchData();
     }, [groupId]);
 
-    const handleGroupChange = (e) => {
-        setGroupId(e.target.value); // Update group ID when the user selects a new group
+    const calculateBlockStyle = (startTime, endTime) => {
+        const getMinutesSinceMidnight = (time) => {
+            const [hours, minutes] = time.split(':').map(Number);
+            return hours * 60 + minutes;
+        };
+
+        const startMinutes = getMinutesSinceMidnight(startTime);
+        const endMinutes = getMinutesSinceMidnight(endTime);
+        const scheduleStartMinutes = 7 * 60; // 7:00 AM
+        const heightPerHour = 60; // Should match the .time-slot height in CSS
+        const pixelsPerMinute = heightPerHour / 60; // 1 pixel per minute
+
+        const top = (startMinutes - scheduleStartMinutes) * pixelsPerMinute;
+        const height = (endMinutes - startMinutes) * pixelsPerMinute;
+
+        return {
+            top: `${top}px`,
+            height: `${height}px`,
+        };
     };
 
-    const getDayIndex = (day) => {
-        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-        return days.indexOf(day);
-    };
+    const lightColors = [
+        '#FFCDD2', '#F8BBD0', '#E1BEE7', '#D1C4E9',
+        '#C5CAE9', '#BBDEFB', '#B3E5FC', '#B2EBF2',
+        '#B2DFDB', '#C8E6C9', '#DCEDC8', '#F0F4C3',
+        '#FFF9C4', '#FFECB3', '#FFE0B2', '#FFCCBC',
+        '#D7CCC8', '#CFD8DC',
+    ];
 
-    const convertTimeToHour = (time) => parseInt(time.split(':')[0], 10);
+    const generateClassColorMap = (blocks) => {
+        const colorMap = {};
+        let colorIndex = 0;
+
+        blocks.forEach(block => {
+            const classKey = block.description;
+            if (!colorMap[classKey]) {
+                colorMap[classKey] = lightColors[colorIndex % lightColors.length];
+                colorIndex++;
+            }
+        });
+
+        setClassColorMap(colorMap);
+    };
 
     return (
-        <div className="group-schedule-container">
-            <h1>Spotsharing Generation</h1>
-
-            {/* Permit group selection */}
-            <div className="group-select">
-                <label htmlFor="group">Select Group: </label>
-                <select id="group" value={groupId} onChange={handleGroupChange}>
-                    <option value={1}>Group 1</option>
-                    <option value={2}>Group 2</option>
-                    <option value={3}>Group 3</option>
-                    <option value={4}>Group 4</option>
-                </select>
-            </div>
-
-            <div className="schedule">
-                <h2>Permit Group {groupId} Schedule</h2>
-
-                {/* List users in the selected group */}
-                <ul>
-                    {users.map(user => (
-                        <li key={user.userid}>
-                            {user.first_name} {user.last_name}
-                        </li>
+        <Box sx={{ padding: 3 }}>
+            <ToastContainer />
+            <Typography variant="h4" align="center" gutterBottom>
+                Schedule for Group ID: {groupId}
+            </Typography>
+            <div className="schedule-grid">
+                <div className="time-column">
+                    <div className="time-header">Time</div>
+                    {Array.from({ length: 16 }, (_, i) => `${7 + i}:00`).map((time, index) => (
+                        <div key={index} className="time-slot">
+                            {time}
+                        </div>
                     ))}
-                </ul>
+                </div>
 
-                {/* Display the schedule for all users in the group */}
-                <table className="schedule-table">
-                    <thead>
-                    <tr>
-                        <th>Time</th>
-                        <th>Monday</th>
-                        <th>Tuesday</th>
-                        <th>Wednesday</th>
-                        <th>Thursday</th>
-                        <th>Friday</th>
-                        <th>Saturday</th>
-                        <th>Sunday</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {Array.from({ length: 12 }).map((_, hour) => (
-                        <tr key={hour}>
-                            <td>{`${7 + hour}:00 AM`}</td>
-                            {[...Array(7)].map((_, dayIndex) => (
-                                <td key={dayIndex} className="time-slot">
-                                    {scheduleBlocks
-                                        .filter(block => getDayIndex(block.dow) === dayIndex &&
-                                            convertTimeToHour(block.start_time) === hour + 7)
-                                        .map(block => {
-                                            const user = users.find(u => u.userid === block.userid);
-                                            return (
-                                                <div key={block.scheduleid} className="block" style={{ backgroundColor: block.block_color || '#3498db' }}>
-                                                    {block.description} ({user ? `${user.first_name} ${user.last_name}` : 'Unknown'})
-                                                </div>
-                                            );
-                                        })}
-                                </td>
-                            ))}
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
+                {daysOfWeek.map((dayName, dayIdx) => (
+                    <div key={dayIdx} className="day-column">
+                        <div className="day-header">{dayName}</div>
+                        <div className="day-content">
+                            {/* Group schedule blocks (excluding user's own blocks) */}
+                            {scheduleBlocks
+                                .filter(block => parseInt(block.dow) === dayIdx + 1 && block.userid !== userId)
+                                .map(block => {
+                                    const style = calculateBlockStyle(block.start_time, block.end_time);
+                                    const classKey = block.description;
+                                    const blockColor = classColorMap[classKey] || '#FFCCBC'; // Default color
+
+                                    return (
+                                        <div
+                                            key={`${block.scheduleid}-${block.userid}`}
+                                            className="schedule-block"
+                                            style={{
+                                                ...style,
+                                                backgroundColor: blockColor,
+                                            }}
+                                        >
+                                            <span className="block-title">{block.description}</span>
+                                            <br />
+                                            <span className="block-time">
+                                                {block.start_time} - {block.end_time}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            {/* User's own schedule blocks */}
+                            {userScheduleBlocks
+                                .filter(block => dayNameToIndex[block.dow] === dayIdx + 1)
+                                .map(block => {
+                                    const style = calculateBlockStyle(block.start_time, block.end_time);
+                                    const classKey = block.description;
+                                    const blockColor = classColorMap[classKey] || '#FFCCBC'; // Default color
+
+                                    return (
+                                        <div
+                                            key={`${block.scheduleid}-${block.userid}`}
+                                            className="schedule-block user-schedule-block"
+                                            style={{
+                                                ...style,
+                                                backgroundColor: blockColor,
+                                            }}
+                                        >
+                                            <span className="block-title">{block.description} (You)</span>
+                                            <br />
+                                            <span className="block-time">
+                                                {block.start_time} - {block.end_time}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                        </div>
+                    </div>
+                ))}
             </div>
-        </div>
+        </Box>
     );
 };
 
