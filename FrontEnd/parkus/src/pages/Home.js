@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import {
   Typography,
+  Grid,
   Card,
   CardContent,
   Paper,
   Box,
-  Container,
-  Grid
+  Container
 } from "@mui/material";
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'; // Import the error icon
+import IconButton from '@mui/material/IconButton';
+import Badge from '@mui/material/Badge';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import { supabase } from '../utils/supabase.ts';
 import './styles/home.css';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
@@ -22,7 +24,7 @@ function Dashboard() {
     const [schedule, setSchedule] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState(null);
-    const [notificationCount, setNotificationCount] = useState(2); // Example count for demo
+    const [notificationCount, setNotificationCount] = useState(0);
 
     useEffect(() => {
         const fetchGroupData = async () => {
@@ -41,67 +43,85 @@ function Dashboard() {
                     .eq('userid', user.id)
                     .single();
 
-                if (userError || !userData) {
+                if (userError) {
                     console.error('Error fetching user details:', userError);
-                    setLoading(false);
-                    return;
                 } else {
                     setUserData(userData);
 
+                    // Fetch group members based on the user's groupid
                     const { data: groupData, error: groupError } = await supabase
                         .from('users')
                         .select('*')
                         .eq('groupid', userData.groupid);
 
-                    if (groupError || !groupData) {
-                        console.error('Error fetching group data:', groupError);
-                        setLoading(false);
-                        return;
+                    if (!groupError && groupData) {
+                        setGroupMembers(groupData);
+
+                        // Log group data and group member IDs
+                        console.log("Group Data:", groupData);
+
+                        const groupUserIds = groupData.map(g => g.userid);
+
+                        // Log groupUserIds to ensure all member IDs are present
+                        console.log("Group User IDs:", groupUserIds);
+
+                        const currentDay = new Date().getDay();
+                        const dayOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][currentDay];
+
+                        const { data: scheduleData, error: scheduleError } = await supabase
+                            .from('schedule_blocks')
+                            .select('*, users(first_name, last_name)')
+                            .eq('dow', dayOfWeek)
+                            .in('userid', groupUserIds) // Fetch schedules for all group members
+                            .order('start_time');
+
+                        if (!scheduleError && scheduleData) {
+                            console.log("Fetched Schedule Data:", scheduleData);
+
+                            // Get today's date
+                            const today = new Date();
+
+                            // Combine `start_time` and `end_time` with the current date
+                            const formattedSchedule = scheduleData.map(item => {
+                                const [startHour, startMinute] = item.start_time.split(':');
+                                const [endHour, endMinute] = item.end_time.split(':');
+
+                                // Create Date objects for start and end times on today's date
+                                const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startHour, startMinute);
+                                const endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endHour, endMinute);
+
+                                return {
+                                    title: `${item.description} - ${item.users.first_name} ${item.users.last_name}`,
+                                    start: startDate,
+                                    end: endDate,
+                                    blockColor: item.block_color  // Add block color for each event
+                                };
+                            });
+
+                            setSchedule(formattedSchedule);
+                        } else {
+                            console.error('Error fetching schedule:', scheduleError);
+                        }
                     }
-
-                    setGroupMembers(groupData);
-
-                    const currentDate = moment().format("YYYY-MM-DD");
-
-                    const { data: scheduleData, error: scheduleError } = await supabase
-                        .from('schedule_blocks')
-                        .select('*, users(first_name, last_name)')
-                        .in('userid', groupData.map(g => g.userid))
-                        .order('start_time');
-
-                    if (scheduleError || !scheduleData) {
-                        console.error('Error fetching schedule:', scheduleError);
-                        setLoading(false);
-                        return;
-                    }
-
-                    // Filter schedule to only show events for the current day
-                    const filteredSchedule = scheduleData.filter(item =>
-                        moment(item.start_time).isSame(currentDate, 'day')
-                    );
-
-                    setSchedule(filteredSchedule.map(item => ({
-                        ...item,
-                        memberName: item.users.first_name + ' ' + item.users.last_name,
-                        start: new Date(item.start_time),  // Convert start_time to Date object
-                        end: new Date(item.end_time),      // Convert end_time to Date object
-                        title: `${item.description} - ${item.users.first_name} ${item.users.last_name}`
-                    })));
                 }
             }
             setLoading(false);
+            setNotificationCount(2); 
         };
 
         fetchGroupData();
     }, []);
 
-    // Inline custom toolbar component to hide navigation buttons
-    const CustomToolbar = () => {
-        return <div></div>;  // Empty toolbar
+    // Function to set event style based on blockColor
+    const eventPropGetter = (event) => {
+        const backgroundColor = event.blockColor || '#3174ad'; 
+        return {
+            style: { backgroundColor }
+        };
     };
 
     if (loading) return (
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4, width: '90%' }}>
+        <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
             <Paper elevation={3} sx={{ p: 5, backgroundColor: '#f5f5f5', minHeight: '80vh' }} className="loading">
                 <Typography variant="h5">Loading...</Typography>
             </Paper>
@@ -109,55 +129,36 @@ function Dashboard() {
     );
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4, width: '90%' }}>
+        <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
             <Paper elevation={3} sx={{ p: 5, backgroundColor: '#f5f5f5', minHeight: '80vh' }}>
                 <Typography variant="h4" gutterBottom align="center" className="heading">
                     Welcome, {userData?.first_name + ' ' + userData?.last_name || "User"}
+                    <IconButton aria-label="notifications" color="default" className="notification">
+                        <Badge badgeContent={notificationCount} color="primary">
+                            <NotificationsIcon />
+                        </Badge>
+                    </IconButton>
                 </Typography>
-
-                {/* Notification Content */}
-                {notificationCount > 0 && (
-                    <Box 
-                        sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            border: '1px solid red', 
-                            borderRadius: '50px', 
-                            padding: '8px 16px', 
-                            backgroundColor: '#fff3f3', 
-                            maxWidth: '230px', 
-                            mx: 'auto',
-                            mb: 3
-                        }}
-                    >
-                        <ErrorOutlineIcon sx={{ color: 'red', mr: 1 }} />
-                        <Typography variant="body1" sx={{ color: '#000' }}>
-                            New Spotshare Member
-                        </Typography>
-                    </Box>
-                )}
 
                 <Box sx={{ mt: 5, mb: 4 }}>
                     <Grid container spacing={2}>
-                        {/* Permit Group Section (Left Side) */}
+                        {/* Permit Group Section */}
                         <Grid item xs={12} md={6}>
                             <Card raised sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                                <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                                <CardContent sx={{ flexGrow: 1 }}>
                                     <Typography variant="h5" gutterBottom align="center" className="subheading">
                                         Permit Group
                                     </Typography>
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', flexGrow: 1 }}>
-                                        {groupMembers.map((member, index) => (
-                                            <Typography key={index} sx={{ my: 1 }}>
-                                                {member.first_name + ' ' + member.last_name}
-                                            </Typography>
-                                        ))}
-                                    </Box>
+                                    {groupMembers.map((member, index) => (
+                                        <Typography key={index} sx={{ my: 3, textAlign: 'center' }}>
+                                            {member.first_name + ' ' + member.last_name}
+                                        </Typography>
+                                    ))}
                                 </CardContent>
                             </Card>
                         </Grid>
 
-                        {/* Calendar Section (Right Side) */}
+                        {/* Calendar Section */}
                         <Grid item xs={12} md={6}>
                             <Card raised sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                                 <CardContent sx={{ flexGrow: 1 }}>
@@ -178,9 +179,8 @@ function Dashboard() {
                                             step={30}  // 30-minute intervals
                                             timeslots={2}  // Show 2 timeslots per hour
                                             defaultDate={new Date()}  // Ensure calendar starts on current day
-                                            components={{
-                                                toolbar: CustomToolbar  // Use custom inline toolbar to hide navigation buttons
-                                            }}
+                                            eventPropGetter={eventPropGetter} // Apply block color to each event
+                                            toolbar={false}  // Disable the toolbar (removes Today, Back, Next)
                                         />
                                     </Box>
                                 </CardContent>
