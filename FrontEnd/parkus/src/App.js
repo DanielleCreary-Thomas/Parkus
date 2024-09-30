@@ -9,6 +9,8 @@ import SpotSharing from "./pages/SpotSharing";
 import Payment from "./pages/Payment";
 import Profile from "./pages/Profile"
 import Layout from './components/Layout'; // Import the layout component
+import Group from './pages/Group';
+
 
 function App() {
     return (
@@ -26,7 +28,8 @@ function App() {
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/updateSchedule" element={<UpdateSchedule />} />
                     <Route path="/spotSharing" element={<SpotSharing />} />
-                    <Route path="/payment" element={<Payment />} />
+                    <Route path="/payment" element={<Payment />}/>
+                    <Route path="/group" element={<Group />} />
                 </Route>
             </Routes>
         </div>
