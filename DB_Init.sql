@@ -1,29 +1,31 @@
 BEGIN;
 	CREATE TABLE IF NOT EXISTS public.users (
-		userID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ) PRIMARY KEY,
-		groupID INTEGER DEFAULT NULL,
+		userID uuid default uuid_generate_v4() PRIMARY KEY,
+		groupID uuid DEFAULT NULL,
 		first_name VARCHAR(255),
 		last_name VARCHAR(255),
 		studentID INTEGER,
 		phone_number VARCHAR(20),
 		email VARCHAR(255),
-		license_plate_number VARCHAR(20)
+		license_plate_number VARCHAR(20),
+		image_proof_url VARCHAR(255)
 	);
 
 
 	CREATE TABLE IF NOT EXISTS public.schedule_blocks
 	(
-		scheduleID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ) PRIMARY KEY,
-		userID integer,
+		scheduleID uuid default uuid_generate_v4()) PRIMARY KEY,
+		userID uuid,
 		description VARCHAR(255),
 		dow VARCHAR(15),
 		start_time time without time zone,
-		end_time time without time zone
+		end_time time without time zone,
+		block_color VARCHAR(15)
 	);
 
 	CREATE TABLE IF NOT EXISTS public.parking_permits (
-		permitID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ) PRIMARY KEY,
-		userID INTEGER,
+		permitID uuid default uuid_generate_v4() PRIMARY KEY,
+		userID uuid,
 		permit_number VARCHAR(255),
 		active_status BOOLEAN,
 		permit_type VARCHAR(255),
@@ -33,15 +35,30 @@ BEGIN;
 	);
 
 	CREATE TABLE IF NOT EXISTS public.parking_groups(
-		groupID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY(INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1) PRIMARY KEY,
-		permitID INTEGER,
+		groupID uuid default uuid_generate_v4() PRIMARY KEY,
+		permitID uuid,
 		fully_paid BOOLEAN
+	);
+
+	CREATE TABLE IF NOT EXISTS public.cars(
+		license_plate_number VARCHAR(20) PRIMARY KEY,
+		province VARCHAR(50),
+		year VARCHAR(20),
+		make VARCHAR(50),
+		model VARCHAR(50),
+		color VARCHAR(20),
+		
 	);
 
 	ALTER TABLE users
 	ADD CONSTRAINT fk_groupID_parking_groups_groupID
 	FOREIGN KEY (groupID)
 	REFERENCES parking_groups (groupID);
+
+	ALTER TABLE users
+	ADD CONSTRAINT fk_plateNum_license_plate_plateNum
+	FOREIGN KEY (license_plate_number)
+	REFERENCES cars (license_plate_number);
 
 	ALTER TABLE schedule_blocks
 	ADD CONSTRAINT fk_userID_users_userID
