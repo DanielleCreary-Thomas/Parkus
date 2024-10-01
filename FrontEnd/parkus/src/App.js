@@ -11,6 +11,7 @@ import Profile from "./pages/Profile";
 import Layout from './components/Layout'; // Layout component with navbar
 import ProtectedRoute from './components/ProtectedRoute/protectedRoute'; // Import ProtectedRoute
 
+
 function App() {
     return (
         <div>
