@@ -4,7 +4,7 @@ import TimeTable from "../components/Schedule/TimeTable/TimeTable";
 import AddScheduleButton from "../components/Schedule/AddScheduleButton/AddScheduleButton";
 import {Dialog, DialogTitle, DialogContent, DialogActions, Button} from "@mui/material";
 
-function UpdateSchedule() {
+function Schedule() {
     const [timeBlocks, setTimeBlocks] = useState([]);
     const [showWarning, setShowWarning] = useState(false);
 
@@ -65,4 +65,4 @@ function UpdateSchedule() {
     );
 }
 
-export default UpdateSchedule;
+export default Schedule;

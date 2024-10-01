@@ -1,7 +1,7 @@
 import Navbar from "../components/SideNav/Navbar/Navbar";
 import {Route, Routes, useNavigate} from "react-router-dom";
 import Home from "./Home";
-import UpdateSchedule from "./UpdateSchedule";
+import Schedule from "./Schedule";
 import SpotSharing from "./SpotSharing";
 import {Typography} from "@mui/material";
 import React, { useState } from "react";

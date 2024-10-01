@@ -4,6 +4,8 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { supabase } from '../../../utils/supabase.ts';
 
+const dayToNumber = { 'Monday': '1', 'Tuesday': '2', 'Wednesday': '3', 'Thursday': '4', 'Friday': '5' };
+
 const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModalOpen, closeModal, isEdit, scheduleid }) => {
     const [description, setDescription] = useState('');
     const [endTime, setEndTime] = useState('');
@@ -36,7 +38,7 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                     if (data) {
                         // Pre-load existing data
                         setDescription(data.description);
-                        setDayOfWeek(data.dow);
+                        setDayOfWeek(Object.keys(dayToNumber).find(key => dayToNumber[key] === data.dow)); // Convert numeric dow to day name
                         setStartTime(data.start_time ? data.start_time.toString() : ''); // Ensure it matches dropdown format
                         setEndTime(data.end_time ? data.end_time.toString() : ''); // Ensure it matches dropdown format
                         setSelectedColor(data.block_color);
@@ -49,7 +51,7 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                 setDescription('');
                 setStartTime(selectedTime || ''); // Set start time from props
                 setEndTime('');
-                setDayOfWeek(selectedDay || '');
+                setDayOfWeek(selectedDay || ''); // Keep day as string here for display purposes
                 setSelectedColor('#FF5733');
             }
         }
@@ -84,12 +86,15 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
         const userId = user.id;
     
         try {
+            // Convert day name to number
+            const numericDayOfWeek = dayToNumber[dayOfWeek]; 
+            
             // Fetch existing schedule blocks for the same day of the week
             const { data: existingBlocks, error: fetchError } = await supabase
                 .from('schedule_blocks')
                 .select('*')
                 .eq('userid', userId)
-                .eq('dow', dayOfWeek);
+                .eq('dow', numericDayOfWeek); // Use numeric day of the week
     
             if (fetchError) {
                 toast.error('Error fetching existing schedule blocks: ' + fetchError.message);
@@ -126,20 +131,19 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                     .from('schedule_blocks')
                     .update({
                         description,
-                        dow: dayOfWeek,
+                        dow: numericDayOfWeek, 
                         start_time: startTime,
                         end_time: endTime,
                         block_color: selectedColor
                     })
                     .eq('scheduleid', scheduleid);
             } else {
-                // Insert new schedule block
                 supabaseResponse = await supabase
                     .from('schedule_blocks')
                     .insert([{
                         userid: userId,
                         description,
-                        dow: dayOfWeek,
+                        dow: numericDayOfWeek, 
                         start_time: startTime,
                         end_time: endTime,
                         block_color: selectedColor
@@ -154,15 +158,13 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
             }
     
             toast.success(isEdit ? 'Schedule block updated successfully!' : 'Schedule block added successfully!');
-            onSave({ description, startTime, endTime, day: dayOfWeek, color: selectedColor });
+            onSave({ description, startTime, endTime, day: numericDayOfWeek, color: selectedColor });
     
-            // Close the modal
             closeModal();
         } catch (error) {
             toast.error('An error occurred: ' + error.message);
         }
     };
-    
 
     const handleDelete = async () => {
         if (!scheduleid) {
@@ -191,7 +193,7 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
     };
 
     const formatTime = (time) => {
-        if (time && time.length === 8) { // Assuming format is always 'hh:mm:ss'
+        if (time && time.length === 8) { // supabase time format is 'hh:mm:ss'
             return time.slice(0, 5); // Take the first 5 characters (hh:mm)
         }
         return time;
@@ -209,18 +211,6 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                     </DialogTitle>
                     <DialogContent>
                         <Stack direction="column" spacing={2}>
-                            {/* <TextField
-                                label="Schedule ID"
-                                fullWidth
-                                variant="outlined"
-                                value={scheduleid || 'N/A'}
-                                InputProps={{
-                                    readOnly: true,
-                                }}
-                                InputLabelProps={{
-                                    style: { paddingTop: '0.5rem', fontSize: '1rem' }
-                                }}
-                            /> */}
                             <TextField
                                 label="Description"
                                 fullWidth
