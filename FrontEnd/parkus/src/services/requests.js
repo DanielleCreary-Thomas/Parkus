@@ -1,27 +1,9 @@
 import {supabase} from "../utils/supabase.ts";
 
-
+//Spotsharing
 export async function matchmake(id) {
     var data = await fetch(`http://127.0.0.1:5000/groups/matchmake/${id}`,
         { method: "GET" })
-        .then(response => response.json())
-        .then(data => data)
-        .catch(error => console.log(error));
-    return data;
-}
-
-export async function checkParkingPermit(userId) {
-    var data = await fetch(`http://127.0.0.1:5000/parking-permit/${userId}`,
-        { method: 'GET' })
-        .then(response => response.json())
-        .then(data => data)
-        .catch(error => console.log(error));
-    return data;
-}
-
-export async function fetchUser(userId) {
-    var data = await fetch(`http://127.0.0.1:5000/users/${userId}`,
-        { method: 'GET' })
         .then(response => response.json())
         .then(data => data)
         .catch(error => console.log(error));
@@ -39,7 +21,7 @@ export async function getCurrUser(){
     return data.data.user.id;
 }
 
-
+//Payment
 export async function uploadETransfer(formData){
     /**
      * Using the current user's id tries uploading their etransfer image
@@ -69,6 +51,49 @@ export async function uploadETransfer(formData){
     })
 }
 
+//Profile
+export async function addParkingPermit(permitData) {
+    var data = await fetch('http://127.0.0.1:5000/parking-permit',
+        { method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(permitData),
+        })
+        .then(response => response.json())
+        .then(data => data)
+        .catch(error => console.log(error));
+    return data;
+}
+
+export async function fetchParkingPermits(userId) {
+    var data = await fetch(`http://127.0.0.1:5000/parking-permits/${userId}`,
+        { method: 'GET' })
+        .then(response => response.json())
+        .then(data => data)
+        .catch(error => console.log(error));
+    return data;
+}
+
+export async function checkParkingPermit(userId) {
+    var data = await fetch(`http://127.0.0.1:5000/parking-permit/${userId}`,
+        { method: 'GET' })
+        .then(response => response.json())
+        .then(data => data)
+        .catch(error => console.log(error));
+    return data;
+}
+
+export async function fetchUser(userId) {
+    var data = await fetch(`http://127.0.0.1:5000/users/${userId}`,
+        { method: 'GET' })
+        .then(response => response.json())
+        .then(data => data)
+        .catch(error => console.log(error));
+    return data;
+}
+
+//Group
 export async function getGroupId(user_id){
     /**
      * Returns the group id for the given user id
@@ -96,31 +121,6 @@ export async function getGroupMembers(groupId){
         .catch(error => console.log(error));
     return data;
 }
-
-
-export async function addParkingPermit(permitData) {
-    var data = await fetch('http://127.0.0.1:5000/parking-permit', 
-        { method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(permitData),
-    })
-    .then(response => response.json())
-    .then(data => data)
-    .catch(error => console.log(error));
-    return data;
-}
-
-export async function fetchParkingPermits(userId) {
-    var data = await fetch(`http://127.0.0.1:5000/parking-permits/${userId}`, 
-        { method: 'GET' })
-        .then(response => response.json())
-        .then(data => data)
-        .catch(error => console.log(error));
-    return data;
-}
-
 
 export async function getGroupLeader(group_id){
     /**
