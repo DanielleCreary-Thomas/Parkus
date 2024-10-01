@@ -13,6 +13,40 @@ CORS(app)
 
 # GET Endpoints
 
+
+@app.route('/groups/<group_id>/schedules', methods=['GET', 'OPTIONS'])
+def get_group_schedules(group_id):
+    """
+    Returns the schedules for all members in the group with the matching id
+    :param group_id: group id
+    :return: JSON with the schedules for each member, including first and last names
+    """
+    assert group_id == request.view_args['group_id']
+    
+    members = data_store.get_group_members(group_id)  # Fetch all members of the group
+    schedules = []
+    
+    # For each member, fetch their schedule and add their name
+    for member in members:
+        user_schedule = data_store.get_schedule_for_user(member['userid'])
+        for block in user_schedule:
+            schedules.append({
+                'user_id': member['userid'],
+                'first_name': member['first_name'],
+                'last_name': member['last_name'],
+                'schedule_id': block['scheduleid'],
+                'dow': block['dow'],
+                'start_time': block['start_time'],
+                'end_time': block['end_time'],
+                'description': block.get('description', '')  # Include description if available
+            })
+    
+    return jsonify(schedules), 200
+
+
+
+
+
 @app.route('/groups/<id>', methods=['GET', 'OPTIONS'])
 def group(id):
     """

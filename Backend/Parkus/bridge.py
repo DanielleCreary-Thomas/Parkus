@@ -182,7 +182,7 @@ def schedule_blocks_for_user(userid):
     """
     response = (
         supabase.table("schedule_blocks")
-            .select("scheduleid", "dow", "start_time", "end_time")
+            .select("scheduleid", "dow", "start_time", "end_time", "description")
             .eq("userid", userid)
             .order("dow")
             .execute()

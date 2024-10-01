@@ -227,6 +227,19 @@ def upload_etransfer_image(imageUrl, userid):
         return result
     return None
 
+
+
+def get_schedule_for_user(userid):
+    """
+    Returns the schedule blocks for the given user
+    :param userid: the user's id
+    :return: list of schedule blocks
+    """
+    return bridge.schedule_blocks_for_user(userid)
+
+
+
+
 if __name__ == '__main__':
     ##Test get members
     members = get_group_members('44966fd0-2c0f-416d-baf8-80bfeb4ba075')
