@@ -4,29 +4,49 @@ import Home from './pages/Home';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import LandingPage from './pages/LandingPage';
-import UpdateSchedule from "./pages/UpdateSchedule";
+import Schedule from "./pages/Schedule";
 import SpotSharing from "./pages/SpotSharing";
 import Payment from "./pages/Payment";
-import Profile from "./pages/Profile"
-import Layout from './components/Layout'; // Import the layout component
+import Profile from "./pages/Profile";
+import Layout from './components/Layout'; // Layout component with navbar
+import ProtectedRoute from './components/ProtectedRoute/protectedRoute'; // Import ProtectedRoute
 
 function App() {
     return (
         <div>
             <Routes>
-                {/* Define all your routes here */}
-                <Route path="/" element={<LandingPage />} /> {/* Landing page route */}
-                <Route path="/signin" element={<SignIn />} /> {/* Sign In page */}
-                <Route path="/signup" element={<SignUp />} /> {/* Sign Up page */}
+                {/* Public routes */}
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/signin" element={<SignIn />} />
+                <Route path="/signup" element={<SignUp />} />
 
-                {/* Routes that require Navbar (authenticated routes) */}
+                {/* Protected routes with Navbar */}
                 <Route element={<Layout />}>
-                    {/* All these routes will have Navbar visible */}
-                    <Route path="/home" element={<Home />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/updateSchedule" element={<UpdateSchedule />} />
-                    <Route path="/spotSharing" element={<SpotSharing />} />
-                    <Route path="/payment" element={<Payment />} />
+                    <Route path="/home" element={
+                        <ProtectedRoute>
+                            <Home />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/profile" element={
+                        <ProtectedRoute>
+                            <Profile />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/schedule" element={
+                        <ProtectedRoute>
+                            <Schedule />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/spotSharing" element={
+                        <ProtectedRoute>
+                            <SpotSharing />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/payment" element={
+                        <ProtectedRoute>
+                            <Payment />
+                        </ProtectedRoute>
+                    } />
                 </Route>
             </Routes>
         </div>
