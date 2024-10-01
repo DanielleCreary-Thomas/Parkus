@@ -1,59 +1,186 @@
-/* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;600&family=Montserrat:wght@600;700&family=Roboto:wght@400&display=swap');
-
-/* Base Typography */
-body {
-    font-family: 'Roboto', sans-serif;
-}
-
-/* Headings */
-.heading {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
-    color: #333;
-}
-
-.subheading {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 600;
-    color: #1976d2;
-}
-
-/* Table Styles */
-.tableHeader {
-    font-family: 'Lato', sans-serif;
-    font-weight: 600;
-}
-
-.tableCell {
-    font-family: 'Lato', sans-serif;
-}
-
-/* Special Styles for Specific Sections */
-.highlight {
-    background-color: #ffeb3b;
-}
-
-.dim {
-    background-color: #e0e0e0;
-}
-
-.dim:hover {
-    background-color: #cfcfcf;
-}
-
-/* Loading Style */
-.loading {
-    color: #555;
+/* General container styling */
+.home-container {
+    max-width: 1000px;
+    height: 860px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f0f4f8;
+    font-family: Arial, sans-serif;
+    border-radius: 10px;
+  
+  }
+  
+  /* Header styling */
+  .home-header {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  /* Main content for permit group and schedule */
+  .home-main-content {
     display: flex;
+    justify-content: space-between;
+    gap: 35px; /* Adds space between the left and right panels */
+  }
+  
+/* Permit group styling */
+.home-left-panel {
+    width: 45%;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    max-height: 800px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Exclude header from centering */
+  .home-left-panel h2 {
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  
+  /* New container to hold and center the dynamic content */
+  .left-panel-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centers content vertically */
+    align-items: center; /* Centers content horizontally */
+    height: 100%; /* Takes up full available space */
+  }
+  
+  /* List styling */
+  .home-left-panel ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Bubble styling for each group member */
+  .home-left-panel li {
+    font-size: 18px;
+    padding: 10px 20px;
+    text-align: center;
+    background-color: #3b89ce; /* Background color for the bubble */
+    color: white;
+    border-radius: 25px; /* Rounded corners to create a bubble effect */
+    margin-bottom: 15px; /* Space between bubbles */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow for a floating effect */
+    width: 200px; /* Fixed width for all bubbles */
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  /* Styling for error or loading messages */
+  .home-left-panel p {
+    text-align: center;
+    font-size: 18px;
+  }
+  
+  
+  
+  
+  /* Right panel styling */
+ .home-right-panel {
+  width: 45%; /* Reduced width to accommodate the gap */
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+   
+}
+  
+  .home-right-panel h2 {
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  
+  /* Calendar styling */
+  .home-calendar {
+    display: flex;
+    position: relative;
+    height: 600px; /* Reduced overall height */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow-y: auto; /* Allow scrolling for events */
+  }
+  
+ /* Calendar timeline (hours) */
+.home-calendar-timeline {
+    width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .home-calendar-hour {
+    height: 40px; /* Reduced each hour block height */
+    line-height: 40px; /* Ensure text stays vertically aligned */
+    font-size: 14px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    color: #333;
+  }
+  
+  .home-calendar-events {
+    flex-grow: 1;
+    position: relative;
+    background-color: #f9f9f9;
+    border-left: 1px solid #ddd;
+  }
+  
+  /* Calendar event block styling */
+/* General event styling */
+.home-calendar-event {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2px;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-}
+    text-align: center;
+  }
+  
+/* Highlight current user's event */
+.current-user {
+    background-color: #2fbe0f; /* Normal blue for current user */
+    opacity: 1; /* Full opacity */
+  }
 
+  /* Grey out others' events */
+.other-user {
+    background-color: #d3d3d3; /* Grey background for others */
+    color: #666; /* Light grey text */
+    opacity: 0.7; /* Slight transparency */
+  }
 
-/* Notification Styles */
-.notification {
-    margin-left: 20px;
-    color: #000000; 
-    cursor: pointer; 
-}
+  .event-time {
+    font-weight: bold;
+  }
+  
+  .event-description {
+    margin-top: 5px;
+  }
+  
+  .event-person {
+    margin-top: 5px;
+    font-weight: bold;
+  }
+  
+  /* No schedule styling */
+  .no-schedule {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+  }
+  
