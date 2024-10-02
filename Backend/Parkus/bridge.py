@@ -78,7 +78,7 @@ def member_count_by_groupid(groupid):
         .execute()
     )
 
-    return response.count
+    return len(response.data)
 
     # with conn.cursor() as cur:
     #     cur.execute('''SELECT COUNT(u.userid) as members, g.groupid
@@ -116,55 +116,78 @@ def group_by_groupid(groupid):
     #     }
     #     return group_dict
 
-
-def groups_with_vacancies():
+###Vacancy Queries
+def get_all_groupids():
     """
-    Returns the group IDs of groups with less than 3 members
-    :return: a list of tuples with groupids at 0 and their member count at 1
+    Returns a dictionary(json) of all groupids
+    :return:
     """
-    # raw_query = """
-    # SELECT COUNT(u.userid) as members, g.groupid
-    # FROM parking_groups g
-    # INNER JOIN users u ON u.groupid = g.groupid
-    # GROUP BY g.groupid
-    # HAVING COUNT(u.userid) < 3
-    # ORDER BY g.groupid;
-    # """
-    # response = (
-    #     supabase
-    #     .rpc(raw_query)
-    #     .execute()
-    # )
     response = (
-        supabase.from_('parking_groups')
-            .select('groupid, COUNT(users.userid) as members')
-            .inner_join('users', 'users.groupid', 'parking_groups.groupid')
-            .group_by('groupid')
-            .having('COUNT(users.userid)', '<', 3)
-            .order('groupid')
-            .execute()
+        supabase.table("parking_groups")
+        .select('groupid')
+        .execute()
+    )
+    return response.data
+
+def active_permit(permitid):
+    """
+    Returns a bool indicating whether the given group has an active permit
+    :param groupid:
+    :return:
+    """
+    response = (
+        supabase.table("parking_permits")
+        .select('permitid')
+        .eq('permitid', permitid)
+        .eq('active_status', True)
+        .execute()
+    )
+    return len(response.data) > 0
+
+def get_group_size(groupid):
+    """
+    Returns the size of the group
+    :param groupid:
+    :return:
+    """
+    response = (
+        supabase.table('users')
+        .select('userid')
+        .eq("groupid", groupid)
+        .execute()
     )
 
-    return response.data
-    # with conn.cursor() as cur:
-    #     cur.execute('''
-    #     SELECT COUNT(u.userid) as members, g.groupid
-    #     FROM parking_groups g
-    #     INNER JOIN users u ON u.groupid = g.groupid
-    #     GROUP BY g.groupid
-    #     HAVING COUNT(u.userid) < 5
-    #     ORDER BY g.groupid;
-    #     ''')
-    #     groups_and_memebers = cur.fetchall()
-    #     return groups_and_memebers
+    return len(response.data)
 
+def get_permit_by_groupid(groupid):
+    """
+    Returns the permit of the given group
+    :param groupid:
+    :return:
+    """
+    response = (
+        supabase.table('parking_groups')
+        .select('permitid')
+        .eq("groupid", groupid)
+        .execute()
+    )
+    return response.data[0]
 
+## User Schedule
 def schedule_blocks_for_user(userid):
     """
     returns the schedule blocks for the given user in the form of a list of tuples
     :param userid: selected user's id
     :return: the list of schedule blocks
     """
+    response = (
+        supabase.table("schedule_blocks")
+            .select("scheduleid", "dow", "start_time", "end_time")
+            .eq("userid", userid)
+            .order("dow")
+            .execute()
+    )
+    return response.data
     # with conn.cursor() as cur:
     #     cur.execute("""
     #     SELECT s.scheduleid, s.dow, s.start_time, s.end_time
@@ -181,6 +204,15 @@ def validate_no_group(userid):
     :param userid: user's id
     :return: bool
     """
+    response = (
+        supabase.table("users")
+        .select("*")
+        .is_("groupid", "null")
+        .eq("userid", userid)
+        .execute()
+    )
+
+    return len(response.data) > 0
     # with conn.cursor() as cur:
     #     cur.execute("""
     #     SELECT *
@@ -188,6 +220,191 @@ def validate_no_group(userid):
     #     WHERE u.userid = %s AND u.groupid is null""",
     #                 (userid,))
     #     return cur.fetchone()
+
+def get_group_leader(groupid):
+    """
+    Returns the leader's userid for the given groupid
+    :param groupid:
+    :return: userid for group leader
+    """
+    permitid_response = (
+        supabase.table("parking_groups")
+        .select("permitid")
+        .eq("groupid", groupid)
+        .execute()
+    )
+    print(permitid_response.data[0])
+
+    if len(permitid_response.data)==1:
+        userid_response = (
+            supabase.table("parking_permits")
+            .select("userid")
+            .eq("permitid", permitid_response.data[0]['permitid'])
+            .execute()
+        )
+        return userid_response.data[0]
+
+    return None
+
+def get_group_id(userid):
+    """
+    Returns the group id for the given userid
+    :param userid:
+    :return:
+    """
+    response = (
+        supabase.table("users")
+        .select("groupid")
+        .eq("userid", userid)
+        .execute()
+    )
+    return response.data[0]
+
+def get_group_members(groupid):
+    """
+    Returns the userid, first name, last name, license plate number,
+     email, and image url for each member of the given group
+    :param groupid:
+    :return:
+    """
+    response = (
+        supabase.table("users")
+        .select("userid", "first_name", "last_name", "license_plate_number", "email", "image_proof_url")
+        .eq("groupid", groupid)
+        .execute()
+    )
+    return response.data
+
+def get_car_info(platenum):
+    """
+    Returns the car info for the given platenum
+    :param platenum:
+    :return:
+    """
+    response = (
+        supabase.table("cars")
+        .select("*")
+        .eq("license_plate_number", platenum)
+        .execute()
+    )
+    return response.data[0]
+
+def paid_member(userid):
+    """
+    Checks if the given user is paid
+    :param userid: given user's id
+    :return: True if the user is paid, False otherwise
+    """
+    response =(
+        supabase.table("users")
+        .select("*")
+        .neq("image_proof_url", None)
+        .execute()
+    )
+    return len(response.data) > 0
+
+
+def get_group_member(userid):
+    """
+    Returns the userid, first name, last name, license_plate_number, email, image url,
+    and car info for the given userid
+    :param userid:
+    :return:
+    """
+    response = (
+        supabase.table("users")
+        .select("userid", "first_name", "last_name", "license_plate_number", "email", "image_proof_url")
+        .eq("userid", userid)
+        .execute()
+    )
+    return response.data[0]
+
+
+def get_group_permit(leaderid):
+    """
+    Returns the imageurl of the permit for the given leader
+    :param leaderid:
+    :return:
+    """
+    response = (
+        supabase.table("users")
+        .select("image_proof_url")
+        .eq("userid", leaderid)
+        .execute()
+    )
+    return response.data[0]
+
+
+
+def upload_etransfer_image(imageUrl, userid):
+    """
+    Updates the given user's eTransfer Proof image url
+    :param imageUrl: Url of the eTransfer Proof image
+    :param userid: user's id
+    :return: True if the user is uploaded, False otherwise
+    """
+    response = (
+        supabase.table("users")
+        .update({"image_proof_url": imageUrl})
+        .eq("userid", userid)
+        .execute()
+    )
+    return len(response.data[0]) > 0
+
+
+"""
+Validation functions
+"""
+def validate_userid(userid):
+    response = (
+        supabase.table("users")
+        .select("*")
+        .eq("userid", userid)
+        .execute()
+    )
+    return len(response.data) > 0
+
+def validate_groupid(groupid):
+    response = (
+        supabase.table("parking_groups")
+        .select("*")
+        .eq("groupid", groupid)
+        .execute()
+    )
+    return len(response.data) > 0
+
+def validate_permitid(permitiid):
+    response = (
+        supabase.table("parking_permits")
+        .select("*")
+        .eq("permitid", permitiid)
+        .execute()
+    )
+    return len(response.data) > 0
+
+def validate_scheduleid(scheduleid):
+    response = (
+        supabase.table("schedule_blocks")
+        .select("*")
+        .eq("scheduleid", scheduleid)
+        .execute()
+    )
+    return len(response.data) > 0
+
+def validate_license_plate_number(license_plate_number):
+    """
+    Checks if the given license plate number is valid
+    :param license_plate_number:
+    :return:
+    """
+    response =(
+        supabase.table("cars")
+        .select("*")
+        .eq("license_plate_number", license_plate_number)
+        .execute()
+    )
+    return len(response.data) > 0
+
 
 
 
@@ -244,14 +461,32 @@ def fetch_parking_permits_by_userid(user_id):
 
 
 if __name__ == "__main__":
-    group1 = member_userid_for_group(1)
-    group1num = member_count_by_groupid(1)
-    for member in group1:
-        print(member['userid'])
+    ##Testing has member paid
+    print(paid_member('33d6127f-3a9e-4681-83a2-92c98db0881c'))
 
-    for member in group1:
-        print(member)
+    ##Testing Get Car info
+    print(get_car_info('ABC123'))
 
-    print(group1num)
-    print(group_by_groupid(1))
-    print(groups_with_vacancies())
+    ##Testing for get group members, leader, id
+    print(get_group_members('44966fd0-2c0f-416d-baf8-80bfeb4ba075')) ##John, Michael, Matthew
+    print(get_group_id('33d6127f-3a9e-4681-83a2-92c98db0881c'))## given john -> '44966fd0-2c0f-416d-baf8-80bfeb4ba075'
+    print(get_group_leader('44966fd0-2c0f-416d-baf8-80bfeb4ba075'))##John
+
+    ##Testing for matchmaking
+    blocks = schedule_blocks_for_user('7ce19f4c-9d60-4539-8217-cfb3967f99ca')  # 5th user emily
+    print(blocks)
+    for block in blocks:
+        print(block)
+    # group1 = member_userid_for_group(1)
+    # group1num = member_count_by_groupid(1)
+    # for member in group1:
+    #     print(member['userid'])
+    #
+    # for member in group1:
+    #     print(member)
+    #
+    # print(group1num)
+    # print(group_by_groupid(1))
+    # print(groups_with_vacancies())
+
+

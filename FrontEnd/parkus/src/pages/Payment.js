@@ -5,6 +5,9 @@ import Schedule from "./Schedule";
 import SpotSharing from "./SpotSharing";
 import {Typography} from "@mui/material";
 import React, { useState } from "react";
+import "./styles/Payment.css"
+import {getCurrUser, uploadETransfer} from "../services/requests";
+import {supabase} from "../utils/supabase.ts";
 
 function Payment() {
     const handleBMOClick = ()=>
@@ -38,33 +41,42 @@ function Payment() {
     function handleCIBCClick() {
         window.open("https://www.cibc.com/en/personal-banking.html", "_blank")
     }
-    const handleSubmit = () => {
+
+    async function uploadProof(file) {
+        let { data, error } =
+            await supabase.storage.from('payment_proof').upload(file.name, file)
+        if (error) {
+            // Handle error
+            console.log(error)
+        } else {
+            // Handle success
+            setUploadImageUrl(supabase.storage.from('payment_proof').getPublicUrl(file.name))
+
+            console.log('upload successful');
+        }
+    }
+
+    const  handleSubmit = async () => {
         if (!selectedImage) {
             alert('Please select an image to upload.');
             return;
         }
 
-        const formData = new FormData();
-        formData.append('proofImage', selectedImage);
+        await uploadProof(selectedImage);
 
-        fetch('https://your-server-endpoint.com/upload', {
-            method: 'POST',
-            body: formData,
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                // Handle success
-                console.log('Upload successful', data);
-                alert('Proof of eTransfer uploaded successfully!');
-                // Reset the form
-                setSelectedImage(null);
-                setImagePreviewUrl(null);
-            })
-            .catch((error) => {
-                // Handle error
-                console.error('Error uploading image', error);
-                alert('There was an error uploading your proof. Please try again.');
-            });
+        const formData = new FormData();
+        formData.append('proofImageUrl', uploadImageUrl);
+        formData.append('userid', await getCurrUser())
+        try{
+            const response = await uploadETransfer(formData);
+            console.log(response);
+            // Reset the form
+            setSelectedImage(null);
+            setImagePreviewUrl(null);
+        }catch(error){
+            console.log("error uploading image", error);
+        }
+
     };
 
     const handleImageUpload = (event) => {
@@ -75,6 +87,7 @@ function Payment() {
         }
     };
 
+    const [uploadImageUrl, setUploadImageUrl] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
     const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
 

@@ -26,6 +26,7 @@ function Navbar() {
             <Button className="navbutton" onClick={() => { navigate("/schedule") }}>Schedule</Button>
             <Button className="navbutton" onClick={() => { navigate("/spotSharing") }}>Spotsharing</Button>
             <Button className="navbutton" onClick={() => { navigate("/payment") }}>Payment</Button>
+            <Button className="navbutton" onClick={() => { navigate("/group") }}>Group</Button>
             <Box height={400}></Box>
             <Button className="signout" onClick={handleSignout}>Signout</Button> {/* Added signout handler */}
         </Stack>

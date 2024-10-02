@@ -2,7 +2,7 @@ import MatchmakingTitle from "../components/SpotSharing/Matchmaking/MatchmakingT
 import {Stack, Typography} from "@mui/material";
 import MatchmakingGroups from "../components/SpotSharing/Matchmaking/MatchmakingGroup/MatchmakingGroups";
 import MatchmakingButton from "../components/SpotSharing/Matchmaking/MatchmakingButton/MatchmakingButton";
-import {matchmake} from "../services/requests"
+import {getCurrUser, matchmake} from "../services/requests"
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 
@@ -13,8 +13,10 @@ function SpotSharing() {
 
     const[data, setData] = useState(false);
 
+
     async function handleMatchmakeClick() {
-        setData( await matchmake(5).then(data => data.availableGroups))
+        const currUser = await getCurrUser();
+        setData( await matchmake(currUser).then(data => data.availableGroups))
         console.log(data)
     }
 
