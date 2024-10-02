@@ -6,7 +6,7 @@ import time
 from bridge import CONNECTION_STRING, fetch_parking_permits_by_userid, supabase
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from bridge import fetch_user_by_userid, check_parking_permit, insert_parking_permit
+# from bridge import fetch_user_by_userid, check_parking_permit, insert_parking_permit
 
 class User:
     def __init__(self, id, name):
@@ -142,16 +142,16 @@ def validate_no_group(userid):
 
 def get_user_by_id(user_id):
     """Wrapper function to fetch user data."""
-    return fetch_user_by_userid(user_id)
+    return bridge.fetch_user_by_userid(user_id)
 
 def user_has_parking_permit(user_id):
     """Wrapper function to check if the user has a parking permit."""
-    return check_parking_permit(user_id)
+    return bridge.check_parking_permit(user_id)
 
 def add_parking_permit(user_id, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location):
     """Wrapper function to insert a new parking permit."""
-    return insert_parking_permit(user_id, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location)
+    return bridge.insert_parking_permit(user_id, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location)
 
 def get_parking_permits_by_userid(user_id):
     """Wrapper function to fetch all parking permits for a given user ID."""
-    return fetch_parking_permits_by_userid(user_id)
+    return bridge.fetch_parking_permits_by_userid(user_id)
