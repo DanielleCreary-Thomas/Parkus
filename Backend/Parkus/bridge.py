@@ -490,3 +490,18 @@ if __name__ == "__main__":
     # print(groups_with_vacancies())
 
 
+def check_fully_paid(groupid):
+    """
+    Checks if the group with the given groupid has fully paid or not.
+    :param groupid: the group's id
+    :return: True if fully_paid is False, else False
+    """
+    response = (
+        supabase.table("parking_groups")
+        .select("fully_paid")
+        .eq("groupid", groupid)
+        .execute()
+    )
+    if response.data:
+        return not response.data[0]['fully_paid']  # Return True if fully_paid is False
+    return False

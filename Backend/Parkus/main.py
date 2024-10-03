@@ -206,5 +206,17 @@ def etransfer_image():
 
 
 
+@app.route('/groups/<group_id>/fully_paid', methods=['GET'])
+def check_group_fully_paid(group_id):
+    """
+    Returns whether the given group has fully paid or not.
+    :param group_id: the group's id
+    :return: JSON with True if fully_paid is False, otherwise False
+    """
+    result = data_store.group_is_not_fully_paid(group_id)
+    return jsonify({"show_notification": result}), 200
+
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

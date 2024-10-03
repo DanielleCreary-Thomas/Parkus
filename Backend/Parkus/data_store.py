@@ -239,6 +239,16 @@ def get_schedule_for_user(userid):
 
 
 
+def group_is_not_fully_paid(groupid):
+    """
+    Wrapper function to check if the group has not fully paid.
+    :param groupid: the group's id
+    :return: True if not fully paid, False otherwise
+    """
+    return bridge.check_fully_paid(groupid)
+
+
+
 
 if __name__ == '__main__':
     ##Test get members
