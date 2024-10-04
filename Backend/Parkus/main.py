@@ -2,11 +2,11 @@
 # Http Endpoints
 import data_store
 import flask
-from flask import jsonify, render_template, send_from_directory
+from flask import jsonify, render_template, send_from_directory, make_response
 from flask import Flask, request
-from flask_cors import CORS
-# Shouldn't have the bridge import in main
+from flask_cors import CORS, cross_origin
 import bridge
+# bridge should be removed from main.py
 
 app = Flask(__name__)
 # Should only be line below
