@@ -1,41 +1,42 @@
 .app-container {
   display: grid;
   grid-template-columns: auto 1fr; /* One block on the left, one on the right */
-  height: 100vh;
+  height: 100vh; /* Ensures it takes the full height of the viewport */
+  overflow: hidden; /* Prevents overflow issues */
 }
 
 .left-panel {
-  background-color: #FFFFFF; /* Example background color */
-  height: 100%;
-  padding: 0; /* Remove any padding */
-  margin: 0; /* Remove any margin */
+  background-color: #FFFFFF;
+  height: 100vh; /* Full viewport height */
+  padding: 0;
+  margin: 0;
 }
 
 .right-panel {
   background-color: #84B5D3;
-  height: 100%;
-  padding: 0; /* Remove any padding */
-  margin: 0; /* Remove any margin */
+  height: 100vh; /* Full viewport height */
+  padding: 0;
+  margin: 0;
+  overflow: auto; /* Allows content scrolling without overflowing the grid */
 }
 
-/* Fullscreen landing page styling */
 .landing-page {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* Full viewport height */
-  width: 100vw;  /* Full viewport width */
-  background: #84B5D3; /* Add a nice gradient background */
+  height: 100vh;
+  width: 100vw;
+  background: #84B5D3;
   color: #fff;
-  font-family: 'Roboto', sans-serif; /* Use a clean modern font */
+  font-family: 'Roboto', sans-serif;
 }
 
 .content {
   text-align: center;
-  background: white; /* Slightly transparent background for the content */
+  background: white;
   padding: 50px;
   border-radius: 10px;
-  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 h1 {
@@ -52,7 +53,7 @@ p {
 
 .button-group {
   display: flex;
-  gap: 20px; /* Add space between the buttons */
+  gap: 20px;
   justify-content: center;
 }
 
@@ -77,10 +78,9 @@ p {
 }
 
 .sign-up-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2); /* Subtle hover effect for sign up */
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Responsive design for smaller screens */
 @media (max-width: 768px) {
   h1 {
     font-size: 2.5rem;
@@ -96,6 +96,6 @@ p {
 
   .button-group {
     flex-direction: column;
-    gap: 10px; /* Adjust gap for small screens */
+    gap: 10px;
   }
 }

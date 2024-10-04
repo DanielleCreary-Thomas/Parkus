@@ -27,7 +27,8 @@ function Navbar() {
             <Button className="navbutton" onClick={() => { navigate("/spotSharing") }}>Spotsharing</Button>
             <Button className="navbutton" onClick={() => { navigate("/payment") }}>Payment</Button>
             <Button className="navbutton" onClick={() => { navigate("/group") }}>Group</Button>
-            <Box height={400}></Box>
+            
+            <Box sx={{ flexGrow: 1 }} /> {/* This will take up the remaining space and push signout button to the bottom */}
             <Button className="signout" onClick={handleSignout}>Signout</Button> {/* Added signout handler */}
         </Stack>
     );

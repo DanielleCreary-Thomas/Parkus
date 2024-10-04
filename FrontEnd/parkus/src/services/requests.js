@@ -177,3 +177,64 @@ export async function getGroupPermit(leaderid){
 }
 
 
+export const fetchCarByUserId = async (userId) => {
+    try {
+      const response = await fetch(`http://127.0.0.1:5000/car/user/${userId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch car information.');
+      }
+      const car = await response.json();
+      return car;
+    } catch (error) {
+      console.error('Error fetching car:', error);
+      throw error;
+    }
+  };
+
+
+export async function addCar(carData) {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/car', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(carData),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to update car information.');
+        }
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Error updating car:', error);
+        throw error;
+    }
+}
+
+
+export async function addUserData(userData) {
+    /**
+     * Sends a POST request to the Flask backend to insert user data and car data.
+     * @param {Object} userData - Data containing user details and the car's license plate number.
+     */
+    try {
+        const response = await fetch('http://127.0.0.1:5000/add-user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userData),
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to insert user and car data. Please try again.');
+        }
+
+        return result;
+    } catch (error) {
+        console.error('Error during data insertion:', error);
+        throw error;
+    }
+}
