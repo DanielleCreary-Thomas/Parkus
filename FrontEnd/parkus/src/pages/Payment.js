@@ -50,14 +50,15 @@ function Payment() {
     }
 
     async function uploadProof(file) {
+        // TODO: Add the logic for if the user is uploading a new image but already has one on file
         let { data, error } =
-            await supabase.storage.from('payment_proof').upload(file.name, file)
+            await supabase.storage.from('payment_proof').upload(userId+file.name, file)
         if (error) {
             // Handle error
             console.log(error)
         } else {
             // Handle success
-            let data = supabase.storage.from('payment_proof').getPublicUrl(file.name)
+            let data = supabase.storage.from('payment_proof').getPublicUrl(userId+file.name)
             console.log("immediate after url call")
             const url = data.data['publicUrl']
             console.log(url)
@@ -79,6 +80,7 @@ function Payment() {
 
             if(groupId !== 'None'){
                 setIsMemberOfGroup(true)
+                setUserId(userid)
                 console.log("member of group", isMemberOfGroup)
             }
 
@@ -107,7 +109,7 @@ function Payment() {
 
         const formData = new FormData();
         formData.append('proofImageUrl', url);
-        formData.append('userid', await getCurrUser())
+        formData.append('userid', userId)
         try{
             const response = await uploadETransfer(formData);
             console.log(response);
