@@ -111,7 +111,6 @@ def get_group_id(user_id):
         return data_store.get_group_id(user_id)
     return {'groupid': 'None'}
 
-
 @app.route('/users/group/<group_id>', methods=['GET', 'OPTIONS'])
 def get_group_members(group_id):
     """
@@ -156,6 +155,16 @@ def get_group_permit(leader_id):
     assert leader_id == request.view_args['leader_id']
     return data_store.get_group_permit(leader_id)
 
+@app.route('/schedule/<user_id>', methods=['GET', 'OPTIONS'])
+def check_schedule(user_id):
+    """
+    Returns whether the given user has any schedule blocks
+    :param user_id:
+    :return:
+    """
+    assert user_id == request.view_args['user_id']
+    return data_store.validate_no_schedule(user_id)
+
 
 ##POST Endpoints
 @app.route('/users/etransfer', methods=['POST'])
@@ -165,12 +174,14 @@ def etransfer_image():
     """
     #assert formData == request.form
     print(request.data)
-    imageUrl = request.data['proofImageUrl']#need to correct
-    userid = request.form['userid']
-
-    return data_store.upload_etransfer_image(imageUrl, userid)
+    json_data = request.get_json()
+    print(json_data)
+    imageUrl = json_data["proofImageUrl"]#need to correct
+    userid = json_data['userId']
+    response = data_store.upload_etransfer_image(imageUrl, userid)
+    return jsonify(response)
 
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run()
