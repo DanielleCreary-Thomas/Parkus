@@ -8,19 +8,18 @@ import {useNavigate} from "react-router-dom";
 
 
 function SpotSharing() {
-    let content;
     const navigate = useNavigate();
 
     const [availableGroups, setAvailableGroups] = useState(false);
     const [completedSchedule, setCompletedSchedule] = useState(false);
     const [notMemberOfGroup, setNotMemberOfGroup] = useState(false);
 
-
-
     async function handleMatchmakeClick() {
         const currUser = await getCurrUser();
-        setAvailableGroups( await matchmake(currUser).then(data => data.availableGroups))
-        console.log(availableGroups)
+        if (currUser) {
+            setAvailableGroups( await matchmake(currUser).then(data => data.availableGroups))
+            console.log(availableGroups)
+        }
     }
 
     function handleGroupClick(id){
