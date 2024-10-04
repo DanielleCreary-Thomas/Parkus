@@ -146,7 +146,7 @@ def get_group_permit(leader_id):
     return data_store.get_group_permit(leader_id)
 
 # POST Endpoints
-
+#Rameez didnt work on this function
 @app.route('/users/etransfer', methods=['POST'])
 def etransfer_image():
     """Uploads a user's eTransfer image"""
