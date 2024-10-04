@@ -11,14 +11,22 @@ export async function matchmake(id) {
 }
 
 export async function getCurrUser(){
-    var data = await supabase.auth.getUser()
+    const data = await supabase.auth.getUser()
         .catch(error => {
-            console.log('Error fetching authenticated user:',error);
+            console.log('Error fetching authenticated user:', error);
             return -1
         });
-
     console.log(data.data.user.id);
     return data.data.user.id;
+}
+
+export async function checkScheduleCompleted(userid){
+    var data = await fetch(`http://127.0.0.1:5000/schedule/${userid}`,
+        { method: "GET" })
+        .then(response => response.json())
+        .then(data => data)
+        .catch(error => console.log(error));
+    return data;
 }
 
 //Payment
@@ -32,23 +40,24 @@ export async function uploadETransfer(formData){
     var proofImageUrl = formData.get('proofImageUrl');
     var userId = formData.get('userid')
     console.log("uploading image URL", proofImageUrl)
+    let body = {
+        "userId" : userId,
+        "proofImageUrl" : proofImageUrl
+    }
+    body = JSON.stringify(body);
 
     var data = await fetch(`http://127.0.0.1:5000/users/etransfer`,
     {
         method: 'POST',
-        body: JSON.stringify({proofImageUrl:proofImageUrl, userId:userId})
-    })
-    .then((response) => console.log(response))
-    .then((data) => {
-        // Handle success
-        console.log('Upload successful', data);
-        alert('Proof of eTransfer uploaded successfully!');
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: body
         })
-    .catch((error) => {
-        // Handle error
-        console.error('Error uploading image', error);
-        alert('There was an error uploading your proof. Please try again.');
-    })
+        .then((response) => response.json())
+        .then((data) => data)
+        .catch((error) => console.log(error));
+    return data;
 }
 
 //Profile
@@ -107,6 +116,7 @@ export async function getGroupId(user_id){
     return data['groupid'];
 
 }
+
 
 export async function getGroupMembers(groupId){
     /**
