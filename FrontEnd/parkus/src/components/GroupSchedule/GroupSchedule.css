@@ -1,0 +1,72 @@
+/* GroupSchedule.css */
+
+* {
+    box-sizing: border-box;
+}
+
+.schedule-grid {
+    display: flex;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+}
+
+.time-column, .day-column {
+    flex: 1;
+}
+
+.time-column {
+    flex: 0 0 auto;
+    width: 80px;
+}
+
+.time-header, .day-header {
+    background-color: #e0e0e0;
+    padding: 0;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    font-weight: bold;
+    border-bottom: 1px solid #ccc;
+}
+
+.time-slot {
+    padding: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #ccc;
+}
+
+.day-column {
+    border-left: 1px solid #ccc;
+}
+
+.day-content {
+    position: relative;
+    height: 960px;
+}
+
+.schedule-block {
+    position: absolute;
+    left: 5px;
+    right: 5px;
+    overflow: hidden;
+    padding: 5px;
+    font-size: 0.8em;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+
+.block-title {
+    font-weight: bold;
+}
+
+.block-time {
+    font-size: 0.9em;
+}
+
+.user-schedule-block {
+    filter: brightness(85%);
+    border: 2px solid #000;
+}

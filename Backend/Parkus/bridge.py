@@ -40,7 +40,24 @@ CONNECTION_STRING = "user=postgres.rtneojaduhodjxqmymlq password=NyidWTNcMUDH8Pn
 #     group_data = cur.fetchall()
 #     return group_data
 
-# def get_all_users()
+# def groups_with_vacancies():
+#     """
+#     Returns the group IDs of groups with less than 5 members
+#     :return: a list of tuples with groupids at 0 and their member count at 1
+#     """
+#     with conn.cursor() as cur:
+#         cur.execute('''
+#         SELECT COUNT(u.userid) as members, g.groupid
+#         FROM parking_groups g
+#         INNER JOIN users u ON u.groupid = g.groupid
+#         GROUP BY g.groupid
+#         HAVING COUNT(u.userid) < 5
+#         ORDER BY g.groupid;
+#         ''')
+#         groups_and_memebers = cur.fetchall()
+#         return groups_and_memebers
+
+
 def member_userid_for_group(groupid):
     """
     Returns the user id of each member of thr group with selected group id
@@ -182,7 +199,7 @@ def schedule_blocks_for_user(userid):
     """
     response = (
         supabase.table("schedule_blocks")
-            .select("scheduleid", "dow", "start_time", "end_time")
+            .select("scheduleid", "dow", "start_time", "end_time", "description")
             .eq("userid", userid)
             .order("dow")
             .execute()
@@ -335,7 +352,6 @@ def get_group_permit(leaderid):
     return response.data[0]
 
 
-
 def upload_etransfer_image(imageUrl, userid):
     """
     Updates the given user's eTransfer Proof image url
@@ -351,6 +367,20 @@ def upload_etransfer_image(imageUrl, userid):
     )
     return len(response.data[0]) > 0
 
+
+def check_schedule_complete(userid):
+    """
+    Checks if the given user has a schedule
+    :param userid:
+    :return:
+    """
+    response = (
+        supabase.table("users")
+        .select("scheduleid")
+        .eq("userid", userid)
+        .execute()
+    )
+    return len(response.data) > 0
 
 """
 Validation functions
@@ -444,6 +474,57 @@ def insert_parking_permit(user_id, permit_number, active_status, permit_type, ac
         "campus_location": campus_location,
     }).execute()
     return response.data is not None and len(response.data) > 0
+
+def fetch_users_by_groupid(group_id):
+    """Fetch users belonging to a specific group."""
+    response = (
+        supabase.table("users")
+        .select("*")
+        .eq("groupid", group_id)
+        .execute()
+    )
+    return response.data if response.data else None
+
+def fetch_schedule_blocks_by_userids(user_ids):
+    """Fetch schedule blocks for multiple users."""
+    response = (
+        supabase.table("schedule_blocks")
+        .select("*")
+        .in_("userid", user_ids)
+        .execute()
+    )
+    return response.data if response.data else None
+
+def fetch_schedule_blocks_by_userid(user_id):
+    """Fetch schedule blocks for a single user."""
+    response = (
+        supabase.table("schedule_blocks")
+        .select("*")
+        .eq("userid", user_id)
+        .execute()
+    )
+    return response.data if response.data else None
+
+
+#this is not by Rameez, but Danielle instead I think
+def validate_userid(userid):
+    response = (
+        supabase.table("users")
+        .select("*")
+        .eq("userid", userid)
+        .execute()
+    )
+    return len(response.data) > 0
+
+def upload_etransfer_image(imageUrl, userid):
+    """Updates the given user's eTransfer proof image URL."""
+    response = (
+        supabase.table("users")
+        .update({"image_proof_url": imageUrl})
+        .eq("userid", userid)
+        .execute()
+    )
+    return len(response.data) > 0
 
 def fetch_parking_permits_by_userid(user_id):
     """Fetches all parking permits for a given user ID from the Supabase database."""
@@ -572,3 +653,18 @@ if __name__ == "__main__":
     # print(groups_with_vacancies())
 
 
+def check_fully_paid(groupid):
+    """
+    Checks if the group with the given groupid has fully paid or not.
+    :param groupid: the group's id
+    :return: True if fully_paid is False, else False
+    """
+    response = (
+        supabase.table("parking_groups")
+        .select("fully_paid")
+        .eq("groupid", groupid)
+        .execute()
+    )
+    if response.data:
+        return not response.data[0]['fully_paid']  # Return True if fully_paid is False
+    return False

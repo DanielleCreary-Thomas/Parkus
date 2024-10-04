@@ -1,94 +1,69 @@
-import {Avatar, Box, Button, Card, CardActions, CardContent, CardHeader, Chip, Stack, Typography} from "@mui/material";
+// MatchmakingGroups.jsx
 
-class user {
-    id:number
-    groupID:number
-    firstName:string
-    lastName:string
-    studentID:number
-    phoneNumber:string
-    licensePlateNumber:string
-    email:string
-    password:string
-}
-export type GroupMetaData = {
-    id:number,
-    members:user[],
-}
-export default function MatchmakingGroups({data}){
-    console.log(data)
+import React from 'react';
+import { Avatar, Box, Button, Card, CardActions, CardContent, CardHeader, Chip, Stack } from "@mui/material";
 
-    const GroupCard = ({groupData, handleGroupClick})=>{
+export default function MatchmakingGroups({ data, handleGroupClick }) {
+    const GroupCard = ({ groupData }) => {
         const MembersList = () => {
-            console.log(groupData.members)
-            if (groupData.members.length === 0){return}
+            if (groupData.members.length === 0) { return null; }
             return groupData.members.map(member => (
-                <Chip avatar={<Avatar sx={{bgcolor:"#A7C957"}}>{member.name[0]}</Avatar>}
-                      label={member.name}
-                      key={member.user_id}
-                      sx={{
-                          width:"50",
-                          marginLeft:"10px"
-                      }}
+                <Chip
+                    avatar={<Avatar sx={{ bgcolor: "#A7C957" }}>{member.name[0]}</Avatar>}
+                    label={member.name}
+                    key={member.user_id}
+                    sx={{ width: "50", marginLeft: "10px" }}
                 />
-
-            ))
-        }
-
+            ));
+        };
 
         return (
             <Card
                 sx={{
-                    borderRadius:"20px",
-                    backgroundColor:"#C0D7D8",
-                    margin:"2rem"
+                    borderRadius: "20px",
+                    backgroundColor: "#C0D7D8",
+                    margin: "2rem"
                 }}
                 key={groupData.group_id}
             >
                 <CardHeader
                     title={"Group #: " + groupData.group_id}
-                    titleTypographyProps={{variant:'h3', fontFamily:"Orelega One"}}
-                >
-                    <Typography variant={"h3"} fontFamily={"Orelega One"}>
-                        {"Group #: " + groupData.group_id}</Typography>
-                </CardHeader>
+                    titleTypographyProps={{ variant: 'h3', fontFamily: "Orelega One" }}
+                />
                 <CardContent>
-                    <MembersList/>
-
+                    <MembersList />
                 </CardContent>
                 <CardActions>
                     <Button
                         sx={{
                             fontFamily: "Orelega One",
-                            // fontWeight:"Bold",
-                            fontSize:"20px",
-                            height:"30px",
+                            fontSize: "20px",
+                            height: "30px",
                             backgroundColor: "#1D3557",
                             color: "#FFFFFF",
-                            borderRadius:"20px"
+                            borderRadius: "20px"
                         }}
-                        onClick={()=>(handleGroupClick(groupData.group_id))}
-                    >View</Button>
+                        onClick={() => handleGroupClick(groupData.group_id)}
+                    >
+                        View
+                    </Button>
                 </CardActions>
             </Card>
-        )
-    }
+        );
+    };
 
     const GroupsList = () => {
-        if (!data){
-            return
-        }
+        if (!data) { return null; }
         return data.map(group => (
             <Box key={group.group_id}>
-                <GroupCard groupData={group}></GroupCard>
+                <GroupCard groupData={group} />
             </Box>
+        ));
+    };
 
-        ))
-    }
-
-    return(
+    return (
         <Stack>
-            <GroupsList></GroupsList>
+            <GroupsList />
         </Stack>
-    )
+    );
 }
