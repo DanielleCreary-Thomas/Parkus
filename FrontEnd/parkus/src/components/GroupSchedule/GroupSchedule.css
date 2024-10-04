@@ -1,6 +1,5 @@
 /* GroupSchedule.css */
 
-/* Apply border-box to include padding and borders within height and width */
 * {
     box-sizing: border-box;
 }
@@ -32,7 +31,7 @@
 
 .time-slot {
     padding: 0;
-    height: 60px; /* Match this with heightPerHour */
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -45,7 +44,7 @@
 
 .day-content {
     position: relative;
-    height: 960px; /* 16 hours * 60px per hour */
+    height: 960px;
 }
 
 .schedule-block {
@@ -56,7 +55,6 @@
     padding: 5px;
     font-size: 0.8em;
     border-radius: 4px;
-    /* No need to set background-color here; it will be set inline */
     box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 }
 
@@ -68,10 +66,7 @@
     font-size: 0.9em;
 }
 
-/* Styles for user's own schedule blocks */
 .user-schedule-block {
-    /* Make the block stand out */
-    filter: brightness(85%); /* Make color stronger */
-    border: 2px solid #000;  /* Add a black border */
-    /* You can also adjust other properties like font-weight or add a shadow */
+    filter: brightness(85%);
+    border: 2px solid #000;
 }
