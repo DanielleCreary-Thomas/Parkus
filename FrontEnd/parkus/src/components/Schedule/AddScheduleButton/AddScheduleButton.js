@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, Stack, TextField, MenuItem, Typography } from "@mui/material";
+import { Select, InputLabel, FormControl, Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, Stack, TextField, MenuItem, Typography } from "@mui/material";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { supabase } from '../../../utils/supabase.ts';
@@ -221,16 +221,20 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                                     style: { paddingTop: '0.5rem', fontSize: '1rem' }
                                 }}
                             />
-                            <TextField
-                                label="Day of the Week"
-                                fullWidth
-                                variant="outlined"
-                                value={dayOfWeek}
-                                onChange={(e) => setDayOfWeek(e.target.value)}
-                                InputLabelProps={{
-                                    style: { paddingTop: '0.5rem', fontSize: '1rem' }
-                                }}
-                            />
+                            <FormControl fullWidth variant="outlined">
+                                <InputLabel style={{ paddingTop: '0.5rem', fontSize: '1rem' }}>Day of the Week</InputLabel>
+                                <Select
+                                    value={dayOfWeek}
+                                    onChange={(e) => setDayOfWeek(e.target.value)}
+                                    label="Day of the Week"
+                                >
+                                    <MenuItem value={"Monday"}>Monday</MenuItem>
+                                    <MenuItem value={"Tuesday"}>Tuesday</MenuItem>
+                                    <MenuItem value={"Wednesday"}>Wednesday</MenuItem>
+                                    <MenuItem value={"Thursday"}>Thursday</MenuItem>
+                                    <MenuItem value={"Friday"}>Friday</MenuItem>
+                                </Select>
+                            </FormControl>
                             <TextField
                                 label="Start Time"
                                 fullWidth
@@ -331,16 +335,20 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                                     style: { paddingTop: '0.5rem', fontSize: '1rem' }
                                 }}
                             />
-                            <TextField
-                                label="Day of the Week"
-                                fullWidth
-                                variant="outlined"
-                                value={dayOfWeek}
-                                onChange={(e) => setDayOfWeek(e.target.value)}
-                                InputLabelProps={{
-                                    style: { paddingTop: '0.5rem', fontSize: '1rem' }
-                                }}
-                            />
+                            <FormControl fullWidth variant="outlined">
+                                <InputLabel style={{ paddingTop: '0.5rem', fontSize: '1rem' }}>Day of the Week</InputLabel>
+                                <Select
+                                    value={dayOfWeek}
+                                    onChange={(e) => setDayOfWeek(e.target.value)}
+                                    label="Day of the Week"
+                                >
+                                    <MenuItem value={"Monday"}>Monday</MenuItem>
+                                    <MenuItem value={"Tuesday"}>Tuesday</MenuItem>
+                                    <MenuItem value={"Wednesday"}>Wednesday</MenuItem>
+                                    <MenuItem value={"Thursday"}>Thursday</MenuItem>
+                                    <MenuItem value={"Friday"}>Friday</MenuItem>
+                                </Select>
+                            </FormControl>
                             <TextField
                                 label="Start Time"
                                 fullWidth

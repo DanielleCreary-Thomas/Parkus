@@ -1,14 +1,14 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 
-function ScheduleTitle() {
+function ProfileTitle() {
     return (
         <Box
-            className={"scheduleTitle"}
+            className={"profileTitle"}
             bgcolor={"#FFFFFF"}
             sx={{
-                width: "90%", // Match the width of the parent container (timetable)
-                maxWidth: "75rem", // Set the same maxWidth as the timetable
+                width: "90%", 
+                maxWidth: "75rem", 
                 border: "3px solid black",
                 borderRadius: 7,
                 alignItems: "center",
@@ -17,9 +17,9 @@ function ScheduleTitle() {
                 margin: "2rem auto", // Center horizontally
             }}
         >
-            <Typography variant="h3" fontFamily={"Orelega One"}>Schedule</Typography>
+            <Typography variant="h3" fontFamily={"Orelega One"}>Profile</Typography>
         </Box>
     );
 }
 
-export default ScheduleTitle;
+export default ProfileTitle;

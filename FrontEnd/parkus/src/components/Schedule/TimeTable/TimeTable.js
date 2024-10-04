@@ -210,13 +210,23 @@ const TimeTable = () => {
 
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center', margin: '2rem' }}>
-            <TableContainer component={Paper} sx={{ maxWidth: '75rem' }}>
+            <TableContainer
+                component={Paper}
+                sx={{ width:'95%' ,maxWidth: '75rem', borderRadius: '30px', overflow: 'hidden' }} // Apply borderRadius and overflow
+            >
                 <Table aria-label="simple table">
                     <TableHead>
                         <TableRow>
-                            <TableCell className="header-cell">Time</TableCell>
-                            {Object.keys(daysOfWeek).map(day => (
-                                <TableCell key={daysOfWeek[day]} align="center" className="header-cell">
+                            <TableCell className="header-cell" sx={{ borderTopLeftRadius: '30px' }}>Time</TableCell> {/* Add border radius for first header cell */}
+                            {Object.keys(daysOfWeek).map((day, index, arr) => (
+                                <TableCell
+                                    key={daysOfWeek[day]}
+                                    align="center"
+                                    className="header-cell"
+                                    sx={{
+                                        ...(index === arr.length - 1 && { borderTopRightRadius: '30px' }) // Add border radius for last header cell
+                                    }}
+                                >
                                     {day}
                                 </TableCell>
                             ))}
@@ -234,7 +244,7 @@ const TimeTable = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
-
+    
             {selectedCell && (
                 <AddScheduleButton
                     onSave={handleSaveTimeBlock}
@@ -251,6 +261,7 @@ const TimeTable = () => {
             )}
         </Box>
     );
+    
 };
 
 export default TimeTable;
