@@ -177,3 +177,28 @@ export async function getGroupPermit(leaderid){
 }
 
 
+ 
+export async function fetchGroupMembersSchedules(groupId) {
+    /**
+     * Fetches schedules for all members in a given group by groupId
+     */
+    var data = await fetch(`http://127.0.0.1:5000/groups/${groupId}/schedules`, 
+        { method: "GET" })
+        .then(response => response.json())
+        .then(data => data)
+        .catch(error => console.log('Error fetching group schedules:', error));
+    
+    return data;
+}
+
+
+export async function checkGroupFullyPaid(groupId) {
+    var data = await fetch(`http://127.0.0.1:5000/groups/${groupId}/fully_paid`, 
+        { method: 'GET' })
+        .then(response => response.json())
+        .then(data => data)
+        .catch(error => console.log(error));
+    return data;
+  }
+  
+

@@ -227,6 +227,29 @@ def upload_etransfer_image(imageUrl, userid):
         return result
     return None
 
+
+
+def get_schedule_for_user(userid):
+    """
+    Returns the schedule blocks for the given user
+    :param userid: the user's id
+    :return: list of schedule blocks
+    """
+    return bridge.schedule_blocks_for_user(userid)
+
+
+
+def group_is_not_fully_paid(groupid):
+    """
+    Wrapper function to check if the group has not fully paid.
+    :param groupid: the group's id
+    :return: True if not fully paid, False otherwise
+    """
+    return bridge.check_fully_paid(groupid)
+
+
+
+
 if __name__ == '__main__':
     ##Test get members
     members = get_group_members('44966fd0-2c0f-416d-baf8-80bfeb4ba075')
