@@ -1,5 +1,3 @@
-// GroupSchedule.jsx
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabase.ts';
 import { Box, Typography } from '@mui/material';

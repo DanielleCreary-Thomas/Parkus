@@ -475,8 +475,8 @@ def fetch_schedule_blocks_by_userid(user_id):
     )
     return response.data if response.data else None
 
-# Other functions from your existing bridge.py...
 
+#this is not by Rameez, but Danielle instead I think
 def validate_userid(userid):
     response = (
         supabase.table("users")

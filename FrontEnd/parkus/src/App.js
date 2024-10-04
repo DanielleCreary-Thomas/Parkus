@@ -1,38 +1,65 @@
-// App.js
-
 import './App.css';
 import { Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import LandingPage from './pages/LandingPage';
-import UpdateSchedule from "./pages/UpdateSchedule";
+import Schedule from "./pages/Schedule";
 import SpotSharing from "./pages/SpotSharing";
 import Payment from "./pages/Payment";
 import Profile from "./pages/Profile";
-import Layout from './components/Layout';
-import Group from './pages/Group';
+import Group from "./pages/Group"
+import Layout from './components/Layout'; // Layout component with navbar
+import ProtectedRoute from './components/ProtectedRoute/protectedRoute'; // Import ProtectedRoute
+
 import GroupSchedule from './components/GroupSchedule/GroupSchedule';
 
 function App() {
     return (
         <div>
             <Routes>
-                {/* Landing page route */}
+                {/* Public routes */}
                 <Route path="/" element={<LandingPage />} />
-                {/* Authentication pages */}
                 <Route path="/signin" element={<SignIn />} />
                 <Route path="/signup" element={<SignUp />} />
 
-                {/* Routes that require Navbar (authenticated routes) */}
+                {/* Protected routes with Navbar */}
                 <Route element={<Layout />}>
-                    <Route path="/home" element={<Home />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/updateSchedule" element={<UpdateSchedule />} />
-                    <Route path="/spotSharing" element={<SpotSharing />} />
-                    <Route path="/payment" element={<Payment />} />
-                    <Route path="/group" element={<Group />} />
-                    <Route path="/group-schedule/:groupId" element={<GroupSchedule />} />
+                    <Route path="/home" element={
+                        <ProtectedRoute>
+                            <Home />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/profile" element={
+                        <ProtectedRoute>
+                            <Profile />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/schedule" element={
+                        <ProtectedRoute>
+                            <Schedule />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/spotSharing" element={
+                        <ProtectedRoute>
+                            <SpotSharing />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/payment" element={
+                        <ProtectedRoute>
+                            <Payment />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/group" element={
+                        <ProtectedRoute>
+                            <Group />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/group-schedule/:groupId" element={
+                        <ProtectedRoute>
+                            <GroupSchedule />
+                        </ProtectedRoute>
+                    } />
                 </Route>
             </Routes>
         </div>
