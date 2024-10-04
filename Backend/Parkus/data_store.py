@@ -238,21 +238,27 @@ def check_schedule_complete(userid):
         result = bridge.check_schedule_complete(userid)
         return {'scheduleComplete': True} if result else {'scheduleComplete': False}
 
-if __name__ == '__main__':
-    ##Test get members
-    members = get_group_members('44966fd0-2c0f-416d-baf8-80bfeb4ba075')
-    for member in members:
-        print(member)
 
-    groups = complete_matchmaking('7ce19f4c-9d60-4539-8217-cfb3967f99ca')
-    # test = groups['members'][0]['schedule'][0]['start_time']
-    for group in groups:
-        print(group)
+def get_schedule_for_user(userid):
+    """
+    Returns the schedule blocks for the given user
+    :param userid: the user's id
+    :return: list of schedule blocks
+    """
+    return bridge.schedule_blocks_for_user(userid)
 
+
+
+def group_is_not_fully_paid(groupid):
+    """
+    Wrapper function to check if the group has not fully paid.
+    :param groupid: the group's id
+    :return: True if not fully paid, False otherwise
+    """
+    return bridge.check_fully_paid(groupid)
 
 
 # data_store.py
-
 def get_user_by_id(user_id):
     """Wrapper function to fetch user data."""
     return bridge.fetch_user_by_userid(user_id)
@@ -268,3 +274,18 @@ def add_parking_permit(user_id, permit_number, active_status, permit_type, activ
 def get_parking_permits_by_userid(user_id):
     """Wrapper function to fetch all parking permits for a given user ID."""
     return bridge.fetch_parking_permits_by_userid(user_id)
+
+
+if __name__ == '__main__':
+    ##Test get members
+    members = get_group_members('44966fd0-2c0f-416d-baf8-80bfeb4ba075')
+    for member in members:
+        print(member)
+
+    groups = complete_matchmaking('7ce19f4c-9d60-4539-8217-cfb3967f99ca')
+    # test = groups['members'][0]['schedule'][0]['start_time']
+    for group in groups:
+        print(group)
+
+
+

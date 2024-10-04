@@ -199,7 +199,7 @@ def schedule_blocks_for_user(userid):
     """
     response = (
         supabase.table("schedule_blocks")
-            .select("scheduleid", "dow", "start_time", "end_time")
+            .select("scheduleid", "dow", "start_time", "end_time", "description")
             .eq("userid", userid)
             .order("dow")
             .execute()
@@ -475,6 +475,57 @@ def insert_parking_permit(user_id, permit_number, active_status, permit_type, ac
     }).execute()
     return response.data is not None and len(response.data) > 0
 
+def fetch_users_by_groupid(group_id):
+    """Fetch users belonging to a specific group."""
+    response = (
+        supabase.table("users")
+        .select("*")
+        .eq("groupid", group_id)
+        .execute()
+    )
+    return response.data if response.data else None
+
+def fetch_schedule_blocks_by_userids(user_ids):
+    """Fetch schedule blocks for multiple users."""
+    response = (
+        supabase.table("schedule_blocks")
+        .select("*")
+        .in_("userid", user_ids)
+        .execute()
+    )
+    return response.data if response.data else None
+
+def fetch_schedule_blocks_by_userid(user_id):
+    """Fetch schedule blocks for a single user."""
+    response = (
+        supabase.table("schedule_blocks")
+        .select("*")
+        .eq("userid", user_id)
+        .execute()
+    )
+    return response.data if response.data else None
+
+
+#this is not by Rameez, but Danielle instead I think
+def validate_userid(userid):
+    response = (
+        supabase.table("users")
+        .select("*")
+        .eq("userid", userid)
+        .execute()
+    )
+    return len(response.data) > 0
+
+def upload_etransfer_image(imageUrl, userid):
+    """Updates the given user's eTransfer proof image URL."""
+    response = (
+        supabase.table("users")
+        .update({"image_proof_url": imageUrl})
+        .eq("userid", userid)
+        .execute()
+    )
+    return len(response.data) > 0
+
 def fetch_parking_permits_by_userid(user_id):
     """Fetches all parking permits for a given user ID from the Supabase database."""
     response = (
@@ -520,3 +571,18 @@ if __name__ == "__main__":
     # print(groups_with_vacancies())
 
 
+def check_fully_paid(groupid):
+    """
+    Checks if the group with the given groupid has fully paid or not.
+    :param groupid: the group's id
+    :return: True if fully_paid is False, else False
+    """
+    response = (
+        supabase.table("parking_groups")
+        .select("fully_paid")
+        .eq("groupid", groupid)
+        .execute()
+    )
+    if response.data:
+        return not response.data[0]['fully_paid']  # Return True if fully_paid is False
+    return False

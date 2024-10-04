@@ -5,13 +5,46 @@ import flask
 from flask import jsonify, render_template, send_from_directory
 from flask import Flask, request
 from flask_cors import CORS
-
+# Shouldn't have the bridge import in main
+import bridge
 
 app = Flask(__name__)
-CORS(app)
-
+# Should only be line below
+# CORS(app)
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
 
 # GET Endpoints
+
+
+@app.route('/groups/<group_id>/schedules', methods=['GET', 'OPTIONS'])
+def get_group_schedules(group_id):
+    """
+    Returns the schedules for all members in the group with the matching id
+    :param group_id: group id
+    :return: JSON with the schedules for each member, including first and last names
+    """
+    assert group_id == request.view_args['group_id']
+
+    members = data_store.get_group_members(group_id)  # Fetch all members of the group
+    schedules = []
+
+    # For each member, fetch their schedule and add their name
+    for member in members:
+        user_schedule = data_store.get_schedule_for_user(member['userid'])
+        for block in user_schedule:
+            schedules.append({
+                'user_id': member['userid'],
+                'first_name': member['first_name'],
+                'last_name': member['last_name'],
+                'schedule_id': block['scheduleid'],
+                'dow': block['dow'],
+                'start_time': block['start_time'],
+                'end_time': block['end_time'],
+                'description': block.get('description', '')  # Include description if available
+            })
+
+    return jsonify(schedules), 200
+
 
 @app.route('/groups/<id>', methods=['GET', 'OPTIONS'])
 def group(id):
@@ -34,7 +67,6 @@ def matchmake(id):
     :param id: given userID
     :return: the groups that match the user's schedule
     """
-    # test = request.args.get('id')
     assert id == request.view_args['id']
     if data_store.validate_no_group(id):
         returnData = {
@@ -53,12 +85,14 @@ def get_user(user_id):
         return jsonify(user)
     else:
         return jsonify({"error": "User not found"}), 404
-    
+
+
 @app.route('/parking-permit/<user_id>', methods=['GET'])
 def check_user_parking_permit(user_id):
     """API endpoint to check if the user has a parking permit."""
     has_permit = data_store.user_has_parking_permit(user_id)
     return jsonify({"has_permit": has_permit})
+
 
 @app.route('/parking-permit', methods=['POST'])
 def add_parking_permit():
@@ -77,7 +111,8 @@ def add_parking_permit():
         return jsonify({"message": "Permit added successfully"}), 201
     else:
         return jsonify({"error": "Failed to add permit"}), 400
-    
+
+
 @app.route('/parking-permits/<user_id>', methods=['GET'])
 def get_user_permits(user_id):
     """API endpoint to fetch all parking permits for a given user ID."""
@@ -92,7 +127,7 @@ def get_user_permits(user_id):
 def get_group_leader(group_id):
     """
     Returns the userid for the leader of a given group
-    :param groupid: the given group's id'
+    :param groupid: the given group's id
     :return: the userid for the group leader
     """
     assert group_id == request.view_args['group_id']
@@ -111,6 +146,7 @@ def get_group_id(user_id):
         return data_store.get_group_id(user_id)
     return {'groupid': 'None'}
 
+
 @app.route('/users/group/<group_id>', methods=['GET', 'OPTIONS'])
 def get_group_members(group_id):
     """
@@ -126,9 +162,9 @@ def get_group_members(group_id):
 @app.route('/users/paid/<user_id>', methods=['GET', 'OPTIONS'])
 def check_paid_member(user_id):
     """
-        Returns whether the given user has paid the group leader
-        :param id: the user's id
-        :return: Boolean value indicating whether the user is paid or not
+    Returns whether the given user has paid the group leader
+    :param id: the user's id
+    :return: Boolean value indicating whether the user is paid or not
     """
     assert user_id == request.view_args['user_id']
     return data_store.check_paid_member(user_id)
@@ -180,6 +216,56 @@ def etransfer_image():
     userid = json_data['userId']
     response = data_store.upload_etransfer_image(imageUrl, userid)
     return jsonify(response)
+
+
+# Update the '/group-schedule' endpoint to handle OPTIONS requests and configure CORS
+@app.route('/group-schedule', methods=['POST', 'OPTIONS'])
+@cross_origin()
+def get_group_schedule():
+    if request.method == 'OPTIONS':
+        # Build a response object for the OPTIONS preflight request
+        response = make_response()
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
+        response.headers.add("Access-Control-Allow-Methods", "POST,OPTIONS")
+        return response, 200
+
+    data = request.json
+    group_id = data.get('group_id')
+    user_id = data.get('user_id')
+
+    if not group_id or not user_id:
+        return jsonify({"error": "Missing group_id or user_id"}), 400
+
+    users_data = bridge.fetch_users_by_groupid(group_id)
+    if not users_data:
+        return jsonify({"error": "Failed to fetch users."}), 500
+
+    user_ids = [user['userid'] for user in users_data]
+
+    group_schedule_data = bridge.fetch_schedule_blocks_by_userids(user_ids)
+    if group_schedule_data is None:
+        return jsonify({"error": "Failed to fetch group schedule blocks."}), 500
+
+    user_schedule_data = bridge.fetch_schedule_blocks_by_userid(user_id)
+    if user_schedule_data is None:
+        return jsonify({"error": "Failed to fetch user schedule."}), 500
+
+    return jsonify({
+        "users": users_data,
+        "group_schedule": group_schedule_data,
+        "user_schedule": user_schedule_data
+    }), 200
+
+@app.route('/groups/<group_id>/fully_paid', methods=['GET'])
+def check_group_fully_paid(group_id):
+    """
+    Returns whether the given group has fully paid or not.
+    :param group_id: the group's id
+    :return: JSON with True if fully_paid is False, otherwise False
+    """
+    result = data_store.group_is_not_fully_paid(group_id)
+    return jsonify({"show_notification": result}), 200
 
 
 
