@@ -1,59 +1,106 @@
-import React, { useState } from 'react';
-import { Stack, Typography } from '@mui/material';
 import MatchmakingTitle from "../components/SpotSharing/Matchmaking/MatchmakingTitle/MatchmakingTitle";
+import {Stack, Typography} from "@mui/material";
 import MatchmakingGroups from "../components/SpotSharing/Matchmaking/MatchmakingGroup/MatchmakingGroups";
 import MatchmakingButton from "../components/SpotSharing/Matchmaking/MatchmakingButton/MatchmakingButton";
-import { useNavigate } from "react-router-dom";
-import { getCurrUser, matchmake } from "../services/requests";
+import {checkScheduleCompleted, getCurrUser, getGroupId, matchmake} from "../services/requests"
+import React, {useEffect, useState} from "react";
+import {useNavigate} from "react-router-dom";
+
 
 function SpotSharing() {
     const navigate = useNavigate();
-    const [data, setData] = useState(null);
+
+    const [availableGroups, setAvailableGroups] = useState(false);
+    const [completedSchedule, setCompletedSchedule] = useState(false);
+    const [notMemberOfGroup, setNotMemberOfGroup] = useState(false);
 
     async function handleMatchmakeClick() {
         const currUser = await getCurrUser();
         if (currUser) {
-            const matchData = await matchmake(currUser);
-            setData(matchData.availableGroups);
+            setAvailableGroups( await matchmake(currUser).then(data => data.availableGroups))
+            console.log(availableGroups)
         }
     }
 
-    function handleGroupClick(id) {
-        navigate(`/group-schedule/${id}`);
+    function handleGroupClick(id){
+        navigate(`/groups/${id}`);
     }
 
-    let content;
+    useEffect(() => {
+        async function init(){
 
-    if (data) {
-        if (data.length > 0) {
-            content = (
-                <Stack>
-                    <MatchmakingTitle />
-                    <MatchmakingButton handleMatchmakeClick={handleMatchmakeClick} />
-                    <MatchmakingGroups data={data} handleGroupClick={handleGroupClick} />
-                </Stack>
-            );
-        } else {
-            content = (
-                <Stack>
-                    <MatchmakingTitle />
-                    <MatchmakingButton handleMatchmakeClick={handleMatchmakeClick} />
-                    <Typography variant={"h3"} fontFamily={"Orelega One"}>
-                        You are already in a group!
-                    </Typography>
-                </Stack>
-            );
+            var userid = await getCurrUser();
+            console.log(userid);
+
+            var groupId = await getGroupId(userid);
+            console.log("spotsharing useEffect",groupId);
+
+            if(groupId === 'None'){
+                setNotMemberOfGroup(true)
+                console.log("member of group", notMemberOfGroup)
+            }
+
         }
-    } else {
-        content = (
-            <Stack>
-                <MatchmakingTitle />
-                <MatchmakingButton handleMatchmakeClick={handleMatchmakeClick} />
-            </Stack>
-        );
-    }
+        init();
+    }, []);
+    // async function checkInGroup(){
+    //     const userid = getCurrUser()
+    //     const groupid = getGroupId(userid)
+    //     if(groupid['groupid'] !== "None"){
+    //         setMemberOfGroup(true)
+    //     }
+    // }
 
-    return content;
+    useEffect(() => {
+        try {
+            const userid = getCurrUser()
+            const scheduleMade = checkScheduleCompleted(userid)
+            if(scheduleMade['scheduleMade'] !== "None"){
+                setCompletedSchedule(true)
+            }
+        }catch (e) {
+            console.error('Error fetching whether schedule complete:',e)
+        }
+
+    }, [completedSchedule]);
+
+
+    return (
+        <Stack>
+            <MatchmakingTitle></MatchmakingTitle>
+            {notMemberOfGroup ? (//check if they're a member of a group already
+                <section>
+                    {completedSchedule ? (//check if they have schedule blocks
+                        <section>
+                            {availableGroups ? (//matchmake completed
+                                <section>
+                                    <MatchmakingButton handleMatchmakeClick={handleMatchmakeClick}/>
+                                    <MatchmakingGroups data={availableGroups} handleGroupClick={handleGroupClick}></MatchmakingGroups>
+                                </section>
+                            ):(//matchmake hasn't been completed
+                                <section>
+                                    <MatchmakingButton handleMatchmakeClick={handleMatchmakeClick}/>
+                                </section>
+                            )}
+                        </section>
+                    ):(
+                        <section>
+                            <h1>Uh Oh!</h1>
+                            <h3> You haven't put in your schedule yet, to join a group head to the schedule tab</h3>
+                        </section>
+                    )}
+                </section>
+            ) : (
+                <section>
+                    <h1>Uh Oh!</h1>
+                    <h3> You are already in a group!</h3>
+                </section>
+            )}
+        </Stack>
+
+
+    )
+
 }
 
 export default SpotSharing;

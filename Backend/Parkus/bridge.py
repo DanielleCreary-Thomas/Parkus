@@ -40,7 +40,24 @@ CONNECTION_STRING = "user=postgres.rtneojaduhodjxqmymlq password=NyidWTNcMUDH8Pn
 #     group_data = cur.fetchall()
 #     return group_data
 
-# def get_all_users()
+# def groups_with_vacancies():
+#     """
+#     Returns the group IDs of groups with less than 5 members
+#     :return: a list of tuples with groupids at 0 and their member count at 1
+#     """
+#     with conn.cursor() as cur:
+#         cur.execute('''
+#         SELECT COUNT(u.userid) as members, g.groupid
+#         FROM parking_groups g
+#         INNER JOIN users u ON u.groupid = g.groupid
+#         GROUP BY g.groupid
+#         HAVING COUNT(u.userid) < 5
+#         ORDER BY g.groupid;
+#         ''')
+#         groups_and_memebers = cur.fetchall()
+#         return groups_and_memebers
+
+
 def member_userid_for_group(groupid):
     """
     Returns the user id of each member of thr group with selected group id
@@ -335,7 +352,6 @@ def get_group_permit(leaderid):
     return response.data[0]
 
 
-
 def upload_etransfer_image(imageUrl, userid):
     """
     Updates the given user's eTransfer Proof image url
@@ -351,6 +367,20 @@ def upload_etransfer_image(imageUrl, userid):
     )
     return len(response.data[0]) > 0
 
+
+def check_schedule_complete(userid):
+    """
+    Checks if the given user has a schedule
+    :param userid:
+    :return:
+    """
+    response = (
+        supabase.table("users")
+        .select("scheduleid")
+        .eq("userid", userid)
+        .execute()
+    )
+    return len(response.data) > 0
 
 """
 Validation functions
