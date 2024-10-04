@@ -3,6 +3,7 @@ import { Typography } from "@mui/material";
 import Navbar from "../components/SideNav/Navbar/Navbar";
 import { supabase } from '../utils/supabase.ts';
 
+
 function Home() {
     const [userData, setUserData] = useState(null); // State to store user data
     const [loading, setLoading] = useState(true);

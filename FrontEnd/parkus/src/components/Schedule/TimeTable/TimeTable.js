@@ -11,7 +11,8 @@ const timeSlots = [
     '19:00', '20:00', '21:00', '22:00'
 ];
 
-const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+// daysOfWeek is now an object mapping day names to their numeric representation
+const daysOfWeek = { 'Monday': '1', 'Tuesday': '2', 'Wednesday': '3', 'Thursday': '4', 'Friday': '5' };
 
 const TimeTable = () => {
     const [schedule, setSchedule] = useState({});
@@ -35,8 +36,10 @@ const TimeTable = () => {
 
         setUserId(session.user.id);
 
+        // Create an empty schedule object based on timeSlots and daysOfWeek
         const emptySchedule = timeSlots.reduce((acc, time) => {
-            acc[time] = daysOfWeek.reduce((week, day) => {
+            // Convert daysOfWeek object keys to an array
+            acc[time] = Object.keys(daysOfWeek).reduce((week, day) => {
                 week[day] = { text: '', isBooked: false };
                 return week;
             }, {});
@@ -59,10 +62,13 @@ const TimeTable = () => {
             const endHour = parseInt(end_time.split(':')[0], 10) - 1; // Adjust endHour to avoid overlapping issues
             const numSlots = (endHour - startHour) + 1; // Calculate the correct rowSpan
 
+            // Convert numeric dow back to day string
+            const dayString = Object.keys(daysOfWeek).find(key => daysOfWeek[key] === dow);
+
             for (let hour = startHour; hour <= endHour; hour++) {
                 const timeString = hour.toString().padStart(2, '0') + ':00';
                 if (hour === startHour) {
-                    emptySchedule[timeString][dow] = {
+                    emptySchedule[timeString][dayString] = {
                         text: description,
                         isBooked: true,
                         rowSpan: numSlots,
@@ -72,7 +78,7 @@ const TimeTable = () => {
                         endTime: formatTime(end_time)
                     };
                 } else {
-                    emptySchedule[timeString][dow] = {
+                    emptySchedule[timeString][dayString] = {
                         text: '',
                         isBooked: true,
                         hidden: true,
@@ -209,8 +215,8 @@ const TimeTable = () => {
                     <TableHead>
                         <TableRow>
                             <TableCell className="header-cell">Time</TableCell>
-                            {daysOfWeek.map(day => (
-                                <TableCell key={day} align="center" className="header-cell">
+                            {Object.keys(daysOfWeek).map(day => (
+                                <TableCell key={daysOfWeek[day]} align="center" className="header-cell">
                                     {day}
                                 </TableCell>
                             ))}
@@ -222,7 +228,7 @@ const TimeTable = () => {
                                 <TableCell component="th" scope="row" className="time-cell">
                                     {time}
                                 </TableCell>
-                                {daysOfWeek.map(day => getTimeSlotRow(time, day))}
+                                {Object.keys(daysOfWeek).map(day => getTimeSlotRow(time, day))}
                             </TableRow>
                         ))}
                     </TableBody>
