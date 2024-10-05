@@ -306,7 +306,7 @@ def get_car_info(platenum):
     )
     return response.data[0]
 
-def paid_member(userid):
+def check_paid_member(userid):
     """
     Checks if the given user is paid
     :param userid: given user's id
@@ -319,6 +319,22 @@ def paid_member(userid):
         .execute()
     )
     return len(response.data) > 0
+
+
+def group_fully_paid(groupid, fully_paid):
+    """
+    Sets that the given group is fully paid
+    :param groupid: the given group's id
+    :param fully_paid: true if every member is fully paid, false otherwise
+    :return:
+    """
+    response =(
+        supabase.table("parking_groups")
+        .update({"fully_paid": fully_paid})
+        .eq("groupid", groupid)
+        .execute()
+    )
+    return response.data[0]
 
 
 def get_group_member(userid):

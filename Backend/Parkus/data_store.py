@@ -173,7 +173,7 @@ def check_paid_member(userid):
     :return:
     """
     if bridge.validate_userid(userid):
-        return check_paid_member(userid)
+        return bridge.check_paid_member(userid)
 
 
 def get_group_member(userid):
@@ -228,14 +228,33 @@ def validate_no_group(userid):
     return result is not None
 
 
-def upload_etransfer_image(imageUrl, userid):
+def upload_etransfer_image(image_url, userid):
+    """
+    Updates the image_proof_url for the given user, updates their group's fully_paid field
+    :param image_url: url of the image bucket url
+    :param userid:
+    :return:
+    """
     if bridge.validate_userid(userid):
-        result = bridge.upload_etransfer_image(imageUrl, userid)
+        groupid = bridge.get_group_id(userid)
+        group_members = bridge.get_group_members(groupid)
+        fully_paid = False
+        count = 0
+        for group_member in group_members:
+            if check_paid_member(group_member['userid']):
+                count += 1
+        bridge.group_fully_paid(groupid, (count == len(group_members)))
+        result = bridge.upload_etransfer_image(image_url, userid)
         return {"urlUploaded": result}
     return None
 
 
 def check_schedule_complete(userid):
+    """
+    Checks to see if the given user has any schedule blocks
+    :param userid:
+    :return:
+    """
     if bridge.validate_userid(userid):
         result = bridge.check_schedule_complete(userid)
         return {'scheduleComplete': True} if result else {'scheduleComplete': False}
