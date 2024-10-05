@@ -199,7 +199,7 @@ def check_schedule(user_id):
     :return:
     """
     assert user_id == request.view_args['user_id']
-    return data_store.validate_no_schedule(user_id)
+    return data_store.check_schedule_complete(user_id)
 
 
 ##POST Endpoints

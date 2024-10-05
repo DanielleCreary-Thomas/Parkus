@@ -375,7 +375,7 @@ def check_schedule_complete(userid):
     :return:
     """
     response = (
-        supabase.table("users")
+        supabase.table("schedule_blocks")
         .select("scheduleid")
         .eq("userid", userid)
         .execute()

@@ -227,14 +227,16 @@ def validate_no_group(userid):
     ##valid
     return result is not None
 
+
 def upload_etransfer_image(imageUrl, userid):
     if bridge.validate_userid(userid):
         result = bridge.upload_etransfer_image(imageUrl, userid)
         return {"urlUploaded": result}
     return None
 
+
 def check_schedule_complete(userid):
-    if(bridge.validate_userid(userid)):
+    if bridge.validate_userid(userid):
         result = bridge.check_schedule_complete(userid)
         return {'scheduleComplete': True} if result else {'scheduleComplete': False}
 
@@ -246,7 +248,6 @@ def get_schedule_for_user(userid):
     :return: list of schedule blocks
     """
     return bridge.schedule_blocks_for_user(userid)
-
 
 
 def group_is_not_fully_paid(groupid):
@@ -263,23 +264,28 @@ def get_user_by_id(user_id):
     """Wrapper function to fetch user data."""
     return bridge.fetch_user_by_userid(user_id)
 
+
 def user_has_parking_permit(user_id):
     """Wrapper function to check if the user has a parking permit."""
     return bridge.check_parking_permit(user_id)
+
 
 def add_parking_permit(user_id, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location):
     """Wrapper function to insert a new parking permit."""
     return bridge.insert_parking_permit(user_id, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location)
 
+
 def get_parking_permits_by_userid(user_id):
     """Wrapper function to fetch all parking permits for a given user ID."""
     return bridge.fetch_parking_permits_by_userid(user_id)
+
 
 def get_car_info_by_userid(user_id):
     """
     Fetch car details for a user by their user_id.
     """
     return bridge.fetch_car_by_userid(user_id)
+
 
 def update_car_info(license_plate_number, province, year, make, model, color):
     """
@@ -298,6 +304,7 @@ def update_car_info(license_plate_number, province, year, make, model, color):
         return {'error': result['error']}
     
     return result
+
 
 def add_user_data(user_id, first_name, last_name, email, student_id, phone_number, license_plate_number):
     """
@@ -324,7 +331,6 @@ def add_user_data(user_id, first_name, last_name, email, student_id, phone_numbe
         return {'error': car_result['error']}
 
     return {'message': 'User and car data inserted successfully'}
-
 
 
 if __name__ == '__main__':
