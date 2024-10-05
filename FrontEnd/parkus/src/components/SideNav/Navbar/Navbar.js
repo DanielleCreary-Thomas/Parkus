@@ -21,12 +21,48 @@ function Navbar() {
         <Stack direction="column" className="navbar">
             {/* Using link to replace anchor tag */}
             <AppTitle />
-            <Button className="navbutton" onClick={() => { navigate("/home") }}>Home</Button>
-            <Button className="navbutton" onClick={() => { navigate("/profile") }}>Profile</Button>
-            <Button className="navbutton" onClick={() => { navigate("/schedule") }}>Schedule</Button>
-            <Button className="navbutton" onClick={() => { navigate("/spotSharing") }}>Spotsharing</Button>
-            <Button className="navbutton" onClick={() => { navigate("/payment") }}>Payment</Button>
-            <Button className="navbutton" onClick={() => { navigate("/group") }}>Group</Button>
+            <Button className="navbutton"
+                    onClick={() => { navigate("/home") }}
+                    sx={{
+                        fontFamily: "Orelega One",
+                        fontSize: "20px",
+                        }}
+            >Home</Button>
+            <Button className="navbutton"
+                    onClick={() => { navigate("/profile") }}
+                    sx={{
+                        fontFamily: "Orelega One",
+                        fontSize: "20px",
+                    }}
+            >Profile</Button>
+            <Button className="navbutton"
+                    onClick={() => { navigate("/schedule") }}
+                    sx={{
+                        fontFamily: "Orelega One",
+                        fontSize: "20px",
+                    }}
+            >Schedule</Button>
+            <Button className="navbutton"
+                    onClick={() => { navigate("/spotSharing") }}
+                    sx={{
+                        fontFamily: "Orelega One",
+                        fontSize: "20px",
+                    }}
+            >Spotsharing</Button>
+            <Button className="navbutton"
+                    onClick={() => { navigate("/payment") }}
+                    sx={{
+                        fontFamily: "Orelega One",
+                        fontSize: "20px",
+                    }}
+            >Payment</Button>
+            <Button className="navbutton"
+                    onClick={() => { navigate("/group") }}
+                    sx={{
+                        fontFamily: "Orelega One",
+                        fontSize: "20px",
+                    }}
+            >Group</Button>
             
             <Box sx={{ flexGrow: 1 }} /> {/* This will take up the remaining space and push signout button to the bottom */}
             <Button className="signout" onClick={handleSignout}>Signout</Button> {/* Added signout handler */}

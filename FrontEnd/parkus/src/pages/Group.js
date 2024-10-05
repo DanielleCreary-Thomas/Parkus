@@ -11,6 +11,7 @@ import {
 import LeaderCard from "../components/Group/LeaderCard/LeaderCard";
 import PaidMemberCard from "../components/Group/MemberCard/PaidMemberCard";
 import UnpaidMemberCard from "../components/Group/MemberCard/UnpaidMemberCard";
+import GroupTitle from "../components/Group/GroupTitle/GroupTitle";
 
 function MemberView({members, userInfoGroup, permitImageUrl, isGroupLeader, isPaidMember}){
     if (isGroupLeader){
@@ -81,7 +82,7 @@ export default function Group(){
             <div className="left-panel">
             </div>
             <div className="right-panel">
-                <Typography variant={"h2"}>Group</Typography>
+                <GroupTitle></GroupTitle>
                 <section>
                     {/*
                     Check if they are group leader or member +

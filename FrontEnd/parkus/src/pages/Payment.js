@@ -9,6 +9,7 @@ import "./styles/Payment.css"
 import {getCurrUser, getGroupId, uploadETransfer} from "../services/requests";
 import {supabase} from "../utils/supabase.ts";
 import {toast} from "react-toastify";
+import PaymentTitle from "../components/Payment/PaymentTitle/PaymentTitle";
 
 function Payment() {
     const [uploadImageUrl, setUploadImageUrl] = useState(null);
@@ -157,7 +158,7 @@ function Payment() {
         <div className="app-container">
             <div className="left-panel"></div>
             <div className="right-panel">
-                <Typography variant={"h2"}>Payment</Typography>
+                <PaymentTitle></PaymentTitle>
                 {isMemberOfGroup ? (//check to see if the current user is in a group
                     <section>
                         <section>
