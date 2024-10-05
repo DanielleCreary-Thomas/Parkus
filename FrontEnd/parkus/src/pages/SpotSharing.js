@@ -23,7 +23,7 @@ function SpotSharing() {
     }
 
     function handleGroupClick(id){
-        navigate(`/groups/${id}`);
+        navigate(`/group-schedule/${id}`);
     }
 
     useEffect(() => {

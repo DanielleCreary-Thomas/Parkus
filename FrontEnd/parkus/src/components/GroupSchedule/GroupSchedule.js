@@ -4,6 +4,7 @@ import { Box, Typography } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
 import { useParams } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
+import JoinButton from './JoinButton/JoinButton';
 import './GroupSchedule.css';
 
 const GroupSchedule = () => {
@@ -176,6 +177,22 @@ const GroupSchedule = () => {
                     </div>
                 ))}
             </div>
+            return (
+            <Box sx={{ padding: 3 }}>
+                <ToastContainer />
+                <Typography variant="h4" align="center" gutterBottom>
+                    Schedule for Group ID: {groupId}
+                </Typography>
+                <div className="schedule-grid">
+                    {/* ... existing schedule grid code */}
+                </div>
+                {/* Add the JoinButton here */}
+                <Box sx={{ marginTop: 2, textAlign: 'center' }}>
+                    <JoinButton groupId={groupId} />
+                </Box>
+            </Box>
+            );
+
         </Box>
     );
 };

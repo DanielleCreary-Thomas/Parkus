@@ -325,6 +325,17 @@ def add_user_data(user_id, first_name, last_name, email, student_id, phone_numbe
 
     return {'message': 'User and car data inserted successfully'}
 
+def add_user_to_group(user_id, group_id):
+    """Wrapper function to add a user to a group."""
+    return bridge.add_user_to_group(user_id, group_id)
+
+def get_group_size(group_id):
+    """Wrapper function to get the size of a group."""
+    return bridge.get_group_size(group_id)
+
+def validate_groupid(group_id):
+    """Wrapper function to validate group ID."""
+    return bridge.validate_groupid(group_id)
 
 
 if __name__ == '__main__':
