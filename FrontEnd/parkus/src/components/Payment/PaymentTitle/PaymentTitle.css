@@ -1,6 +1,7 @@
-.matchmakingTitle {
+.paymentTitle {
     background-color: #FFFFFF;
-    width: 90em;
+    width: 75em;
+    min-width: 350px;
     height: 5.75em;
     display: flex;
     justify-content: center; /* Horizontally center the content */

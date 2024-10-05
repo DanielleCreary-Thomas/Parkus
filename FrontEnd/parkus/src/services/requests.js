@@ -16,6 +16,7 @@ export async function getCurrUser(){
             console.log('Error fetching authenticated user:', error);
             return -1
         });
+
     console.log(data.data.user.id);
     return data.data.user.id;
 }
