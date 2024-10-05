@@ -2,11 +2,11 @@
 # Http Endpoints
 import data_store
 import flask
-from flask import jsonify, render_template, send_from_directory
-from flask import Flask, request, make_response
+from flask import jsonify, render_template, send_from_directory, make_response
+from flask import Flask, request
 from flask_cors import CORS, cross_origin
-# Shouldn't have the bridge import in main
 import bridge
+# bridge should be removed from main.py
 
 app = Flask(__name__)
 # Should only be line below
@@ -267,6 +267,69 @@ def check_group_fully_paid(group_id):
     result = data_store.group_is_not_fully_paid(group_id)
     return jsonify({"show_notification": result}), 200
 
+@app.route('/car/user/<user_id>', methods=['GET'])
+def get_car_by_userid(user_id):
+    """
+    Fetch the car information by the user's user_id.
+    """
+    car = data_store.get_car_info_by_userid(user_id)
+    if car:
+        return jsonify(car), 200
+    else:
+        return jsonify({"error": "No car information found for this user"}), 404
+
+# POST Endpoint to update car info
+@app.route('/car', methods=['POST'])
+def update_car():
+    """
+    API endpoint to update the car information based on the license plate number.
+    """
+    data = request.json
+    license_plate_number = data.get('license_plate_number')
+    province = data.get('province')
+    year = data.get('year')
+    make = data.get('make')
+    model = data.get('model')
+    color = data.get('color')
+
+    # Call the data_store to update the car information
+    result = data_store.update_car_info(license_plate_number, province, year, make, model, color)
+
+    if 'error' in result:
+        return jsonify({'error': result['error']}), 400
+
+    return jsonify({"message": "Car information updated successfully"}), 201
+
+
+@app.route('/add-user', methods=['POST'])
+def add_user():
+    """
+    API endpoint to add user data to the 'users' table in Supabase and the car's license plate into the 'cars' table.
+    """
+    data = request.json
+    user_id = data.get('user_id')
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    email = data.get('email')
+    student_id = data.get('studentid')
+    phone_number = data.get('phone_number')
+    license_plate_number = data.get('license_plate_number')
+
+    # Insert user and car data
+    result = data_store.add_user_data(
+        user_id=user_id,
+        first_name=first_name,
+        last_name=last_name,
+        email=email,
+        student_id=student_id,
+        phone_number=phone_number,
+        license_plate_number=license_plate_number
+    )
+
+    if 'error' in result:
+        return jsonify({'error': result['error']}), 400
+
+    return jsonify({'message': 'User and car data inserted successfully'}), 201
 
 
 if __name__ == '__main__':

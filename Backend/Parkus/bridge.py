@@ -540,6 +540,88 @@ def fetch_parking_permits_by_userid(user_id):
         print("No permits found.")
         return []
 
+def fetch_car_by_userid(user_id):
+    """
+    Fetch car details using the user_id by first fetching the license plate number.
+    """
+    try:
+        # Fetch the license plate number associated with the user_id
+        user_response = supabase.table("users").select("license_plate_number").eq("userid", user_id).execute()
+        if not user_response.data or not user_response.data[0]["license_plate_number"]:
+            return None
+        
+        license_plate_number = user_response.data[0]["license_plate_number"]
+        
+        # Fetch car info using the license plate number
+        car_response = supabase.table("cars").select("*").eq("license_plate_number", license_plate_number).execute()
+        if car_response.data:
+            return car_response.data[0]
+        else:
+            return None
+    except Exception as e:
+        print(f"Error fetching car info: {e}")
+        return None
+    
+def update_car_info(license_plate_number, province, year, make, model, color):
+    """
+    Updates the car information in the 'cars' table where the license_plate_number matches.
+    """
+    try:
+        # Ensure the column names are correct and targeting the right row
+        print(f"Updating car with license plate: {license_plate_number}")
+        response = supabase.table("cars").update({
+            "province": province,
+            "year": year,
+            "make": make,
+            "model": model,
+            "color": color
+        }).eq('license_plate_number', license_plate_number).execute()  # Ensure license_plate_ matches
+
+        # Print response for debugging purposes
+        print("Supabase response:", response)
+        
+        return response
+    except Exception as e:
+        print(f"Error updating car information: {str(e)}")
+        return {'error': str(e)}
+
+def insert_user_data(user_id, first_name, last_name, email, student_id, phone_number, license_plate_number):
+    """
+    Inserts user details into the 'users' table in Supabase.
+    """
+    try:
+        response = supabase.table('users').insert([{
+            'userid': user_id,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+            'studentid': student_id,
+            'phone_number': phone_number,
+            'license_plate_number': license_plate_number
+        }]).execute()
+        
+        return response
+    except Exception as e:
+        return {'error': str(e)}
+
+#insert license_plate_number to cars table when user sign up
+def insert_license_plate_number(license_plate_number):
+    """
+    Inserts the car's license plate into the 'cars' table, with other columns set to NULL.
+    """
+    try:
+        response = supabase.table('cars').insert([{
+            'license_plate_number': license_plate_number,
+            'province': '',
+            'year': '',
+            'make': '',
+            'model': '',
+            'color': ''
+        }]).execute()
+        
+        return response
+    except Exception as e:
+        return {'error': str(e)}
 
 if __name__ == "__main__":
     ##Testing has member paid

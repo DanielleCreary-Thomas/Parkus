@@ -275,6 +275,57 @@ def get_parking_permits_by_userid(user_id):
     """Wrapper function to fetch all parking permits for a given user ID."""
     return bridge.fetch_parking_permits_by_userid(user_id)
 
+def get_car_info_by_userid(user_id):
+    """
+    Fetch car details for a user by their user_id.
+    """
+    return bridge.fetch_car_by_userid(user_id)
+
+def update_car_info(license_plate_number, province, year, make, model, color):
+    """
+    Handles updating the car information in the 'cars' table.
+    """
+    result = bridge.update_car_info(
+        license_plate_number=license_plate_number,
+        province=province,
+        year=year,
+        make=make,
+        model=model,
+        color=color
+    )
+    
+    if 'error' in result:
+        return {'error': result['error']}
+    
+    return result
+
+def add_user_data(user_id, first_name, last_name, email, student_id, phone_number, license_plate_number):
+    """
+    Handles adding user data to the 'users' table and car data to the 'cars' table.
+    """
+    # Insert user data
+    result = bridge.insert_user_data(
+        user_id=user_id,
+        first_name=first_name,
+        last_name=last_name,
+        email=email,
+        student_id=student_id,
+        phone_number=phone_number,
+        license_plate_number=license_plate_number
+    )
+    
+    if 'error' in result:
+        return {'error': result['error']}
+
+    # Insert car data
+    car_result = bridge.insert_license_plate_number(license_plate_number)
+
+    if 'error' in car_result:
+        return {'error': car_result['error']}
+
+    return {'message': 'User and car data inserted successfully'}
+
+
 
 if __name__ == '__main__':
     ##Test get members
