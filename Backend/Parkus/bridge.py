@@ -82,6 +82,7 @@ def member_userid_for_group(groupid):
     #     members = cur.fetchall()
     #     return members
 
+
 def member_count_by_groupid(groupid):
     """
     returns the number of members in the group with the given ID
@@ -133,6 +134,7 @@ def group_by_groupid(groupid):
     #     }
     #     return group_dict
 
+
 ###Vacancy Queries
 def get_all_groupids():
     """
@@ -145,6 +147,7 @@ def get_all_groupids():
         .execute()
     )
     return response.data
+
 
 def active_permit(permitid):
     """
@@ -161,6 +164,7 @@ def active_permit(permitid):
     )
     return len(response.data) > 0
 
+
 def get_group_size(groupid):
     """
     Returns the size of the group
@@ -176,6 +180,7 @@ def get_group_size(groupid):
 
     return len(response.data)
 
+
 def get_permit_by_groupid(groupid):
     """
     Returns the permit of the given group
@@ -189,6 +194,7 @@ def get_permit_by_groupid(groupid):
         .execute()
     )
     return response.data[0]
+
 
 ## User Schedule
 def schedule_blocks_for_user(userid):
@@ -215,6 +221,7 @@ def schedule_blocks_for_user(userid):
     #     schedule = cur.fetchall()
     #     return schedule
 
+
 def validate_no_group(userid):
     """
     Checks that given user has no group
@@ -237,6 +244,7 @@ def validate_no_group(userid):
     #     WHERE u.userid = %s AND u.groupid is null""",
     #                 (userid,))
     #     return cur.fetchone()
+
 
 def get_group_leader(groupid):
     """
@@ -263,6 +271,7 @@ def get_group_leader(groupid):
 
     return None
 
+
 def get_group_id(userid):
     """
     Returns the group id for the given userid
@@ -276,6 +285,7 @@ def get_group_id(userid):
         .execute()
     )
     return response.data[0]
+
 
 def get_group_members(groupid):
     """
@@ -292,6 +302,7 @@ def get_group_members(groupid):
     )
     return response.data
 
+
 def get_car_info(platenum):
     """
     Returns the car info for the given platenum
@@ -305,6 +316,7 @@ def get_car_info(platenum):
         .execute()
     )
     return response.data[0]
+
 
 def check_paid_member(userid):
     """

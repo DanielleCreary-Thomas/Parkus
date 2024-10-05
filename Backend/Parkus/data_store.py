@@ -121,14 +121,13 @@ def groups_with_vacancies():
     return available_groups
 
 
-
 def get_group_by_id(id):
     """
     returns the group with matching id
     :param id: id of selected group
     :return: group data in the form of a dictionary
     """
-    return bridge.group_by_id(id)
+    return bridge.get_group_members(id)
 
 
 def get_group_leader(groupid):
@@ -148,8 +147,9 @@ def get_group_id(userid):
     :return: group id
     """
     if bridge.validate_userid(userid):
-        if not bridge.validate_no_group():
+        if not bridge.validate_no_group(userid):
             return bridge.get_group_id(userid)
+
 
 def get_group_members(groupid):
     """
@@ -198,7 +198,6 @@ def get_group_permit(leaderid):
     """
     if bridge.validate_userid(leaderid):
         return bridge.get_group_permit(leaderid)
-
 
 
 def complete_matchmaking(userid):
