@@ -1,37 +1,324 @@
+// import React, { useEffect, useState } from 'react';
+// import { supabase } from '../utils/supabase.ts';
+// import { fetchUser, checkParkingPermit, addParkingPermit, fetchParkingPermits, fetchCarByUserId, addCar } from '../services/requests.js';
+// import { Box, Card, Typography, Tabs, Tab, Button, TextField, Checkbox } from '@mui/material';
+
+// function TabPanel({ children, value, index }) {
+//   return (
+//     <div role="tabpanel" hidden={value !== index}>
+//       {value === index && <Box p={3}>{children}</Box>}
+//     </div>
+//   );
+// }
+
+// const Profile = () => {
+//   const [value, setValue] = useState(0);
+//   const [user, setUser] = useState(null);
+//   const [userId, setUserId] = useState(null);
+//   const [hasPermit, setHasPermit] = useState(false);
+//   const [permitInputEnabled, setPermitInputEnabled] = useState(false);
+//   const [permits, setPermits] = useState([]);
+//   const [permitData, setPermitData] = useState({
+//     permit_number: '',
+//     active_status: false,
+//     permit_type: '',
+//     activate_date: '',
+//     expiration_date: '',
+//     campus_location: '',
+//   });
+//   const [carData, setCarData] = useState({
+//     license_plate_number: '',
+//     province: '',
+//     year: '',
+//     make: '',
+//     model: '',
+//     color: ''
+//   });
+//   const [fetchedCarData, setFetchedCarData] = useState(null);
+//   const [error, setError] = useState(null);
+
+//   // Handle tab change
+//   const handleTabChange = (event, newValue) => {
+//     setValue(newValue);
+//   };
+
+//   useEffect(() => {
+//     const fetchUserId = async () => {
+//       try {
+//         const { data: { user }, error } = await supabase.auth.getUser();
+//         if (error) {
+//           console.error('Error fetching authenticated user:', error);
+//           setError('Failed to fetch authenticated user.');
+//           return;
+//         }
+//         if (user) {
+//           setUserId(user.id);
+//           fetchUserCar(user.id);
+//         } else {
+//           setError('No user is currently signed in.');
+//         }
+//       } catch (err) {
+//         console.error('Error fetching user session:', err);
+//         setError('Error retrieving user session.');
+//       }
+//     };
+//     fetchUserId();
+//   }, []);
+
+//   // Fetch car data using the user's ID
+//   const fetchUserCar = async (userId) => {
+//     try {
+//       const car = await fetchCarByUserId(userId);
+//       setFetchedCarData(car);
+//       if (car) {
+//         setCarData({
+//           license_plate_number: car.license_plate_number,
+//           province: car.province,
+//           year: car.year,
+//           make: car.make,
+//           model: car.model,
+//           color: car.color
+//         });
+//       }
+//     } catch (error) {
+//       setError('No car information found for this user.');
+//     }
+//   };
+
+//   // Fetch user permits
+//   useEffect(() => {
+//     if (!userId) return;
+
+//     fetchUser(userId)
+//       .then(data => setUser(data))
+//       .catch(error => {
+//         console.error('Error fetching user:', error);
+//         setError('Failed to fetch user data.');
+//       });
+
+//     checkParkingPermit(userId)
+//       .then(data => {
+//         setHasPermit(data.has_permit);
+//         setPermitInputEnabled(data.has_permit);
+//         if (data.has_permit) {
+//           fetchUserPermits();
+//         }
+//       })
+//       .catch(error => {
+//         console.error('Error checking parking permit:', error);
+//         setError('Failed to check parking permit.');
+//       });
+//   }, [userId]);
+
+//   const fetchUserPermits = async () => {
+//     try {
+//       const permits = await fetchParkingPermits(userId);
+//       setPermits(permits);
+//     } catch (error) {
+//       console.error('Error fetching parking permits:', error);
+//       setError('Failed to fetch parking permits.');
+//     }
+//   };
+
+//   const handlePermitInputChange = (e) => {
+//     const { name, value } = e.target;
+//     setPermitData(prev => ({ ...prev, [name]: value }));
+//   };
+
+//   const handleCarInputChange = (e) => {
+//     const { name, value } = e.target;
+//     setCarData(prev => ({ ...prev, [name]: value }));
+//   };
+
+//   const handleCheckboxChange = (event) => {
+//     setPermitInputEnabled(event.target.checked);
+//     setHasPermit(event.target.checked);
+//   };
+
+//   const handlePermitSubmit = async () => {
+//     if (!userId) return;
+//     try {
+//       await addParkingPermit({
+//         userid: userId,
+//         ...permitData,
+//       });
+//       alert('Permit added successfully!');
+//       setHasPermit(true);
+//       setPermitInputEnabled(true);
+//       fetchUserPermits();
+//     } catch (error) {
+//       console.error('Error adding permit:', error);
+//       setError('Failed to add permit.');
+//     }
+//   };
+
+//   const handleCarSubmit = async () => {
+//     if (!userId) return;
+//     try {
+//       await addCar({
+//         userid: userId,
+//         ...carData,
+//       });
+//       alert('Car information added successfully!');
+//       fetchUserCar(userId);
+//     } catch (error) {
+//       console.error('Error adding car information:', error);
+//       setError('Failed to add car information.');
+//     }
+//   };
+
+//   return (
+//     <Card sx={{ maxWidth: 800, margin: 'auto', padding: '20px' }}>
+//       <Tabs value={value} onChange={handleTabChange} centered>
+//         <Tab label="User Info" />
+//         <Tab label="Car Info" />
+//         <Tab label="Permit Info" />
+//       </Tabs>
+
+//       <TabPanel value={value} index={0}>
+//         {user ? (
+//           <Box>
+//             <Typography variant="h5">User Info</Typography>
+//             <p>First Name: {user.first_name}</p>
+//             <p>Last Name: {user.last_name}</p>
+//             <p>Student ID: {user.studentid}</p>
+//             <p>Phone Number: {user.phone_number}</p>
+//             <p>Email: {user.email}</p>
+//           </Box>
+//         ) : (
+//           <p>Loading user data...</p>
+//         )}
+//       </TabPanel>
+
+//       <TabPanel value={value} index={1}>
+//         <Typography variant="h5">Car Info</Typography>
+//         {fetchedCarData ? (
+//           <Box>
+//             <p><strong>License Plate:</strong> {fetchedCarData.license_plate_number}</p>
+//             <p><strong>Province:</strong> {fetchedCarData.province}</p>
+//             <p><strong>Year:</strong> {fetchedCarData.year}</p>
+//             <p><strong>Make:</strong> {fetchedCarData.make}</p>
+//             <p><strong>Model:</strong> {fetchedCarData.model}</p>
+//             <p><strong>Color:</strong> {fetchedCarData.color}</p>
+//           </Box>
+//         ) : (
+//           <p>No car information found. Please add your car details below.</p>
+//         )}
+//         <Box sx={{ mt: 2 }}>
+//           <TextField label="Province" name="province" value={carData.province} onChange={handleCarInputChange} fullWidth margin="normal" />
+//           <TextField label="Year" name="year" value={carData.year} onChange={handleCarInputChange} fullWidth margin="normal" />
+//           <TextField label="Make" name="make" value={carData.make} onChange={handleCarInputChange} fullWidth margin="normal" />
+//           <TextField label="Model" name="model" value={carData.model} onChange={handleCarInputChange} fullWidth margin="normal" />
+//           <TextField label="Color" name="color" value={carData.color} onChange={handleCarInputChange} fullWidth margin="normal" />
+//           <Button variant="contained" onClick={handleCarSubmit}>Submit Car Info</Button>
+//         </Box>
+//       </TabPanel>
+
+//       <TabPanel value={value} index={2}>
+//         <Typography variant="h5">Parking Permit Info</Typography>
+//         <Checkbox checked={permitInputEnabled} onChange={handleCheckboxChange} />
+//         I have a parking permit
+//         {permitInputEnabled ? (
+//           <Box sx={{ mt: 2 }}>
+//             <TextField label="Permit Number" name="permit_number" value={permitData.permit_number} onChange={handlePermitInputChange} fullWidth margin="normal" />
+//             <TextField label="Permit Type" name="permit_type" value={permitData.permit_type} onChange={handlePermitInputChange} fullWidth margin="normal" />
+//             <TextField
+//               label="Activation Date"
+//               type="date"
+//               name="activate_date"
+//               value={permitData.activate_date}
+//               onChange={handlePermitInputChange}
+//               InputLabelProps={{
+//                 shrink: true, // Ensures that the label stays shrunk above the field
+//               }}
+//               fullWidth
+//               margin="normal"
+//             />
+
+//             <TextField
+//               label="Expiration Date"
+//               type="date"
+//               name="expiration_date"
+//               value={permitData.expiration_date}
+//               onChange={handlePermitInputChange}
+//               InputLabelProps={{
+//                 shrink: true, // Ensures that the label stays shrunk above the field
+//               }}
+//               fullWidth
+//               margin="normal"
+//             />
+
+//             <TextField label="Campus Location" name="campus_location" value={permitData.campus_location} onChange={handlePermitInputChange} fullWidth margin="normal" />
+//             <Button variant="contained" onClick={handlePermitSubmit}>Submit Permit Info</Button>
+//           </Box>
+//         ) : (
+//           <Button onClick={() => window.open('https://epark.sheridancollege.ca/', '_blank')}>Apply for Parking Permit</Button>
+//         )}
+//       </TabPanel>
+//     </Card>
+//   );
+// };
+
+// export default Profile;
+
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabase.ts';
-import { fetchUser, checkParkingPermit, addParkingPermit, fetchParkingPermits } from '../services/requests.js';
+import { fetchUser, checkParkingPermit, addParkingPermit, fetchParkingPermits, fetchCarByUserId, addCar } from '../services/requests.js';
+import { Box, Card, Typography, Tabs, Tab, Button, TextField, Checkbox } from '@mui/material';
+import ProfileTitle from '../components/Profile/ProfileTitle/ProfileTitle.js';
+
+function TabPanel({ children, value, index }) {
+  return (
+    <div role="tabpanel" hidden={value !== index}>
+      {value === index && <Box p={3}>{children}</Box>}
+    </div>
+  );
+}
 
 const Profile = () => {
+  const [value, setValue] = useState(0);
   const [user, setUser] = useState(null);
-  const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
   const [hasPermit, setHasPermit] = useState(false);
   const [permitInputEnabled, setPermitInputEnabled] = useState(false);
+  const [permits, setPermits] = useState([]);
   const [permitData, setPermitData] = useState({
     permit_number: '',
     active_status: false,
     permit_type: '',
     activate_date: '',
     expiration_date: '',
-    campus_location: '',
+    campus_location: ''
   });
-  const [permits, setPermits] = useState([]); // State to store parking permits
+  const [carData, setCarData] = useState({
+    license_plate_number: '',
+    province: '',
+    year: '',
+    make: '',
+    model: '',
+    color: ''
+  });
+  const [fetchedCarData, setFetchedCarData] = useState(null);
+  const [error, setError] = useState(null);
+
+  // Handle tab change
+  const handleTabChange = (event, newValue) => {
+    setValue(newValue);
+  };
 
   useEffect(() => {
-    // Fetch the currently signed-in user's details
     const fetchUserId = async () => {
       try {
         const { data: { user }, error } = await supabase.auth.getUser();
-
         if (error) {
           console.error('Error fetching authenticated user:', error);
           setError('Failed to fetch authenticated user.');
           return;
         }
-
         if (user) {
-          setUserId(user.id); // Set the authenticated user's ID
+          setUserId(user.id);
+          fetchUserCar(user.id);
         } else {
           setError('No user is currently signed in.');
         }
@@ -40,14 +327,31 @@ const Profile = () => {
         setError('Error retrieving user session.');
       }
     };
-
     fetchUserId();
   }, []);
+
+  const fetchUserCar = async (userId) => {
+    try {
+      const car = await fetchCarByUserId(userId);
+      setFetchedCarData(car);
+      if (car) {
+        setCarData({
+          license_plate_number: car.license_plate_number,
+          province: car.province,
+          year: car.year,
+          make: car.make,
+          model: car.model,
+          color: car.color
+        });
+      }
+    } catch (error) {
+      setError('No car information found for this user.');
+    }
+  };
 
   useEffect(() => {
     if (!userId) return;
 
-    // Fetch user data from the backend API
     fetchUser(userId)
       .then(data => setUser(data))
       .catch(error => {
@@ -55,13 +359,12 @@ const Profile = () => {
         setError('Failed to fetch user data.');
       });
 
-    // Check if the user has a parking permit
     checkParkingPermit(userId)
       .then(data => {
         setHasPermit(data.has_permit);
         setPermitInputEnabled(data.has_permit);
         if (data.has_permit) {
-          fetchUserPermits(); // Fetch permits if the user has them
+          fetchUserPermits();
         }
       })
       .catch(error => {
@@ -73,7 +376,7 @@ const Profile = () => {
   const fetchUserPermits = async () => {
     try {
       const permits = await fetchParkingPermits(userId);
-      setPermits(permits); // Set the fetched permits
+      setPermits(permits);
     } catch (error) {
       console.error('Error fetching parking permits:', error);
       setError('Failed to fetch parking permits.');
@@ -85,13 +388,18 @@ const Profile = () => {
     setPermitData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleActiveStatusChange = (e) => {
-    setPermitData(prev => ({ ...prev, active_status: e.target.value === 'Active' }));
+  const handleCarInputChange = (e) => {
+    const { name, value } = e.target;
+    setCarData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCheckboxChange = (event) => {
+    setPermitInputEnabled(event.target.checked);
+    setHasPermit(event.target.checked);
   };
 
   const handlePermitSubmit = async () => {
     if (!userId) return;
-
     try {
       await addParkingPermit({
         userid: userId,
@@ -100,150 +408,208 @@ const Profile = () => {
       alert('Permit added successfully!');
       setHasPermit(true);
       setPermitInputEnabled(true);
-      setPermitData({
-        permit_number: '',
-        active_status: false,
-        permit_type: '',
-        activate_date: '',
-        expiration_date: '',
-        campus_location: '',
-      });
-      fetchUserPermits(); // Fetch updated permits after adding
+      fetchUserPermits();
     } catch (error) {
       console.error('Error adding permit:', error);
       setError('Failed to add permit.');
     }
   };
 
-  const handleCheckboxChange = (event) => {
-    setPermitInputEnabled(event.target.checked);
-    setHasPermit(event.target.checked); // Adjust the permit status based on checkbox
+  const handleCarSubmit = async () => {
+    if (!userId) return;
+    try {
+      await addCar({
+        userid: userId,
+        ...carData,
+      });
+      alert('Car information added successfully!');
+      fetchUserCar(userId);
+    } catch (error) {
+      console.error('Error adding car information:', error);
+      setError('Failed to add car information.');
+    }
   };
 
   return (
-    <div style={{ display: 'flex', gap: '20px' }}>
-      {/* Left Section: User Profile */}
-      <div style={{ flex: 1 }}>
-        <h1>User Profile</h1>
-        {error && <p>{error}</p>}
-        {user ? (
-          <div>
-            <p>First Name: {user.first_name}</p>
-            <p>Last Name: {user.last_name}</p>
-            <p>Student ID: {user.studentid}</p>
-            <p>Phone Number: {user.phone_number}</p>
-            <p>Email: {user.email}</p>
-            <p>Group ID: {user.groupid}</p>
-            <p>License Plate: {user.license_plate_number}</p>
-            <p>eTransfer Proof: {user.eTransferProof}</p>
+    <>
+      <ProfileTitle /> {/* Profile title displayed outside the card */}
+      <Card sx={{ maxWidth: 800, margin: 'auto', padding: '20px' }}>
+        <Tabs value={value} onChange={handleTabChange} centered>
+          <Tab label="User Info" />
+          <Tab label="Car Info" />
+          <Tab label="Permit Info" />
+        </Tabs>
 
-            <div>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={permitInputEnabled}
-                  onChange={handleCheckboxChange}
-                />
-                I have a parking permit
-              </label>
+        <TabPanel value={value} index={0}>
+          {user ? (
+            <Box>
+              <p>First Name: {user.first_name}</p>
+              <p>Last Name: {user.last_name}</p>
+              <p>Student ID: {user.studentid}</p>
+              <p>Phone Number: {user.phone_number}</p>
+              <p>Email: {user.email}</p>
+            </Box>
+          ) : (
+            <p>Loading user data...</p>
+          )}
+        </TabPanel>
 
-              {permitInputEnabled ? (
-                <div>
-                  <input
-                    type="text"
-                    name="permit_number"
-                    value={permitData.permit_number}
-                    onChange={handlePermitInputChange}
-                    placeholder="Permit Number"
-                  />
-                  <input
-                    type="text"
-                    name="permit_type"
-                    value={permitData.permit_type}
-                    onChange={handlePermitInputChange}
-                    placeholder="Permit Type"
-                  />
-                  <input
-                    type="date"
-                    name="activate_date"
-                    value={permitData.activate_date}
-                    onChange={handlePermitInputChange}
-                    placeholder="Activation Date"
-                  />
-                  <input
-                    type="date"
-                    name="expiration_date"
-                    value={permitData.expiration_date}
-                    onChange={handlePermitInputChange}
-                    placeholder="Expiration Date"
-                  />
-                  <input
-                    type="text"
-                    name="campus_location"
-                    value={permitData.campus_location}
-                    onChange={handlePermitInputChange}
-                    placeholder="Campus Location"
-                  />
-                  <label>
-                    Active Status:
-                    <select
-                      name="active_status"
-                      value={permitData.active_status ? 'Active' : 'Inactive'}
-                      onChange={handleActiveStatusChange}
-                    >
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
-                    </select>
-                  </label>
-                  <button onClick={handlePermitSubmit}>
-                    Submit Permit Details
-                  </button>
-                </div>
-              ) : (
-                <button onClick={() => window.open('https://epark.sheridancollege.ca/', '_blank')}>
-                  Apply for Parking Permit
-                </button>
-              )}
-            </div>
-          </div>
-        ) : (
-          <p>Loading user data...</p> // Display while fetching data
-        )}
-      </div>
+        <TabPanel value={value} index={1}>
+          {fetchedCarData ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: '600px', margin: '0 auto' }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', textAlign: 'left', width: '100%' }}>
+                <Typography><strong>License Plate:</strong> {fetchedCarData.license_plate_number}</Typography>
+                <Typography><strong>Province:</strong> {fetchedCarData.province}</Typography>
+                <Typography><strong>Year:</strong> {fetchedCarData.year}</Typography>
+                <Typography><strong>Make:</strong> {fetchedCarData.make}</Typography>
+                <Typography><strong>Model:</strong> {fetchedCarData.model}</Typography>
+                <Typography><strong>Color:</strong> {fetchedCarData.color}</Typography>
+              </Box>
+            </Box>
+          ) : (
+            <Typography>No car information found. Please add your car details below.</Typography>
+          )}
 
-      {/* Right Section: Parking Permits */}
-      <div style={{ flex: 1 }}>
-        <h2>Parking Permits</h2>
-        {permits.length > 0 ? (
-          <table>
-            <thead>
-              <tr>
-                <th>Permit Number</th>
-                <th>Permit Type</th>
-                <th>Activate Date</th>
-                <th>Expiration Date</th>
-                <th>Campus Location</th>
-                <th>Active Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {permits.map((permit) => (
-                <tr key={permit.permitid}>
-                  <td>{permit.permit_number}</td>
-                  <td>{permit.permit_type}</td>
-                  <td>{permit.activate_date}</td>
-                  <td>{permit.expiration_date}</td>
-                  <td>{permit.campus_location}</td>
-                  <td>{permit.active_status ? 'Active' : 'Inactive'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p>No parking permits found.</p>
-        )}
-      </div>
-    </div>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: '400px', margin: '20px auto' }}>
+            <TextField
+              label="Province"
+              name="province"
+              value={carData.province}
+              onChange={handleCarInputChange}
+              fullWidth
+              margin="dense"
+            />
+            <TextField
+              label="Year"
+              name="year"
+              value={carData.year}
+              onChange={handleCarInputChange}
+              fullWidth
+              margin="dense"
+            />
+            <TextField
+              label="Make"
+              name="make"
+              value={carData.make}
+              onChange={handleCarInputChange}
+              fullWidth
+              margin="dense"
+            />
+            <TextField
+              label="Model"
+              name="model"
+              value={carData.model}
+              onChange={handleCarInputChange}
+              fullWidth
+              margin="dense"
+            />
+            <TextField
+              label="Color"
+              name="color"
+              value={carData.color}
+              onChange={handleCarInputChange}
+              fullWidth
+              margin="dense"
+            />
+            <Button
+              variant="contained"
+              onClick={handleCarSubmit}
+              sx={{ mt: 2 }}
+            >
+              Submit Car Info
+            </Button>
+          </Box>
+        </TabPanel>
+
+        <TabPanel value={value} index={2}>
+  <Typography variant="h5">Parking Permit Info</Typography>
+  <Checkbox checked={permitInputEnabled} onChange={handleCheckboxChange} />
+  I have a parking permit
+  {permitInputEnabled ? (
+    <Box sx={{ mt: 2 }}>
+      <TextField
+        label="Permit Number"
+        name="permit_number"
+        value={permitData.permit_number}
+        onChange={handlePermitInputChange}
+        fullWidth
+        margin="normal"
+      />
+
+      {/* Permit Type Dropdown */}
+      <TextField
+        select
+        label="Permit Type"
+        name="permit_type"
+        value={permitData.permit_type}
+        onChange={handlePermitInputChange}
+        fullWidth
+        margin="normal"
+        SelectProps={{
+          native: true,
+        }}
+      >
+        <option value=""></option> {/* Default empty option */}
+        <option value="Virtual">Virtual</option>
+        <option value="Physical">Physical</option>
+      </TextField>
+
+      <TextField
+        label="Activation Date"
+        type="date"
+        name="activate_date"
+        value={permitData.activate_date}
+        onChange={handlePermitInputChange}
+        InputLabelProps={{
+          shrink: true,
+        }}
+        fullWidth
+        margin="normal"
+      />
+      <TextField
+        label="Expiration Date"
+        type="date"
+        name="expiration_date"
+        value={permitData.expiration_date}
+        onChange={handlePermitInputChange}
+        InputLabelProps={{
+          shrink: true,
+        }}
+        fullWidth
+        margin="normal"
+      />
+
+      {/* Campus Location Dropdown */}
+      <TextField
+        select
+        label="Campus Location"
+        name="campus_location"
+        value={permitData.campus_location}
+        onChange={handlePermitInputChange}
+        fullWidth
+        margin="normal"
+        SelectProps={{
+          native: true,
+        }}
+      >
+        <option value=""></option> {/* Default empty option */}
+        <option value="Trafalgar Campus">Trafalgar Campus</option>
+        <option value="Davis Campus">Davis Campus</option>
+      </TextField>
+
+      <Button variant="contained" onClick={handlePermitSubmit}>
+        Submit Permit Info
+      </Button>
+    </Box>
+  ) : (
+    <Button onClick={() => window.open('https://epark.sheridancollege.ca/', '_blank')}>
+      Apply for Parking Permit
+    </Button>
+  )}
+</TabPanel>
+
+      </Card>
+    </>
   );
 };
 

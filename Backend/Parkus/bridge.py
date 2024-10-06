@@ -40,7 +40,24 @@ CONNECTION_STRING = "user=postgres.rtneojaduhodjxqmymlq password=NyidWTNcMUDH8Pn
 #     group_data = cur.fetchall()
 #     return group_data
 
-# def get_all_users()
+# def groups_with_vacancies():
+#     """
+#     Returns the group IDs of groups with less than 5 members
+#     :return: a list of tuples with groupids at 0 and their member count at 1
+#     """
+#     with conn.cursor() as cur:
+#         cur.execute('''
+#         SELECT COUNT(u.userid) as members, g.groupid
+#         FROM parking_groups g
+#         INNER JOIN users u ON u.groupid = g.groupid
+#         GROUP BY g.groupid
+#         HAVING COUNT(u.userid) < 5
+#         ORDER BY g.groupid;
+#         ''')
+#         groups_and_memebers = cur.fetchall()
+#         return groups_and_memebers
+
+
 def member_userid_for_group(groupid):
     """
     Returns the user id of each member of thr group with selected group id
@@ -335,7 +352,6 @@ def get_group_permit(leaderid):
     return response.data[0]
 
 
-
 def upload_etransfer_image(imageUrl, userid):
     """
     Updates the given user's eTransfer Proof image url
@@ -351,6 +367,20 @@ def upload_etransfer_image(imageUrl, userid):
     )
     return len(response.data[0]) > 0
 
+
+def check_schedule_complete(userid):
+    """
+    Checks if the given user has a schedule
+    :param userid:
+    :return:
+    """
+    response = (
+        supabase.table("users")
+        .select("scheduleid")
+        .eq("userid", userid)
+        .execute()
+    )
+    return len(response.data) > 0
 
 """
 Validation functions
@@ -445,6 +475,57 @@ def insert_parking_permit(user_id, permit_number, active_status, permit_type, ac
     }).execute()
     return response.data is not None and len(response.data) > 0
 
+def fetch_users_by_groupid(group_id):
+    """Fetch users belonging to a specific group."""
+    response = (
+        supabase.table("users")
+        .select("*")
+        .eq("groupid", group_id)
+        .execute()
+    )
+    return response.data if response.data else None
+
+def fetch_schedule_blocks_by_userids(user_ids):
+    """Fetch schedule blocks for multiple users."""
+    response = (
+        supabase.table("schedule_blocks")
+        .select("*")
+        .in_("userid", user_ids)
+        .execute()
+    )
+    return response.data if response.data else None
+
+def fetch_schedule_blocks_by_userid(user_id):
+    """Fetch schedule blocks for a single user."""
+    response = (
+        supabase.table("schedule_blocks")
+        .select("*")
+        .eq("userid", user_id)
+        .execute()
+    )
+    return response.data if response.data else None
+
+
+#this is not by Rameez, but Danielle instead I think
+def validate_userid(userid):
+    response = (
+        supabase.table("users")
+        .select("*")
+        .eq("userid", userid)
+        .execute()
+    )
+    return len(response.data) > 0
+
+def upload_etransfer_image(imageUrl, userid):
+    """Updates the given user's eTransfer proof image URL."""
+    response = (
+        supabase.table("users")
+        .update({"image_proof_url": imageUrl})
+        .eq("userid", userid)
+        .execute()
+    )
+    return len(response.data) > 0
+
 def fetch_parking_permits_by_userid(user_id):
     """Fetches all parking permits for a given user ID from the Supabase database."""
     response = (
@@ -459,6 +540,88 @@ def fetch_parking_permits_by_userid(user_id):
         print("No permits found.")
         return []
 
+def fetch_car_by_userid(user_id):
+    """
+    Fetch car details using the user_id by first fetching the license plate number.
+    """
+    try:
+        # Fetch the license plate number associated with the user_id
+        user_response = supabase.table("users").select("license_plate_number").eq("userid", user_id).execute()
+        if not user_response.data or not user_response.data[0]["license_plate_number"]:
+            return None
+        
+        license_plate_number = user_response.data[0]["license_plate_number"]
+        
+        # Fetch car info using the license plate number
+        car_response = supabase.table("cars").select("*").eq("license_plate_number", license_plate_number).execute()
+        if car_response.data:
+            return car_response.data[0]
+        else:
+            return None
+    except Exception as e:
+        print(f"Error fetching car info: {e}")
+        return None
+    
+def update_car_info(license_plate_number, province, year, make, model, color):
+    """
+    Updates the car information in the 'cars' table where the license_plate_number matches.
+    """
+    try:
+        # Ensure the column names are correct and targeting the right row
+        print(f"Updating car with license plate: {license_plate_number}")
+        response = supabase.table("cars").update({
+            "province": province,
+            "year": year,
+            "make": make,
+            "model": model,
+            "color": color
+        }).eq('license_plate_number', license_plate_number).execute()  # Ensure license_plate_ matches
+
+        # Print response for debugging purposes
+        print("Supabase response:", response)
+        
+        return response
+    except Exception as e:
+        print(f"Error updating car information: {str(e)}")
+        return {'error': str(e)}
+
+def insert_user_data(user_id, first_name, last_name, email, student_id, phone_number, license_plate_number):
+    """
+    Inserts user details into the 'users' table in Supabase.
+    """
+    try:
+        response = supabase.table('users').insert([{
+            'userid': user_id,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+            'studentid': student_id,
+            'phone_number': phone_number,
+            'license_plate_number': license_plate_number
+        }]).execute()
+        
+        return response
+    except Exception as e:
+        return {'error': str(e)}
+
+#insert license_plate_number to cars table when user sign up
+def insert_license_plate_number(license_plate_number):
+    """
+    Inserts the car's license plate into the 'cars' table, with other columns set to NULL.
+    """
+    try:
+        response = supabase.table('cars').insert([{
+            'license_plate_number': license_plate_number,
+            'province': '',
+            'year': '',
+            'make': '',
+            'model': '',
+            'color': ''
+        }]).execute()
+        
+        return response
+    except Exception as e:
+        return {'error': str(e)}
 
 if __name__ == "__main__":
     ##Testing has member paid

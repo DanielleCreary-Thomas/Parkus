@@ -140,6 +140,7 @@ def get_group_leader(groupid):
     if bridge.validate_groupid(groupid):
         return bridge.get_group_leader(groupid)
 
+
 def get_group_id(userid):
     """
     returns the group id for the matching user id
@@ -182,7 +183,7 @@ def get_group_member(userid):
     :return:
     """
     if bridge.validate_userid(userid):
-        member = get_group_member(userid)
+        member = bridge.get_group_member(userid)
         platenum = member['license_plate_number']
         if bridge.validate_license_plate_number(platenum):
             member['car'] = bridge.get_car_info(platenum)
@@ -201,6 +202,11 @@ def get_group_permit(leaderid):
 
 
 def complete_matchmaking(userid):
+    """
+    Completes the matchmaking algorithm for the given user and provides the group options available
+    :param userid:
+    :return:
+    """
     curr_user = User(userid,'testname')
     curr_user.get_schedule_for_userid()
     group_options = []
@@ -224,9 +230,13 @@ def validate_no_group(userid):
 def upload_etransfer_image(imageUrl, userid):
     if bridge.validate_userid(userid):
         result = bridge.upload_etransfer_image(imageUrl, userid)
-        return result
+        return {"urlUploaded": result}
     return None
 
+def check_schedule_complete(userid):
+    if(bridge.validate_userid(userid)):
+        result = bridge.check_schedule_complete(userid)
+        return {'scheduleComplete': True} if result else {'scheduleComplete': False}
 
 
 
@@ -249,23 +259,7 @@ def group_is_not_fully_paid(groupid):
     return bridge.check_fully_paid(groupid)
 
 
-
-
-if __name__ == '__main__':
-    ##Test get members
-    members = get_group_members('44966fd0-2c0f-416d-baf8-80bfeb4ba075')
-    for member in members:
-        print(member)
-
-    groups = complete_matchmaking('7ce19f4c-9d60-4539-8217-cfb3967f99ca')
-    # test = groups['members'][0]['schedule'][0]['start_time']
-    for group in groups:
-        print(group)
-
-
-
 # data_store.py
-
 def get_user_by_id(user_id):
     """Wrapper function to fetch user data."""
     return bridge.fetch_user_by_userid(user_id)
@@ -281,3 +275,69 @@ def add_parking_permit(user_id, permit_number, active_status, permit_type, activ
 def get_parking_permits_by_userid(user_id):
     """Wrapper function to fetch all parking permits for a given user ID."""
     return bridge.fetch_parking_permits_by_userid(user_id)
+
+def get_car_info_by_userid(user_id):
+    """
+    Fetch car details for a user by their user_id.
+    """
+    return bridge.fetch_car_by_userid(user_id)
+
+def update_car_info(license_plate_number, province, year, make, model, color):
+    """
+    Handles updating the car information in the 'cars' table.
+    """
+    result = bridge.update_car_info(
+        license_plate_number=license_plate_number,
+        province=province,
+        year=year,
+        make=make,
+        model=model,
+        color=color
+    )
+    
+    if 'error' in result:
+        return {'error': result['error']}
+    
+    return result
+
+def add_user_data(user_id, first_name, last_name, email, student_id, phone_number, license_plate_number):
+    """
+    Handles adding user data to the 'users' table and car data to the 'cars' table.
+    """
+    # Insert user data
+    result = bridge.insert_user_data(
+        user_id=user_id,
+        first_name=first_name,
+        last_name=last_name,
+        email=email,
+        student_id=student_id,
+        phone_number=phone_number,
+        license_plate_number=license_plate_number
+    )
+    
+    if 'error' in result:
+        return {'error': result['error']}
+
+    # Insert car data
+    car_result = bridge.insert_license_plate_number(license_plate_number)
+
+    if 'error' in car_result:
+        return {'error': car_result['error']}
+
+    return {'message': 'User and car data inserted successfully'}
+
+
+
+if __name__ == '__main__':
+    ##Test get members
+    members = get_group_members('44966fd0-2c0f-416d-baf8-80bfeb4ba075')
+    for member in members:
+        print(member)
+
+    groups = complete_matchmaking('7ce19f4c-9d60-4539-8217-cfb3967f99ca')
+    # test = groups['members'][0]['schedule'][0]['start_time']
+    for group in groups:
+        print(group)
+
+
+
