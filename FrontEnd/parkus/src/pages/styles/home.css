@@ -20,7 +20,7 @@
   
 /* New header panel styling */
 .home-header-panel {
-  width: 96%; /* Full width of the container */
+  width: 100%; /* Full width of the container */
   background-color: #fff;
   padding: 20px;
   border-radius: 30px;
