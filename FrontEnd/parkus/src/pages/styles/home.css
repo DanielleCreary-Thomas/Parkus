@@ -1,10 +1,10 @@
 /* General container styling */
 .home-container {
     max-width: 1000px;
-    height: 860px;
+    height: 950px;
     margin: 0 auto;
     padding: 20px;
-    background-color: #f0f4f8;
+    background-color: #84B5D3;
     font-family: Arial, sans-serif;
     border-radius: 10px;
   
@@ -18,6 +18,19 @@
     font-weight: bold;
   }
   
+/* New header panel styling */
+.home-header-panel {
+  width: 96%; /* Full width of the container */
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 30px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+
+
   /* Main content for permit group and schedule */
   .home-main-content {
     display: flex;
@@ -30,7 +43,7 @@
     width: 45%;
     background-color: #fff;
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 30px;
     max-height: 800px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
@@ -88,7 +101,7 @@
   width: 45%; /* Reduced width to accommodate the gap */
   background-color: #fff;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 30px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
    
 }
@@ -131,26 +144,33 @@
     position: relative;
     background-color: #f9f9f9;
     border-left: 1px solid #ddd;
+    border: 1px solid #ccc;
+    margin-top: 8px;
   }
   
-  /* Calendar event block styling */
-/* General event styling */
+ 
 .home-calendar-event {
-    position: absolute;
-    left: 10px;
-    right: 10px;
-    background-color: #007bff;
-    color: white;
-    border-radius: 4px;
-    font-size: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 2px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-  }
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: -5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 5px; /* Add padding to avoid text touching the edges */
+  overflow: hidden; /* Hide overflow content */
+  word-wrap: break-word; /* Ensure long words wrap within the event block */
+  height: auto; /* Adjust height to accommodate text content */
+ 
+}
+
   
 /* Highlight current user's event */
 .current-user {
@@ -195,7 +215,7 @@
   border: 1px solid #f5c6cb;
   color: #721c24;
   padding: 10px;
-  border-radius: 4px;
+  border-radius: 20px;
   margin: 10px 0;
   max-width: 300px;
   margin-left: auto;
