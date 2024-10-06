@@ -437,7 +437,7 @@ def validate_license_plate_number(license_plate_number):
 
 
 
-
+########################### Profile ###########################
 def fetch_user_by_userid(user_id):
     """Fetches user data by userid from the Supabase database."""
     response = (
@@ -463,7 +463,7 @@ def check_parking_permit(user_id):
     return response.data is not None and len(response.data) > 0
 
 def insert_parking_permit(user_id, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location):
-    """Inserts a new parking permit into the Supabase database."""
+    """Inserts a new parking permit into the parking_permits table."""
     response = supabase.table("parking_permits").insert({
         "userid": user_id,
         "permit_number": permit_number,
@@ -473,7 +473,31 @@ def insert_parking_permit(user_id, permit_number, active_status, permit_type, ac
         "expiration_date": expiration_date,
         "campus_location": campus_location,
     }).execute()
+
     return response.data is not None and len(response.data) > 0
+
+def fetch_permit_id(user_id, permit_number):
+    """Fetches the permit ID from parking_permits table."""
+    response = supabase.table("parking_permits").select("permitid").eq("userid", user_id).eq("permit_number", permit_number).execute()
+
+    print("Supabase response:", response)  # Log the entire response for debugging
+    
+    # Check if the response contains data and log it
+    if response.data and len(response.data) > 0:
+        print("Permit Data:", response.data[0])  # Log the permit data
+        return response.data[0]['permitid']
+    else:
+        return None  # Return None if no data is found
+
+def insert_parking_group(permitid):
+    """Inserts a new parking group using the permitid."""
+    response = supabase.table("parking_groups").insert({
+        "permitid": permitid,
+        "fully_paid": False  # Default to False
+    }).execute()
+
+    return response.data is not None and len(response.data) > 0
+
 
 def fetch_users_by_groupid(group_id):
     """Fetch users belonging to a specific group."""
@@ -484,6 +508,32 @@ def fetch_users_by_groupid(group_id):
         .execute()
     )
     return response.data if response.data else None
+
+def update_permit_info(permitid, userid, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location):
+    """
+    Updates the permit information in the 'goup_permits' table where the permitid matches.
+    """
+    try:
+        # Ensure the column names are correct and targeting the right row
+        print(f"Updating permit with permitid: {permitid}")
+        response = supabase.table("parking_permits").update({
+            "permit_number": permit_number,
+            "active_status": active_status,
+            "permit_type": permit_type,
+            "activate_date": activate_date,
+            "expiration_date": expiration_date,
+            "campus_location": campus_location
+        }).eq('permitid', permitid).execute()  # Ensure license_plate_ matches
+
+        # Print response for debugging purposes
+        print("Supabase response:", response)
+        
+        return response
+    except Exception as e:
+        print(f"Error updating car information: {str(e)}")
+        return {'error': str(e)}
+
+########################### Profile ###########################
 
 def fetch_schedule_blocks_by_userids(user_ids):
     """Fetch schedule blocks for multiple users."""
