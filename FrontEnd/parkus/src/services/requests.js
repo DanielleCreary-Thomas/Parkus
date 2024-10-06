@@ -31,9 +31,21 @@ export async function checkScheduleCompleted(userid){
 }
 
 //Payment
+export async function checkUserImageProof(user_id){
+    /**
+     * using the current user's id, checks to see if they have already uploaded an imageProofUrl
+     */
+    var data = await fetch(`http://127.0.0.1:5000/users/imageproof/${user_id}`,
+        { method: "GET" })
+        .then(response => response.json())
+        .then(data => data)
+        .catch(error => console.log(error));
+    return data['imageProof'];
+}
+
 export async function uploadETransfer(formData){
     /**
-     * Using the current user's id tries uploading their etransfer image
+     * Using the current user's id tries uploading their image proof url
      */
     console.log("uploading image form", formData)
 
@@ -47,7 +59,7 @@ export async function uploadETransfer(formData){
     }
     body = JSON.stringify(body);
 
-    var data = await fetch(`http://127.0.0.1:5000/users/etransfer`,
+    var data = await fetch(`http://127.0.0.1:5000/users/imageproof`,
     {
         method: 'POST',
         headers: {
@@ -119,13 +131,13 @@ export async function getGroupId(user_id){
 }
 
 
-export async function getGroupMembers(groupId){
+export async function getGroupMembers(group_id){
     /**
      * gets the information for each member of the given group
      * Information: userid, first name, last name, car info,
      *      email, image url, and car info
      */
-    var data = await fetch(`http://127.0.0.1:5000/users/group/${groupId}`,
+    var data = await fetch(`http://127.0.0.1:5000/users/group/${group_id}`,
         {method: "GET"})
         .then(response => response.json())
         .then(data => data)
@@ -156,7 +168,7 @@ export async function hasMemberPaid(userid){
         .then(data => data)
         .catch(error => console.log(error));
         console.log('check Paid Member', data)
-    return data.data;
+    return data["memberPaid"];
 }
 
 export async function getGroupMember(userid){
@@ -170,7 +182,7 @@ export async function getGroupMember(userid){
         .then(response => response.json())
         .then(data => data)
         .catch(error => console.log(error));
-        console.log('check Paid Member', data)
+        console.log('get group member info', data)
     return data;
 }
 
@@ -184,7 +196,7 @@ export async function getGroupPermit(leaderid){
         .then(data => data)
         .catch(error => console.log(error));
         console.log('check Paid Member', data)
-    return data
+    return data['image_proof_url']
 }
 
 

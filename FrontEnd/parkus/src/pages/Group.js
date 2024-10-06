@@ -15,10 +15,17 @@ import GroupTitle from "../components/Group/GroupTitle/GroupTitle";
 
 function MemberView({members, userInfoGroup, permitImageUrl, isGroupLeader, isPaidMember}){
     if (isGroupLeader){
-        return (<LeaderCard data={members}/>)
+        for (const member in members) {
+            if(member['image_proof_url'] == null){
+                member['image_proof_url'] =
+                    "https://rtneojaduhodjxqmymlq.supabase.co/storage/v1/object/public/payment_proof/UnpaidDefault.webp"
+            }
+        }
+        console.log(members)
+        return (<LeaderCard data={members} permitData={permitImageUrl} />)
     }
     else{
-        if(isPaidMember){
+        if(isPaidMember && userInfoGroup && permitImageUrl){
             return (<PaidMemberCard memberData={userInfoGroup} permitData={permitImageUrl}/>)
         }
         else{
@@ -31,7 +38,7 @@ function MemberView({members, userInfoGroup, permitImageUrl, isGroupLeader, isPa
 export default function Group(){
     const [groupLeader, setGroupLeader] = React.useState(null);
     const [isMemberPaid, setIsMemberPaid] = React.useState(null);
-    const [userid, setUserid] = React.useState(null);
+    const [userId, setUserId] = React.useState(null);
     const [groupId, setGroupId] = React.useState(null);
     const [permitImageUrl, setPermitImageUrl] = React.useState(null);
     const [members, setMembers] = React.useState(null);
@@ -42,39 +49,42 @@ export default function Group(){
         async function init(){
             console.log("------INIT USEFFECT START-----");
             var userid = await getCurrUser();
-            setUserid(userid);
+            setUserId(userid);
             console.log(userid);
 
-            var groupId = await getGroupId(userid);
-            setGroupId(groupId);
-            console.log(groupId);
+            var groupid = await getGroupId(userid);
+            setGroupId(groupid); //because function is asynchronous, this hasn't been set yet
+            console.log(groupid);
 
             if(groupId !== 'None'){
-                var groupLeader = await getGroupLeader(groupId)
+                var groupLeader = await getGroupLeader(groupid)
                 setGroupLeader(groupLeader);
                 console.log(groupLeader);
 
-                setIsMemberPaid( await hasMemberPaid(userid));
-                console.log(isMemberPaid);
+                var paid_member = await hasMemberPaid(userid)
+                setIsMemberPaid(paid_member);
+                console.log(paid_member);
 
-                setMembers(await getGroupMembers(groupId));
-                console.log(members);
+                if(paid_member){
+                    var allMembers = await getGroupMembers(groupid);
+                    setMembers(allMembers);
+                    console.log(allMembers);
 
-                setUserInfoGroup(await getGroupMember(userid));
-                console.log(userInfoGroup);
+                    var userMemberInfo = await getGroupMember(userid);
+                    setUserInfoGroup(userMemberInfo);
+                    console.log(userMemberInfo);
 
-                setPermitImageUrl(await getGroupPermit(groupLeader))
-                console.log(permitImageUrl);
+                    var permitImage = await getGroupPermit(groupLeader);
+                    setPermitImageUrl(permitImage)
+                    console.log(permitImage);
+                }
             }
-
-
-
         }
         init();
     }, []);
 
     function checkGroupLeader() {
-        return groupLeader === userid;
+        return groupLeader === userId;
     }
 
     return(
