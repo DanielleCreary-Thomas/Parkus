@@ -75,6 +75,33 @@ export async function addParkingPermit(permitData) {
     return data;
 }
 
+export async function getPermitId({ userid, permit_number }) {
+    const data = await fetch(`http://127.0.0.1:5000/get-permitid?userid=${userid}&permit_number=${permit_number}`, {
+        method: 'GET',
+    })
+    .then(response => response.json())
+    .then(data => data)
+    .catch(error => console.log(error));
+
+    return data;
+}
+
+// Function to insert a parking group using the permit ID
+export async function addParkingGroup(permitid) {
+    const data = await fetch('http://127.0.0.1:5000/parking-group', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ permitid }),  // Send the permitid
+    })
+    .then(response => response.json())
+    .then(data => data)
+    .catch(error => console.log(error));
+
+    return data;
+}
+
 export async function fetchParkingPermits(userId) {
     var data = await fetch(`http://127.0.0.1:5000/parking-permits/${userId}`,
         { method: 'GET' })
@@ -101,6 +128,7 @@ export async function fetchUser(userId) {
         .catch(error => console.log(error));
     return data;
 }
+
 
 //Group
 export async function getGroupId(user_id){
@@ -246,6 +274,29 @@ export async function addCar(carData) {
         throw error;
     }
 }
+
+export async function updatePermit(permitData) {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/update_permit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(permitData),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update permit information.');
+        }
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Error updating permit:', error);
+        throw error;
+    }
+}
+
 
 
 export async function addUserData(userData) {
