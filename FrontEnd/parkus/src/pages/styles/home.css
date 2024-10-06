@@ -58,20 +58,21 @@
     margin: 0;
   }
   
-  /* Bubble styling for each group member */
-  .home-left-panel li {
-    font-size: 18px;
-    padding: 10px 20px;
-    text-align: center;
-    background-color: #3b89ce; /* Background color for the bubble */
-    color: white;
-    border-radius: 25px; /* Rounded corners to create a bubble effect */
-    margin-bottom: 15px; /* Space between bubbles */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow for a floating effect */
-    width: 200px; /* Fixed width for all bubbles */
-    margin-left: auto;
-    margin-right: auto;
-  }
+ /* Bubble styling for each group member */
+.home-left-panel li {
+  font-size: 20px; /* Increased font size */
+  padding: 15px 30px; /* Increased padding */
+  text-align: center;
+  background-color: #3b89ce; /* Background color for the bubble */
+  color: white;
+  border-radius: 30px; /* Rounded corners to create a bubble effect */
+  margin-bottom: 15px; /* Space between bubbles */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow for a floating effect */
+  width: 250px; /* Increased width for larger bubbles */
+  margin-left: auto;
+  margin-right: auto;
+}
+
   
   /* Styling for error or loading messages */
   .home-left-panel p {
