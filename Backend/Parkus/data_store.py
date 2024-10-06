@@ -173,7 +173,7 @@ def check_paid_member(userid):
     :return:
     """
     if bridge.validate_userid(userid):
-        return bridge.check_paid_member(userid)
+        return {"memberPaid": True} if bridge.check_image_proof(userid) else {"memberPaid": False}
 
 
 def get_group_member(userid):
@@ -222,9 +222,14 @@ def complete_matchmaking(userid):
 
 
 def validate_no_group(userid):
+    """
+    Checks to see that the given user has no group
+    :param userid: given userid
+    :return: Bool that is true if the given user has no group
+    """
     result = bridge.validate_no_group(userid)
     ##valid
-    return result is not None
+    return result is True
 
 
 def upload_etransfer_image(image_url, userid):
@@ -243,9 +248,20 @@ def upload_etransfer_image(image_url, userid):
             if check_paid_member(group_member['userid']):
                 count += 1
         bridge.group_fully_paid(groupid, (count == len(group_members)))
-        result = bridge.upload_etransfer_image(image_url, userid)
+        result = bridge.upload_image_proof(image_url, userid)
         return {"urlUploaded": result}
     return None
+
+
+def check_image_proof(user_id):
+    """
+    Returns whether the given user has any image proof url
+    :param user_id:
+    :return:
+    """
+    if bridge.validate_userid(user_id):
+        result = bridge.check_image_proof(user_id)
+        return {'imageProof': True} if result else {'imageProof': False}
 
 
 def check_schedule_complete(userid):
