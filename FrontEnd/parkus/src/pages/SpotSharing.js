@@ -55,7 +55,16 @@ function SpotSharing() {
         <div>
             <MatchmakingTitle></MatchmakingTitle>
             {notMemberOfGroup ? (//check if they're a member of a group already
-                <section>
+                <Stack
+                    spacing={2}
+                    sx={{
+                        justifyContent: "center",
+                        alignItems: 'center',
+                        display: 'flex',
+                        maxWidth: '400px',
+                        margin: '20px auto',
+                        minWidth: '400px'
+                    }}>
                     {completedSchedule ? (//check if they have schedule blocks
                         <section>
                             {availableGroups ? (//matchmake completed
@@ -75,12 +84,21 @@ function SpotSharing() {
                             <h3> You haven't put in your schedule yet, to join a group head to the schedule tab</h3>
                         </section>
                     )}
-                </section>
+                </Stack>
             ) : (
-                <section>
+                <Stack
+                    spacing={2}
+                    sx={{
+                        justifyContent: "center",
+                        alignItems: 'center',
+                        display: 'flex',
+                        maxWidth: '400px',
+                        margin: '20px auto',
+                        minWidth: '400px'
+                    }}>
                     <h1>Uh Oh!</h1>
                     <h3> You are already in a group!</h3>
-                </section>
+                </Stack>
             )}
         </div>
 
