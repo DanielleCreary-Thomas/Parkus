@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './styles/SignUp.css';
-import { addUserData } from '../services/requests.js'; 
+import { addUserData } from '../services/requests.js';
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
@@ -113,115 +113,114 @@ const SignUp = () => {
                     margin="normal"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    />
-                    <TextField
-                        label="License Plate Number"
-                        variant="outlined"
-                        fullWidth
-                        margin="normal"
-                        value={licensePlateNumber}
-                        onChange={(e) => setLicensePlateNumber(e.target.value)}
-                        required
-                    />
-                    <TextField
-                        label="Email"
-                        variant="outlined"
-                        fullWidth
-                        margin="normal"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                    <TextField
-                        label="Password"
-                        type="password"
-                        variant="outlined"
-                        fullWidth
-                        margin="normal"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        size="large"
-                        onClick={handleSignUp}
-                        className="sign-up-button"
-                    >
-                        Sign Up
-                    </Button>
-    
-                    <div className="sign-in-link">
-                        Already have an account? <Link to="/signin">Sign In</Link>
-                    </div>
+                />
+                <TextField
+                    label="License Plate Number"
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                    value={licensePlateNumber}
+                    onChange={(e) => setLicensePlateNumber(e.target.value)}
+                    required
+                />
+                <TextField
+                    label="Email"
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                />
+                <TextField
+                    label="Password"
+                    type="password"
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
+                <Button
+                    variant="contained"
+                    color="primary"
+                    size="large"
+                    onClick={handleSignUp}
+                    className="sign-up-button"
+                >
+                    Sign Up
+                </Button>
+
+                <div className="sign-in-link">
+                    Already have an account? <Link to="/signin">Sign In</Link>
                 </div>
-    
-                <Dialog
-                    open={openDialog}
-                    onClose={handleCloseDialog}
-                    PaperProps={{
-                        sx: {
-                            backgroundColor: '#f5f5f5',
-                            boxShadow: '0 0 20px rgba(0, 0, 0, 0.2)',
-                            borderRadius: '12px',
-                        }
+            </div>
+
+            <Dialog
+                open={openDialog}
+                onClose={handleCloseDialog}
+                PaperProps={{
+                    sx: {
+                        backgroundColor: '#f5f5f5',
+                        boxShadow: '0 0 20px rgba(0, 0, 0, 0.2)',
+                        borderRadius: '12px',
+                    }
+                }}
+            >
+                <DialogTitle
+                    sx={{
+                        color: '#333',
+                        fontSize: '24px',
+                        textAlign: 'center',
+                        fontWeight: 'bold',
+                    }}
+                    id="alert-dialog-title"
+                >
+                    {"Registration Successful"}
+                </DialogTitle>
+                <DialogContent
+                    sx={{
+                        padding: '16px 24px',
                     }}
                 >
-                    <DialogTitle 
+                    <DialogContentText
                         sx={{
-                            color: '#333',
-                            fontSize: '24px',
+                            color: '#666',
                             textAlign: 'center',
-                            fontWeight: 'bold',
+                            fontSize: '18px',
                         }}
-                        id="alert-dialog-title"
+                        id="alert-dialog-description"
                     >
-                        {"Registration Successful"}
-                    </DialogTitle>
-                    <DialogContent
+                        You have successfully registered!
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions
+                    sx={{
+                        justifyContent: 'center',
+                    }}
+                >
+                    <Button
                         sx={{
-                            padding: '16px 24px',
+                            backgroundColor: '#1976d2',
+                            color: '#fff',
+                            '&:hover': {
+                                backgroundColor: '#155a9b',
+                            },
+                            borderRadius: '8px',
+                            padding: '6px 16px',
                         }}
+                        onClick={handleCloseDialog}
+                        autoFocus
                     >
-                        <DialogContentText 
-                            sx={{
-                                color: '#666',
-                                textAlign: 'center',
-                                fontSize: '18px',
-                            }}
-                            id="alert-dialog-description"
-                        >
-                            You have successfully registered!
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions
-                        sx={{
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Button
-                            sx={{
-                                backgroundColor: '#1976d2',
-                                color: '#fff',
-                                '&:hover': {
-                                    backgroundColor: '#155a9b',
-                                },
-                                borderRadius: '8px',
-                                padding: '6px 16px',
-                            }}
-                            onClick={handleCloseDialog}
-                            autoFocus
-                        >
-                            OK
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-    
-                <ToastContainer position="top-right" autoClose={5000} hideProgressBar />
-            </div>
-        );
-    };
-    
-    export default SignUp;
-    
+                        OK
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <ToastContainer position="top-right" autoClose={5000} hideProgressBar />
+        </div>
+    );
+};
+
+export default SignUp;

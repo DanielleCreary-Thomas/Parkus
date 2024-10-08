@@ -23,7 +23,7 @@ function SpotSharing() {
     }
 
     function handleGroupClick(id){
-        navigate(`/groups/${id}`);
+        navigate(`/group-schedule/${id}`);
     }
 
     useEffect(() => {
@@ -40,36 +40,31 @@ function SpotSharing() {
                 console.log("member of group", notMemberOfGroup)
             }
 
+            var scheduleComplete = await checkScheduleCompleted(userid)
+            console.log(scheduleComplete)
+            if(scheduleComplete['scheduleComplete'] !== false){
+                setCompletedSchedule(true)
+            }
         }
         init();
     }, []);
-    // async function checkInGroup(){
-    //     const userid = getCurrUser()
-    //     const groupid = getGroupId(userid)
-    //     if(groupid['groupid'] !== "None"){
-    //         setMemberOfGroup(true)
-    //     }
-    // }
 
-    useEffect(() => {
-        try {
-            const userid = getCurrUser()
-            const scheduleMade = checkScheduleCompleted(userid)
-            if(scheduleMade['scheduleMade'] !== "None"){
-                setCompletedSchedule(true)
-            }
-        }catch (e) {
-            console.error('Error fetching whether schedule complete:',e)
-        }
-
-    }, [completedSchedule]);
 
 
     return (
-        <Stack>
+        <div>
             <MatchmakingTitle></MatchmakingTitle>
             {notMemberOfGroup ? (//check if they're a member of a group already
-                <section>
+                <Stack
+                    spacing={2}
+                    sx={{
+                        justifyContent: "center",
+                        alignItems: 'center',
+                        display: 'flex',
+                        maxWidth: '400px',
+                        margin: '20px auto',
+                        minWidth: '400px'
+                    }}>
                     {completedSchedule ? (//check if they have schedule blocks
                         <section>
                             {availableGroups ? (//matchmake completed
@@ -89,14 +84,23 @@ function SpotSharing() {
                             <h3> You haven't put in your schedule yet, to join a group head to the schedule tab</h3>
                         </section>
                     )}
-                </section>
+                </Stack>
             ) : (
-                <section>
+                <Stack
+                    spacing={2}
+                    sx={{
+                        justifyContent: "center",
+                        alignItems: 'center',
+                        display: 'flex',
+                        maxWidth: '400px',
+                        margin: '20px auto',
+                        minWidth: '400px'
+                    }}>
                     <h1>Uh Oh!</h1>
                     <h3> You are already in a group!</h3>
-                </section>
+                </Stack>
             )}
-        </Stack>
+        </div>
 
 
     )
