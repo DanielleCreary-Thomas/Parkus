@@ -740,5 +740,34 @@ if __name__ == "__main__":
     # print(group_by_groupid(1))
     # print(groups_with_vacancies())
 
+def add_user_to_group(user_id, group_id):
+    """Updates the user's group_id in the database."""
+    response = (
+        supabase.table("users")
+        .update({"groupid": group_id})
+        .eq("userid", user_id)
+        .execute()
+    )
+    return len(response.data) > 0
+
+def get_group_size(group_id):
+    """Returns the number of users in a group."""
+    response = (
+        supabase.table('users')
+        .select('userid')
+        .eq("groupid", group_id)
+        .execute()
+    )
+    return len(response.data)
+
+def validate_groupid(group_id):
+    """Checks if the group ID exists."""
+    response = (
+        supabase.table('parking_groups')
+        .select('groupid')
+        .eq('groupid', group_id)
+        .execute()
+    )
+    return len(response.data) > 0
 
 
