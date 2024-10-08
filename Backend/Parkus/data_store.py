@@ -239,6 +239,7 @@ def check_schedule_complete(userid):
         return {'scheduleComplete': True} if result else {'scheduleComplete': False}
 
 
+
 def get_schedule_for_user(userid):
     """
     Returns the schedule blocks for the given user
@@ -247,7 +248,7 @@ def get_schedule_for_user(userid):
     """
     return bridge.schedule_blocks_for_user(userid)
 
-
+    
 
 def group_is_not_fully_paid(groupid):
     """

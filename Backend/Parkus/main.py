@@ -9,6 +9,10 @@ import bridge
 # bridge should be removed from main.py
 
 app = Flask(__name__)
+CORS(app)
+
+
+
 # Should only be line below
 # CORS(app)
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
@@ -44,6 +48,34 @@ def get_group_schedules(group_id):
             })
 
     return jsonify(schedules), 200
+
+
+
+@app.route('/users/<user_id>/schedule', methods=['GET'])
+def get_user_schedule(user_id):
+    """
+    Returns the schedule for the user with the matching id
+    :param user_id: user id
+    :return: JSON with the user's schedule
+    """
+    assert user_id == request.view_args['user_id']
+
+    user_schedule = data_store.get_schedule_for_user(user_id)
+
+    schedule_data = []
+    for block in user_schedule:
+        schedule_data.append({
+            'user_id': user_id,
+            'schedule_id': block['scheduleid'],
+            'dow': block['dow'],
+            'start_time': block['start_time'],
+            'end_time': block['end_time'],
+            'description': block.get('description', '')
+        })
+    return jsonify(schedule_data), 200
+
+
+
 
 
 @app.route('/groups/<id>', methods=['GET', 'OPTIONS'])
@@ -333,4 +365,8 @@ def add_user():
 
 
 if __name__ == '__main__':
+
     app.run()
+
+
+
