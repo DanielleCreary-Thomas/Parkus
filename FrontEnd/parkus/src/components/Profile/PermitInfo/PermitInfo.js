@@ -109,20 +109,20 @@ const PermitInfo = ({
           I have a parking permit
           {permitInputEnabled ? (
             <Box sx={{ mt: 2 }}>
-              <TextField label="Permit Number" name="permit_number" value={permitData.permit_number} onChange={handlePermitInputChange} fullWidth margin="normal" />
-              <TextField select label="Permit Type" name="permit_type" value={permitData.permit_type} onChange={handlePermitInputChange} fullWidth margin="normal" SelectProps={{ native: true }}>
+              <TextField label="Permit Number" name="permit_number" required value={permitData.permit_number} onChange={handlePermitInputChange} fullWidth margin="normal" />
+              <TextField select label="Permit Type" name="permit_type" required value={permitData.permit_type} onChange={handlePermitInputChange} fullWidth margin="normal" SelectProps={{ native: true }}>
                 <option value=""></option>
                 <option value="Virtual">Virtual</option>
                 <option value="Physical">Physical</option>
               </TextField>
-              <TextField label="Activation Date" type="date" name="activate_date" value={permitData.activate_date} onChange={handlePermitInputChange} fullWidth margin="normal" InputLabelProps={{ shrink: true }} />
-              <TextField label="Expiration Date" type="date" name="expiration_date" value={permitData.expiration_date} onChange={handlePermitInputChange} fullWidth margin="normal" InputLabelProps={{ shrink: true }} />
-              <TextField select label="Active Status" name="active_status" value={permitData.active_status} onChange={handlePermitInputChange} fullWidth margin="normal" SelectProps={{ native: true }}>
+              <TextField label="Activation Date" type="date" name="activate_date" required value={permitData.activate_date} onChange={handlePermitInputChange} fullWidth margin="normal" InputLabelProps={{ shrink: true }} />
+              <TextField label="Expiration Date" type="date" name="expiration_date" required value={permitData.expiration_date} onChange={handlePermitInputChange} fullWidth margin="normal" InputLabelProps={{ shrink: true }} />
+              <TextField select label="Active Status" name="active_status" required value={permitData.active_status} onChange={handlePermitInputChange} fullWidth margin="normal" SelectProps={{ native: true }}>
                 <option value=""></option>
                 <option value="TRUE">Active</option>
                 <option value="FALSE">Inactive</option>
               </TextField>
-              <TextField select label="Campus Location" name="campus_location" value={permitData.campus_location} onChange={handlePermitInputChange} fullWidth margin="normal" SelectProps={{ native: true }}>
+              <TextField select label="Campus Location" name="campus_location" required value={permitData.campus_location} onChange={handlePermitInputChange} fullWidth margin="normal" SelectProps={{ native: true }}>
                 <option value=""></option>
                 <option value="Trafalgar Campus">Trafalgar Campus</option>
                 <option value="Davis Campus">Davis Campus</option>

@@ -153,40 +153,73 @@ const Profile = () => {
 
   const handlePermitSubmit = async () => {
     if (!userId) {
-      toast.error('User ID is missing.');
-      return;
-    }
-    try {
-      const checkPermitExists = await checkParkingPermit(userId); // Using the function from requests.js
-      if (checkPermitExists && checkPermitExists.has_permit) {
-        toast.error('Parking permit already exists for this user.');
+        toast.error('User ID is missing.');
         return;
-      }
-
-      const permitResponse = await addParkingPermit({ userid: userId, ...permitData });
-      if (permitResponse) {
-        const permitIdResponse = await getPermitId({ userid: userId, permit_number: permitData.permit_number });
-        if (permitIdResponse && permitIdResponse.permitid) {
-          const groupResponse = await addParkingGroup(permitIdResponse.permitid);
-          if (groupResponse.error) {
-            toast.error(`Error adding parking group: ${groupResponse.error}`);
-          } else {
-            toast.success('Parking Info added successfully!');
-            await fetchUserPermits();  // Re-fetch the permits
-            setHasPermit(true);
-            setPermitInputEnabled(false);
-          }
-        } else {
-          toast.error('Error retrieving permit ID.');
-        }
-      } else {
-        toast.error('Error adding permit.');
-      }
-    } catch (error) {
-      console.error('Error adding permit or group:', error);
-      toast.error('Failed to add permit or parking group.');
     }
-  };
+
+    // Validate if any of the required fields are missing or empty
+    if (!permitData.permit_number || permitData.permit_number.trim() === '') {
+        toast.error('Permit Number is missing.');
+        return;
+    }
+
+    if (!permitData.permit_type || permitData.permit_type.trim() === '') {
+        toast.error('Permit Type is missing.');
+        return;
+    }
+
+    if (!permitData.activate_date || permitData.activate_date.trim() === '') {
+        toast.error('Activation Date is missing.');
+        return;
+    }
+
+    if (!permitData.expiration_date || permitData.expiration_date.trim() === '') {
+        toast.error('Expiration Date is missing.');
+        return;
+    }
+
+    if (!permitData.active_status) {
+        toast.error('Active Status is missing.');
+        return;
+    }
+
+    if (!permitData.campus_location || permitData.campus_location.trim() === '') {
+        toast.error('Campus Location is missing.');
+        return;
+    }
+
+    try {
+        const checkPermitExists = await checkParkingPermit(userId); // Using the function from requests.js
+        if (checkPermitExists && checkPermitExists.has_permit) {
+            toast.error('Parking permit already exists for this user.');
+            return;
+        }
+
+        const permitResponse = await addParkingPermit({ userid: userId, ...permitData });
+        if (permitResponse) {
+            const permitIdResponse = await getPermitId({ userid: userId, permit_number: permitData.permit_number });
+            if (permitIdResponse && permitIdResponse.permitid) {
+                const groupResponse = await addParkingGroup(permitIdResponse.permitid);
+                if (groupResponse.error) {
+                    toast.error(`Error adding parking group: ${groupResponse.error}`);
+                } else {
+                    toast.success('Parking Info added successfully!');
+                    await fetchUserPermits();  // Re-fetch the permits
+                    setHasPermit(true);
+                    setPermitInputEnabled(false);
+                }
+            } else {
+                toast.error('Error retrieving permit ID.');
+            }
+        } else {
+            toast.error('Error adding permit.');
+        }
+    } catch (error) {
+        console.error('Error adding permit or group:', error);
+        toast.error('Failed to add permit or parking group.');
+    }
+};
+
 
   const handleCarSubmit = async () => {
     if (!userId) {
