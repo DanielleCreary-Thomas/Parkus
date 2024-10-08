@@ -119,6 +119,7 @@ def get_user(user_id):
         return jsonify({"error": "User not found"}), 404
 
 
+########################### Profile ###########################
 @app.route('/parking-permit/<user_id>', methods=['GET'])
 def check_user_parking_permit(user_id):
     """API endpoint to check if the user has a parking permit."""
@@ -139,10 +140,44 @@ def add_parking_permit():
     campus_location = data.get('campus_location')
 
     result = data_store.add_parking_permit(user_id, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location)
+
+    return jsonify(result)
+
+@app.route('/get-permitid', methods=['GET'])
+def get_permit_id():
+    """API endpoint to retrieve permit ID based on user ID and permit number."""
+    user_id = request.args.get('userid')
+    permit_number = request.args.get('permit_number')
+
+    if not user_id or not permit_number:
+        return jsonify({"error": "Missing user ID or permit number"}), 400
+
+    try:
+        permitid = data_store.get_permit_id(user_id, permit_number)
+
+        if permitid:
+            return jsonify({"permitid": permitid}), 200
+        else:
+            return jsonify({"error": "Permit not found"}), 404
+    except Exception as e:
+        print(f"Error retrieving permit ID: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+
+@app.route('/parking-group', methods=['POST'])
+def add_parking_group():
+    """API endpoint to add a new parking group using the permitid."""
+    data = request.json
+    permitid = data.get('permitid')
+
+    if not permitid:
+        return jsonify({"error": "Missing permitid"}), 400
+
+    result = data_store.add_parking_group(permitid)
+
     if result:
-        return jsonify({"message": "Permit added successfully"}), 201
+        return jsonify({"message": "Parking group added successfully"}), 201
     else:
-        return jsonify({"error": "Failed to add permit"}), 400
+        return jsonify({"error": "Failed to add parking group"}), 500
 
 
 @app.route('/parking-permits/<user_id>', methods=['GET'])
@@ -153,7 +188,25 @@ def get_user_permits(user_id):
         return jsonify(permits), 200
     else:
         return jsonify({"error": "No permits found"}), 404
+    
+@app.route('/is-permit-holder', methods=['GET'])
+def check_if_permit_holder():
+    """
+    API endpoint to check if the user is the permit holder for their group.
+    :return: Boolean result indicating if the user is the permit holder.
+    """
+    user_id = request.args.get('userid')
+    group_id = request.args.get('groupid')
 
+    if not user_id or not group_id:
+        return jsonify({"error": "Missing user ID or group ID"}), 400
+
+    is_holder = data_store.is_user_permit_holder(user_id, group_id)
+
+    return jsonify({"isPermitHolder": is_holder}), 200
+
+    
+########################### Profile ###########################
 
 @app.route('/permits/userid/<group_id>', methods=['GET', 'OPTIONS'])
 def get_group_leader(group_id):
@@ -336,6 +389,30 @@ def update_car():
 
     # Call the data_store to update the car information
     result = data_store.update_car_info(license_plate_number, province, year, make, model, color)
+    
+    if 'error' in result:
+        return jsonify({'error': result['error']}), 400
+    
+    return jsonify({"message": "Car information updated successfully"}), 201
+
+
+@app.route('/update_permit', methods=['POST'])
+def update_permit():
+    """
+    API endpoint to update the permit information based on the permit id.
+    """
+    data = request.json
+    permitid = data.get('permitid')
+    userid = data.get('userid')
+    permit_number = data.get('permit_number')
+    active_status = data.get('active_status')
+    permit_type = data.get('permit_type')
+    activate_date = data.get('activate_date')
+    expiration_date = data.get('expiration_date')
+    campus_location = data.get('campus_location')
+
+    # Call the data_store to update the car information
+    result = data_store.update_permit_info(permitid, userid, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location)
     
     if 'error' in result:
         return jsonify({'error': result['error']}), 400
