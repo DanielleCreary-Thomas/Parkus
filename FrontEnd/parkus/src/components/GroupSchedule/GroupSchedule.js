@@ -1,3 +1,5 @@
+// GroupSchedule.jsx
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabase.ts';
 import { Box, Typography } from '@mui/material';
@@ -177,22 +179,10 @@ const GroupSchedule = () => {
                     </div>
                 ))}
             </div>
-            return (
-            <Box sx={{ padding: 3 }}>
-                <ToastContainer />
-                <Typography variant="h4" align="center" gutterBottom>
-                    Schedule for Group ID: {groupId}
-                </Typography>
-                <div className="schedule-grid">
-                    {/* ... existing schedule grid code */}
-                </div>
-                {/* Add the JoinButton here */}
-                <Box sx={{ marginTop: 2, textAlign: 'center' }}>
-                    <JoinButton groupId={groupId} />
-                </Box>
+            {/* Add the JoinButton here */}
+            <Box sx={{ marginTop: 2, textAlign: 'center' }}>
+                <JoinButton groupId={groupId} />
             </Box>
-            );
-
         </Box>
     );
 };
