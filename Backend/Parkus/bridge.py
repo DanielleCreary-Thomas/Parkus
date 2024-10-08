@@ -82,6 +82,7 @@ def member_userid_for_group(groupid):
     #     members = cur.fetchall()
     #     return members
 
+
 def member_count_by_groupid(groupid):
     """
     returns the number of members in the group with the given ID
@@ -133,6 +134,7 @@ def group_by_groupid(groupid):
     #     }
     #     return group_dict
 
+
 ###Vacancy Queries
 def get_all_groupids():
     """
@@ -145,6 +147,7 @@ def get_all_groupids():
         .execute()
     )
     return response.data
+
 
 def active_permit(permitid):
     """
@@ -161,6 +164,7 @@ def active_permit(permitid):
     )
     return len(response.data) > 0
 
+
 def get_group_size(groupid):
     """
     Returns the size of the group
@@ -176,6 +180,7 @@ def get_group_size(groupid):
 
     return len(response.data)
 
+
 def get_permit_by_groupid(groupid):
     """
     Returns the permit of the given group
@@ -189,6 +194,7 @@ def get_permit_by_groupid(groupid):
         .execute()
     )
     return response.data[0]
+
 
 ## User Schedule
 def schedule_blocks_for_user(userid):
@@ -215,6 +221,7 @@ def schedule_blocks_for_user(userid):
     #     schedule = cur.fetchall()
     #     return schedule
 
+
 def validate_no_group(userid):
     """
     Checks that given user has no group
@@ -223,13 +230,13 @@ def validate_no_group(userid):
     """
     response = (
         supabase.table("users")
-        .select("*")
-        .is_("groupid", "null")
+        .select("groupid")
         .eq("userid", userid)
         .execute()
     )
 
-    return len(response.data) > 0
+
+    return response.data[0]['groupid'] == None
     # with conn.cursor() as cur:
     #     cur.execute("""
     #     SELECT *
@@ -237,6 +244,7 @@ def validate_no_group(userid):
     #     WHERE u.userid = %s AND u.groupid is null""",
     #                 (userid,))
     #     return cur.fetchone()
+
 
 def get_group_leader(groupid):
     """
@@ -263,6 +271,7 @@ def get_group_leader(groupid):
 
     return None
 
+
 def get_group_id(userid):
     """
     Returns the group id for the given userid
@@ -276,6 +285,7 @@ def get_group_id(userid):
         .execute()
     )
     return response.data[0]
+
 
 def get_group_members(groupid):
     """
@@ -292,6 +302,7 @@ def get_group_members(groupid):
     )
     return response.data
 
+
 def get_car_info(platenum):
     """
     Returns the car info for the given platenum
@@ -306,19 +317,22 @@ def get_car_info(platenum):
     )
     return response.data[0]
 
-def paid_member(userid):
+
+
+def group_fully_paid(groupid, fully_paid):
     """
-    Checks if the given user is paid
-    :param userid: given user's id
-    :return: True if the user is paid, False otherwise
+    Sets that the given group is fully paid
+    :param groupid: the given group's id
+    :param fully_paid: true if every member is fully paid, false otherwise
+    :return:
     """
     response =(
-        supabase.table("users")
-        .select("*")
-        .neq("image_proof_url", None)
+        supabase.table("parking_groups")
+        .update({"fully_paid": fully_paid})
+        .eq("groupid", groupid)
         .execute()
     )
-    return len(response.data) > 0
+    return response.data[0]
 
 
 def get_group_member(userid):
@@ -352,20 +366,35 @@ def get_group_permit(leaderid):
     return response.data[0]
 
 
-def upload_etransfer_image(imageUrl, userid):
+def upload_image_proof(image_url, userid):
     """
     Updates the given user's eTransfer Proof image url
-    :param imageUrl: Url of the eTransfer Proof image
+    :param image_url: Url of the eTransfer Proof image
     :param userid: user's id
     :return: True if the user is uploaded, False otherwise
     """
     response = (
         supabase.table("users")
-        .update({"image_proof_url": imageUrl})
+        .update({"image_proof_url": image_url})
         .eq("userid", userid)
         .execute()
     )
-    return len(response.data[0]) > 0
+    return len(response.data) > 0
+
+
+def check_image_proof(userid):
+    """
+    Checks if the given user has an image proof url
+    :param userid:
+    :return:
+    """
+    response = (
+        supabase.table("users")
+        .select("image_proof_url")
+        .eq("userid", userid)
+        .execute()
+    )
+    return response.data[0]['image_proof_url'] != None
 
 
 def check_schedule_complete(userid):
@@ -375,16 +404,36 @@ def check_schedule_complete(userid):
     :return:
     """
     response = (
-        supabase.table("users")
+        supabase.table("schedule_blocks")
         .select("scheduleid")
         .eq("userid", userid)
         .execute()
     )
     return len(response.data) > 0
 
+
+def check_fully_paid(groupid):
+    """
+    Checks if the group with the given groupid has fully paid or not.
+    :param groupid: the group's id
+    :return: True if fully_paid is False, else False
+    """
+    response = (
+        supabase.table("parking_groups")
+        .select("fully_paid")
+        .eq("groupid", groupid)
+        .execute()
+    )
+    if response.data:
+        return not response.data[0]['fully_paid']  # Return True if fully_paid is False
+    return False
+
+
 """
 Validation functions
 """
+
+
 def validate_userid(userid):
     response = (
         supabase.table("users")
@@ -393,6 +442,7 @@ def validate_userid(userid):
         .execute()
     )
     return len(response.data) > 0
+
 
 def validate_groupid(groupid):
     response = (
@@ -403,6 +453,7 @@ def validate_groupid(groupid):
     )
     return len(response.data) > 0
 
+
 def validate_permitid(permitiid):
     response = (
         supabase.table("parking_permits")
@@ -412,6 +463,7 @@ def validate_permitid(permitiid):
     )
     return len(response.data) > 0
 
+
 def validate_scheduleid(scheduleid):
     response = (
         supabase.table("schedule_blocks")
@@ -420,6 +472,7 @@ def validate_scheduleid(scheduleid):
         .execute()
     )
     return len(response.data) > 0
+
 
 def validate_license_plate_number(license_plate_number):
     """
@@ -506,26 +559,6 @@ def fetch_schedule_blocks_by_userid(user_id):
     return response.data if response.data else None
 
 
-#this is not by Rameez, but Danielle instead I think
-def validate_userid(userid):
-    response = (
-        supabase.table("users")
-        .select("*")
-        .eq("userid", userid)
-        .execute()
-    )
-    return len(response.data) > 0
-
-def upload_etransfer_image(imageUrl, userid):
-    """Updates the given user's eTransfer proof image URL."""
-    response = (
-        supabase.table("users")
-        .update({"image_proof_url": imageUrl})
-        .eq("userid", userid)
-        .execute()
-    )
-    return len(response.data) > 0
-
 def fetch_parking_permits_by_userid(user_id):
     """Fetches all parking permits for a given user ID from the Supabase database."""
     response = (
@@ -539,6 +572,7 @@ def fetch_parking_permits_by_userid(user_id):
     else:
         print("No permits found.")
         return []
+
 
 def fetch_car_by_userid(user_id):
     """
@@ -561,7 +595,8 @@ def fetch_car_by_userid(user_id):
     except Exception as e:
         print(f"Error fetching car info: {e}")
         return None
-    
+
+
 def update_car_info(license_plate_number, province, year, make, model, color):
     """
     Updates the car information in the 'cars' table where the license_plate_number matches.
@@ -585,6 +620,7 @@ def update_car_info(license_plate_number, province, year, make, model, color):
         print(f"Error updating car information: {str(e)}")
         return {'error': str(e)}
 
+
 def insert_user_data(user_id, first_name, last_name, email, student_id, phone_number, license_plate_number):
     """
     Inserts user details into the 'users' table in Supabase.
@@ -603,6 +639,7 @@ def insert_user_data(user_id, first_name, last_name, email, student_id, phone_nu
         return response
     except Exception as e:
         return {'error': str(e)}
+
 
 #insert license_plate_number to cars table when user sign up
 def insert_license_plate_number(license_plate_number):
@@ -623,9 +660,10 @@ def insert_license_plate_number(license_plate_number):
     except Exception as e:
         return {'error': str(e)}
 
+
 if __name__ == "__main__":
     ##Testing has member paid
-    print(paid_member('33d6127f-3a9e-4681-83a2-92c98db0881c'))
+    print(check_paid_member('33d6127f-3a9e-4681-83a2-92c98db0881c'))
 
     ##Testing Get Car info
     print(get_car_info('ABC123'))
@@ -653,18 +691,4 @@ if __name__ == "__main__":
     # print(groups_with_vacancies())
 
 
-def check_fully_paid(groupid):
-    """
-    Checks if the group with the given groupid has fully paid or not.
-    :param groupid: the group's id
-    :return: True if fully_paid is False, else False
-    """
-    response = (
-        supabase.table("parking_groups")
-        .select("fully_paid")
-        .eq("groupid", groupid)
-        .execute()
-    )
-    if response.data:
-        return not response.data[0]['fully_paid']  # Return True if fully_paid is False
-    return False
+

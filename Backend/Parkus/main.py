@@ -174,7 +174,7 @@ def get_group_id(user_id):
     :return: group id
     """
     assert user_id == request.view_args['user_id']
-    if not data_store.validate_no_group(user_id):
+    if not data_store.validate_no_group(user_id): # Checks to see that a user has no group
         return data_store.get_group_id(user_id)
     return {'groupid': 'None'}
 
@@ -231,22 +231,32 @@ def check_schedule(user_id):
     :return:
     """
     assert user_id == request.view_args['user_id']
-    return data_store.validate_no_schedule(user_id)
+    return data_store.check_schedule_complete(user_id)
 
+
+@app.route('/users/imageproof/<user_id>', methods=['GET', 'OPTIONS'])
+def check_image_proof(user_id):
+    """
+    Returns whether the given user has any image proof url
+    :param user_id:
+    :return:
+    """
+    assert user_id == request.view_args['user_id']
+    return data_store.check_image_proof(user_id)
 
 ##POST Endpoints
-@app.route('/users/etransfer', methods=['POST'])
-def etransfer_image():
-    """uploads a user's etransfer image
-    :return: the user's etransfer image
+@app.route('/users/imageproof', methods=['POST'])
+def image_proof_upload():
+    """uploads a user's image proof url
+    :return: the user's image proof url
     """
     #assert formData == request.form
     print(request.data)
     json_data = request.get_json()
     print(json_data)
-    imageUrl = json_data["proofImageUrl"]#need to correct
+    image_url = json_data["proofImageUrl"]
     userid = json_data['userId']
-    response = data_store.upload_etransfer_image(imageUrl, userid)
+    response = data_store.upload_etransfer_image(image_url, userid)
     return jsonify(response)
 
 
