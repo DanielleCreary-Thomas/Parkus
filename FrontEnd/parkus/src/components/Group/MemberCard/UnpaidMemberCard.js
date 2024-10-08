@@ -14,7 +14,16 @@ import {
 
 export default function UnpaidMemberCard() {
     return (
-        <Stack>
+        <Stack
+            spacing={2}
+            sx={{
+                justifyContent: "center",
+                alignItems: 'center',
+                display: 'flex',
+                maxWidth: '400px',
+                margin: '20px auto',
+                minWidth: '400px'
+            }}>
             <h1>
                 Uh Oh!
             </h1>
