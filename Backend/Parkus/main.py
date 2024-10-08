@@ -9,6 +9,10 @@ import bridge
 # bridge should be removed from main.py
 
 app = Flask(__name__)
+CORS(app)
+
+
+
 # Should only be line below
 # CORS(app)
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
@@ -44,6 +48,34 @@ def get_group_schedules(group_id):
             })
 
     return jsonify(schedules), 200
+
+
+
+@app.route('/users/<user_id>/schedule', methods=['GET'])
+def get_user_schedule(user_id):
+    """
+    Returns the schedule for the user with the matching id
+    :param user_id: user id
+    :return: JSON with the user's schedule
+    """
+    assert user_id == request.view_args['user_id']
+
+    user_schedule = data_store.get_schedule_for_user(user_id)
+
+    schedule_data = []
+    for block in user_schedule:
+        schedule_data.append({
+            'user_id': user_id,
+            'schedule_id': block['scheduleid'],
+            'dow': block['dow'],
+            'start_time': block['start_time'],
+            'end_time': block['end_time'],
+            'description': block.get('description', '')
+        })
+    return jsonify(schedule_data), 200
+
+
+
 
 
 @app.route('/groups/<id>', methods=['GET', 'OPTIONS'])
@@ -87,6 +119,7 @@ def get_user(user_id):
         return jsonify({"error": "User not found"}), 404
 
 
+########################### Profile ###########################
 @app.route('/parking-permit/<user_id>', methods=['GET'])
 def check_user_parking_permit(user_id):
     """API endpoint to check if the user has a parking permit."""
@@ -107,10 +140,44 @@ def add_parking_permit():
     campus_location = data.get('campus_location')
 
     result = data_store.add_parking_permit(user_id, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location)
+
+    return jsonify(result)
+
+@app.route('/get-permitid', methods=['GET'])
+def get_permit_id():
+    """API endpoint to retrieve permit ID based on user ID and permit number."""
+    user_id = request.args.get('userid')
+    permit_number = request.args.get('permit_number')
+
+    if not user_id or not permit_number:
+        return jsonify({"error": "Missing user ID or permit number"}), 400
+
+    try:
+        permitid = data_store.get_permit_id(user_id, permit_number)
+
+        if permitid:
+            return jsonify({"permitid": permitid}), 200
+        else:
+            return jsonify({"error": "Permit not found"}), 404
+    except Exception as e:
+        print(f"Error retrieving permit ID: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+
+@app.route('/parking-group', methods=['POST'])
+def add_parking_group():
+    """API endpoint to add a new parking group using the permitid."""
+    data = request.json
+    permitid = data.get('permitid')
+
+    if not permitid:
+        return jsonify({"error": "Missing permitid"}), 400
+
+    result = data_store.add_parking_group(permitid)
+
     if result:
-        return jsonify({"message": "Permit added successfully"}), 201
+        return jsonify({"message": "Parking group added successfully"}), 201
     else:
-        return jsonify({"error": "Failed to add permit"}), 400
+        return jsonify({"error": "Failed to add parking group"}), 500
 
 
 @app.route('/parking-permits/<user_id>', methods=['GET'])
@@ -121,7 +188,25 @@ def get_user_permits(user_id):
         return jsonify(permits), 200
     else:
         return jsonify({"error": "No permits found"}), 404
+    
+@app.route('/is-permit-holder', methods=['GET'])
+def check_if_permit_holder():
+    """
+    API endpoint to check if the user is the permit holder for their group.
+    :return: Boolean result indicating if the user is the permit holder.
+    """
+    user_id = request.args.get('userid')
+    group_id = request.args.get('groupid')
 
+    if not user_id or not group_id:
+        return jsonify({"error": "Missing user ID or group ID"}), 400
+
+    is_holder = data_store.is_user_permit_holder(user_id, group_id)
+
+    return jsonify({"isPermitHolder": is_holder}), 200
+
+    
+########################### Profile ###########################
 
 @app.route('/permits/userid/<group_id>', methods=['GET', 'OPTIONS'])
 def get_group_leader(group_id):
@@ -142,7 +227,7 @@ def get_group_id(user_id):
     :return: group id
     """
     assert user_id == request.view_args['user_id']
-    if not data_store.validate_no_group(user_id):
+    if not data_store.validate_no_group(user_id): # Checks to see that a user has no group
         return data_store.get_group_id(user_id)
     return {'groupid': 'None'}
 
@@ -199,22 +284,32 @@ def check_schedule(user_id):
     :return:
     """
     assert user_id == request.view_args['user_id']
-    return data_store.validate_no_schedule(user_id)
+    return data_store.check_schedule_complete(user_id)
 
+
+@app.route('/users/imageproof/<user_id>', methods=['GET', 'OPTIONS'])
+def check_image_proof(user_id):
+    """
+    Returns whether the given user has any image proof url
+    :param user_id:
+    :return:
+    """
+    assert user_id == request.view_args['user_id']
+    return data_store.check_image_proof(user_id)
 
 ##POST Endpoints
-@app.route('/users/etransfer', methods=['POST'])
-def etransfer_image():
-    """uploads a user's etransfer image
-    :return: the user's etransfer image
+@app.route('/users/imageproof', methods=['POST'])
+def image_proof_upload():
+    """uploads a user's image proof url
+    :return: the user's image proof url
     """
     #assert formData == request.form
     print(request.data)
     json_data = request.get_json()
     print(json_data)
-    imageUrl = json_data["proofImageUrl"]#need to correct
+    image_url = json_data["proofImageUrl"]
     userid = json_data['userId']
-    response = data_store.upload_etransfer_image(imageUrl, userid)
+    response = data_store.upload_etransfer_image(image_url, userid)
     return jsonify(response)
 
 
@@ -331,6 +426,31 @@ def update_car():
     return jsonify({"message": "Car information updated successfully"}), 201
 
 
+
+@app.route('/update_permit', methods=['POST'])
+def update_permit():
+    """
+    API endpoint to update the permit information based on the permit id.
+    """
+    data = request.json
+    permitid = data.get('permitid')
+    userid = data.get('userid')
+    permit_number = data.get('permit_number')
+    active_status = data.get('active_status')
+    permit_type = data.get('permit_type')
+    activate_date = data.get('activate_date')
+    expiration_date = data.get('expiration_date')
+    campus_location = data.get('campus_location')
+
+    # Call the data_store to update the car information
+    result = data_store.update_permit_info(permitid, userid, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location)
+    
+    if 'error' in result:
+        return jsonify({'error': result['error']}), 400
+    
+    return jsonify({"message": "Car information updated successfully"}), 201
+
+    
 @app.route('/add-user', methods=['POST'])
 def add_user():
     """
@@ -363,4 +483,8 @@ def add_user():
 
 
 if __name__ == '__main__':
+
     app.run()
+
+
+

@@ -1,26 +1,26 @@
 import {Box, Button, Card, CardActions, CardContent, CardHeader, Typography} from "@mui/material";
 
-export default function MatchmakingTitle(){
+export default function GroupTitle(){
 
 
     return(
         <Box
-            className={"matchmakingTitle"}
+            className={"groupTitle"}
             bgcolor={"#FFFFFF"}
-            maxWidth={"90em"}
+            maxWidth={"75rem"}
 
             sx={{
-                minWidth: "350px",
+                minWidth: "300px",
                 border:"3px solid black",
                 borderRadius:7,
                 alignItems: "center",
                 display:"flex",
                 justifyContent:"center",
-                margin: "2rem"
+                margin: "2rem",
 
             }}
         >
-            <Typography variant={"h2"} fontFamily={"Orelega One"}>SpotSharing Generation</Typography>
+            <Typography variant={"h2"} fontFamily={"Orelega One"}>Group</Typography>
         </Box>
     )
 }

@@ -121,14 +121,13 @@ def groups_with_vacancies():
     return available_groups
 
 
-
 def get_group_by_id(id):
     """
     returns the group with matching id
     :param id: id of selected group
     :return: group data in the form of a dictionary
     """
-    return bridge.group_by_id(id)
+    return bridge.get_group_members(id)
 
 
 def get_group_leader(groupid):
@@ -148,8 +147,9 @@ def get_group_id(userid):
     :return: group id
     """
     if bridge.validate_userid(userid):
-        if not bridge.validate_no_group():
+        if not bridge.validate_no_group(userid):
             return bridge.get_group_id(userid)
+
 
 def get_group_members(groupid):
     """
@@ -173,7 +173,7 @@ def check_paid_member(userid):
     :return:
     """
     if bridge.validate_userid(userid):
-        return check_paid_member(userid)
+        return {"memberPaid": True} if bridge.check_image_proof(userid) else {"memberPaid": False}
 
 
 def get_group_member(userid):
@@ -200,7 +200,6 @@ def get_group_permit(leaderid):
         return bridge.get_group_permit(leaderid)
 
 
-
 def complete_matchmaking(userid):
     """
     Completes the matchmaking algorithm for the given user and provides the group options available
@@ -223,18 +222,55 @@ def complete_matchmaking(userid):
 
 
 def validate_no_group(userid):
+    """
+    Checks to see that the given user has no group
+    :param userid: given userid
+    :return: Bool that is true if the given user has no group
+    """
     result = bridge.validate_no_group(userid)
     ##valid
-    return result is not None
+    return result is True
 
-def upload_etransfer_image(imageUrl, userid):
+
+def upload_etransfer_image(image_url, userid):
+    """
+    Updates the image_proof_url for the given user, updates their group's fully_paid field
+    :param image_url: url of the image bucket url
+    :param userid:
+    :return:
+    """
     if bridge.validate_userid(userid):
-        result = bridge.upload_etransfer_image(imageUrl, userid)
+        groupid = bridge.get_group_id(userid)
+        group_members = bridge.get_group_members(groupid)
+        fully_paid = False
+        count = 0
+        for group_member in group_members:
+            if check_paid_member(group_member['userid']):
+                count += 1
+        bridge.group_fully_paid(groupid, (count == len(group_members)))
+        result = bridge.upload_image_proof(image_url, userid)
         return {"urlUploaded": result}
     return None
 
+
+def check_image_proof(user_id):
+    """
+    Returns whether the given user has any image proof url
+    :param user_id:
+    :return:
+    """
+    if bridge.validate_userid(user_id):
+        result = bridge.check_image_proof(user_id)
+        return {'imageProof': True} if result else {'imageProof': False}
+
+
 def check_schedule_complete(userid):
-    if(bridge.validate_userid(userid)):
+    """
+    Checks to see if the given user has any schedule blocks
+    :param userid:
+    :return:
+    """
+    if bridge.validate_userid(userid):
         result = bridge.check_schedule_complete(userid)
         return {'scheduleComplete': True} if result else {'scheduleComplete': False}
 
@@ -246,7 +282,6 @@ def get_schedule_for_user(userid):
     :return: list of schedule blocks
     """
     return bridge.schedule_blocks_for_user(userid)
-
 
 
 def group_is_not_fully_paid(groupid):
@@ -263,23 +298,36 @@ def get_user_by_id(user_id):
     """Wrapper function to fetch user data."""
     return bridge.fetch_user_by_userid(user_id)
 
+########################### Profile ###########################
 def user_has_parking_permit(user_id):
     """Wrapper function to check if the user has a parking permit."""
     return bridge.check_parking_permit(user_id)
+
 
 def add_parking_permit(user_id, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location):
     """Wrapper function to insert a new parking permit."""
     return bridge.insert_parking_permit(user_id, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location)
 
+def get_permit_id(user_id, permit_number):
+    """Calls the bridge function to fetch the permit ID."""
+    return bridge.fetch_permit_id(user_id, permit_number)
+
+def add_parking_group(permitid):
+    """Calls the bridge function to insert a parking group using permitid."""
+    return bridge.insert_parking_group(permitid)
+
+
 def get_parking_permits_by_userid(user_id):
     """Wrapper function to fetch all parking permits for a given user ID."""
     return bridge.fetch_parking_permits_by_userid(user_id)
+
 
 def get_car_info_by_userid(user_id):
     """
     Fetch car details for a user by their user_id.
     """
     return bridge.fetch_car_by_userid(user_id)
+
 
 def update_car_info(license_plate_number, province, year, make, model, color):
     """
@@ -298,6 +346,39 @@ def update_car_info(license_plate_number, province, year, make, model, color):
         return {'error': result['error']}
     
     return result
+
+
+def update_permit_info(permitid, userid, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location):
+    """
+    Handles updating the permit information in the 'parking_permits' table.
+    """
+    result = bridge.update_permit_info(
+        permitid=permitid,
+        userid=userid,
+        permit_number=permit_number,
+        active_status=active_status,
+        permit_type=permit_type,
+        activate_date=activate_date,
+        expiration_date=expiration_date,
+        campus_location=campus_location
+    )
+    
+    if 'error' in result:
+        return {'error': result['error']}
+    
+    return result
+
+def is_user_permit_holder(user_id, group_id):
+    """
+    Wrapper function to check if the user is the permit holder for their group.
+    """
+    return bridge.is_user_permit_holder(user_id, group_id)
+
+
+########################### Profile ###########################
+
+
+########################### Signup ###########################
 
 def add_user_data(user_id, first_name, last_name, email, student_id, phone_number, license_plate_number):
     """
@@ -324,6 +405,7 @@ def add_user_data(user_id, first_name, last_name, email, student_id, phone_numbe
         return {'error': car_result['error']}
 
     return {'message': 'User and car data inserted successfully'}
+########################### Signup ###########################
 
 def add_user_to_group(user_id, group_id):
     """Wrapper function to add a user to a group."""

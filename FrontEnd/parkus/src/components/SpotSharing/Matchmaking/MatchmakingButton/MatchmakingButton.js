@@ -7,10 +7,14 @@ export default function MatchmakingButton({handleMatchmakeClick}) {
                 fontFamily: "Orelega One",
                 // fontWeight:"Bold",
                 fontSize:"50px",
-                height:"50px",
+                height:"60px",
                 backgroundColor: "#1D3557",
                 color: "#FFFFFF",
-                borderRadius:"20px"
+                borderRadius:"20px",
+                alignItems: "center",
+                display:"flex",
+                justifyContent:"center",
+                margin: "2rem"
             }}
             onClick={handleMatchmakeClick}>
         Matchmake!</Button>
