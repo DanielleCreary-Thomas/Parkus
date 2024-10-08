@@ -9,6 +9,10 @@ import bridge
 # bridge should be removed from main.py
 
 app = Flask(__name__)
+CORS(app)
+
+
+
 # Should only be line below
 # CORS(app)
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
@@ -44,6 +48,34 @@ def get_group_schedules(group_id):
             })
 
     return jsonify(schedules), 200
+
+
+
+@app.route('/users/<user_id>/schedule', methods=['GET'])
+def get_user_schedule(user_id):
+    """
+    Returns the schedule for the user with the matching id
+    :param user_id: user id
+    :return: JSON with the user's schedule
+    """
+    assert user_id == request.view_args['user_id']
+
+    user_schedule = data_store.get_schedule_for_user(user_id)
+
+    schedule_data = []
+    for block in user_schedule:
+        schedule_data.append({
+            'user_id': user_id,
+            'schedule_id': block['scheduleid'],
+            'dow': block['dow'],
+            'start_time': block['start_time'],
+            'end_time': block['end_time'],
+            'description': block.get('description', '')
+        })
+    return jsonify(schedule_data), 200
+
+
+
 
 
 @app.route('/groups/<id>', methods=['GET', 'OPTIONS'])
@@ -195,7 +227,7 @@ def get_group_id(user_id):
     :return: group id
     """
     assert user_id == request.view_args['user_id']
-    if not data_store.validate_no_group(user_id):
+    if not data_store.validate_no_group(user_id): # Checks to see that a user has no group
         return data_store.get_group_id(user_id)
     return {'groupid': 'None'}
 
@@ -252,22 +284,32 @@ def check_schedule(user_id):
     :return:
     """
     assert user_id == request.view_args['user_id']
-    return data_store.validate_no_schedule(user_id)
+    return data_store.check_schedule_complete(user_id)
 
+
+@app.route('/users/imageproof/<user_id>', methods=['GET', 'OPTIONS'])
+def check_image_proof(user_id):
+    """
+    Returns whether the given user has any image proof url
+    :param user_id:
+    :return:
+    """
+    assert user_id == request.view_args['user_id']
+    return data_store.check_image_proof(user_id)
 
 ##POST Endpoints
-@app.route('/users/etransfer', methods=['POST'])
-def etransfer_image():
-    """uploads a user's etransfer image
-    :return: the user's etransfer image
+@app.route('/users/imageproof', methods=['POST'])
+def image_proof_upload():
+    """uploads a user's image proof url
+    :return: the user's image proof url
     """
     #assert formData == request.form
     print(request.data)
     json_data = request.get_json()
     print(json_data)
-    imageUrl = json_data["proofImageUrl"]#need to correct
+    image_url = json_data["proofImageUrl"]
     userid = json_data['userId']
-    response = data_store.upload_etransfer_image(imageUrl, userid)
+    response = data_store.upload_etransfer_image(image_url, userid)
     return jsonify(response)
 
 
@@ -410,4 +452,8 @@ def add_user():
 
 
 if __name__ == '__main__':
+
     app.run()
+
+
+
