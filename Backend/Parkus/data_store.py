@@ -312,6 +312,14 @@ def get_permit_id(user_id, permit_number):
     """Calls the bridge function to fetch the permit ID."""
     return bridge.fetch_permit_id(user_id, permit_number)
 
+def get_group_id_for_user(permit_id):
+    """Calls the bridge function to fetch the group ID."""
+    return bridge.fetch_group_id(permit_id)
+
+def update_user_groupid(userid, groupid):
+    """Wrapper function to update user group ID."""
+    return bridge.update_user_groupid(userid, groupid)
+
 def add_parking_group(permitid):
     """Calls the bridge function to insert a parking group using permitid."""
     return bridge.insert_parking_group(permitid)
@@ -368,13 +376,6 @@ def update_permit_info(permitid, userid, permit_number, active_status, permit_ty
     
     return result
 
-def is_user_permit_holder(user_id, group_id):
-    """
-    Wrapper function to check if the user is the permit holder for their group.
-    """
-    return bridge.is_user_permit_holder(user_id, group_id)
-
-
 ########################### Profile ###########################
 
 
@@ -430,6 +431,5 @@ if __name__ == '__main__':
     # test = groups['members'][0]['schedule'][0]['start_time']
     for group in groups:
         print(group)
-
 
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabase.ts';
-import { fetchUser, checkParkingPermit, addParkingPermit, fetchParkingPermits, fetchCarByUserId, addCar, getPermitId, addParkingGroup, uploadETransfer, updatePermit } from '../services/requests.js'; // Importing all functions
+import { fetchUser, checkParkingPermit, addParkingPermit, fetchParkingPermits, fetchCarByUserId, addCar, getPermitId, addParkingGroup, uploadETransfer, fetchGroupId, updatePermit, updateUserGroupId } from '../services/requests.js'; // Importing all functions
 import { Box, Card, Typography, Tabs, Tab, Button, TextField, Checkbox, Modal } from '@mui/material';
 import ProfileTitle from '../components/Profile/ProfileTitle/ProfileTitle.js';
 import EditPermitModal from '../components/Profile/EditPermitModal/EditPermitModal.js';
@@ -153,73 +153,84 @@ const Profile = () => {
 
   const handlePermitSubmit = async () => {
     if (!userId) {
-        toast.error('User ID is missing.');
-        return;
+      toast.error('User ID is missing.');
+      return;
     }
 
-    // Validate if any of the required fields are missing or empty
+    // Validate required fields
     if (!permitData.permit_number || permitData.permit_number.trim() === '') {
-        toast.error('Permit Number is missing.');
-        return;
+      toast.error('Permit Number is missing.');
+      return;
+    }
+    if (!permitData.permit_type || permitData.permit_type.trim() === '') {
+      toast.error('Permit Type is missing.');
+      return;
     }
 
-    if (!permitData.permit_type || permitData.permit_type.trim() === '') {
-        toast.error('Permit Type is missing.');
-        return;
+    if (new Date(permitData.activate_date) >= new Date(permitData.expiration_date)) {
+      toast.error('Activation date cannot be later than or equal to the expiration date.');
+      return;
     }
 
     if (!permitData.activate_date || permitData.activate_date.trim() === '') {
-        toast.error('Activation Date is missing.');
-        return;
+      toast.error('Activation Date is missing.');
+      return;
     }
-
     if (!permitData.expiration_date || permitData.expiration_date.trim() === '') {
-        toast.error('Expiration Date is missing.');
-        return;
+      toast.error('Expiration Date is missing.');
+      return;
     }
-
     if (!permitData.active_status) {
-        toast.error('Active Status is missing.');
-        return;
+      toast.error('Active Status is missing.');
+      return;
     }
-
     if (!permitData.campus_location || permitData.campus_location.trim() === '') {
-        toast.error('Campus Location is missing.');
-        return;
+      toast.error('Campus Location is missing.');
+      return;
     }
 
     try {
-        const checkPermitExists = await checkParkingPermit(userId); // Using the function from requests.js
-        if (checkPermitExists && checkPermitExists.has_permit) {
-            toast.error('Parking permit already exists for this user.');
-            return;
-        }
+      const checkPermitExists = await checkParkingPermit(userId); // Using the function from requests.js
+      if (checkPermitExists && checkPermitExists.has_permit) {
+        toast.error('Parking permit already exists for this user.');
+        return;
+      }
 
-        const permitResponse = await addParkingPermit({ userid: userId, ...permitData });
-        if (permitResponse) {
-            const permitIdResponse = await getPermitId({ userid: userId, permit_number: permitData.permit_number });
-            if (permitIdResponse && permitIdResponse.permitid) {
-                const groupResponse = await addParkingGroup(permitIdResponse.permitid);
-                if (groupResponse.error) {
-                    toast.error(`Error adding parking group: ${groupResponse.error}`);
-                } else {
-                    toast.success('Parking Info added successfully!');
-                    await fetchUserPermits();  // Re-fetch the permits
-                    setHasPermit(true);
-                    setPermitInputEnabled(false);
-                }
-            } else {
-                toast.error('Error retrieving permit ID.');
+      // Add parking permit
+      const permitResponse = await addParkingPermit({ userid: userId, ...permitData });
+      if (permitResponse) {
+        const permitIdResponse = await getPermitId({ userid: userId, permit_number: permitData.permit_number });
+
+        if (permitIdResponse && permitIdResponse.permitid) {
+          const groupResponse = await addParkingGroup(permitIdResponse.permitid);
+
+          if (groupResponse.error) {
+            toast.error(`Error adding parking group: ${groupResponse.error}`);
+          } else {
+            toast.success('Parking Info added successfully!');
+            await fetchUserPermits();  // Re-fetch the permits
+            setHasPermit(true);
+            setPermitInputEnabled(false);
+
+            // Fetch the group ID based on the permit ID
+            const groupIdResponse = await fetchGroupId({ permitId: permitIdResponse.permitid });
+
+            if (groupIdResponse && groupIdResponse.groupid) {
+              // Update the user's group ID in the backend, but don't show any error messages
+              await updateUserGroupId({ userid: userId, groupid: groupIdResponse.groupid });
             }
+          }
         } else {
-            toast.error('Error adding permit.');
+          toast.error('Error retrieving permit ID.');
         }
+      } else {
+        toast.error('Error adding permit.');
+      }
     } catch (error) {
-        console.error('Error adding permit or group:', error);
-        toast.error('Failed to add permit or parking group.');
+      console.error('Error adding permit or group:', error);
+      toast.error('Failed to add permit or parking group.');
     }
-};
-
+  };
 
   const handleCarSubmit = async () => {
     if (!userId) {
@@ -242,6 +253,12 @@ const Profile = () => {
   };
 
   const handlePermitUpdate = async () => {
+
+    if (new Date(permitData.activate_date) >= new Date(permitData.expiration_date)) {
+      toast.error('Activation date cannot be later than or equal to the expiration date.');
+      return;
+    }
+
     try {
       await updatePermit({ ...permitData });
       toast.success('Permit information updated successfully!');
@@ -252,6 +269,7 @@ const Profile = () => {
       toast.error('Failed to update permit information.');
     }
   };
+
 
   const handleSubmit = async () => {
     if (!selectedImage) {
@@ -336,6 +354,8 @@ const Profile = () => {
             selectedImage={selectedImage}
             handleSubmit={handleSubmit}
             user={user}
+            groupid={user?.groupid}
+            isPermitHolder={hasPermit}
           />
         </TabPanel>
       </Card>
