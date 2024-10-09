@@ -28,6 +28,7 @@ const Profile = () => {
   const [uploadImageUrl, setUploadImageUrl] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [userImageProof, setUserImageProof] = useState(false);
   const [permitData, setPermitData] = useState({
     permit_number: '',
     active_status: false,
@@ -271,30 +272,40 @@ const Profile = () => {
   };
 
 
-  const handleSubmit = async () => {
+  const  handleSubmit = async () => {
     if (!selectedImage) {
-      toast.error('Please select an image to upload.');
-      return;
+        alert('Please select an image to upload.');
+        return;
     }
-    try {
-      const url = await uploadProof(selectedImage);
-      const formData = new FormData();
-      formData.append('proofImageUrl', url);
-      formData.append('userid', userId);
-      const response = await uploadETransfer(formData);
-      if (response['urlUploaded'] === true) {
-        setSelectedImage(null);
-        setImagePreviewUrl(null);
-        setUploadImageUrl(null);
-        toast.success("Image uploaded successfully!");
-      } else {
-        toast.error("Failed to upload image. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error("An error occurred while uploading the image. Please try again.");
+
+    const url = await uploadProof(selectedImage);
+
+    console.log("outside",url)
+
+    if(url !== undefined){
+        const formData = new FormData();
+        formData.append('proofImageUrl', url);
+        formData.append('userid', userId)
+        try{
+            const response = await uploadETransfer(formData);
+            console.log(response);
+            if(response['urlUploaded'] === true){
+                console.log("image uploaded successfully")
+                // Reset the form
+                setSelectedImage(null);
+                setImagePreviewUrl(null);
+                setUploadImageUrl(null);
+                toast.success("Image uploaded successfully")
+            }
+
+        }catch(error){
+            console.log("error uploading image", error);
+            toast.error("An error occurred while uploading image, Try Again", error);
+        }
+    }else{
+        toast.error("An error occurred while uploading image, Try Again");
     }
-  };
+};
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -305,16 +316,29 @@ const Profile = () => {
   };
 
   async function uploadProof(file) {
-    let { data, error } =
-      await supabase.storage.from('permit_confirmation').upload(userId + file.name, file);
-    if (error) {
-      console.error(error);
-      return;
+    let outerError;
+    if(!userImageProof) {//if the user has no image proof
+        let {data, error} =
+            await supabase.storage.from('permit_confirmation').upload(userId, file)
+        outerError = error
+    } else {
+        let { data, error } =
+            await supabase.storage.from('permit_confirmation').update(userId, file)
+        outerError = error
     }
-    let response = supabase.storage.from('permit_confirmation').getPublicUrl(userId + file.name);
-    const url = response.data['publicUrl'];
-    return url;
-  }
+    if (outerError) {
+        // Handle error
+        console.log(outerError)
+    } else {
+        // Handle success
+        let data = supabase.storage.from('payment_proof').getPublicUrl(userId)
+        console.log("immediate after url call")
+        const url = data.data['publicUrl']
+        console.log(url)
+        return url
+
+    }
+}
 
   return (
     <>
