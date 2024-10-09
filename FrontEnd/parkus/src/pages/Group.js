@@ -56,7 +56,7 @@ export default function Group(){
             setGroupId(groupid); //because function is asynchronous, this hasn't been set yet
             console.log(groupid);
 
-            if(groupId !== 'None' && groupId !== null){
+            if(groupid !== 'None' && groupid !== null){
                 var groupLeader = await getGroupLeader(groupid)
                 setGroupLeader(groupLeader);
                 console.log(groupLeader);
