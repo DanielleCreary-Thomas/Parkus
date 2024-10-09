@@ -59,7 +59,10 @@ export async function uploadETransfer(formData){
     }
     body = JSON.stringify(body);
 
-    var data = await fetch(`http://127.0.0.1:5000/users/imageproof`,
+    // const cacheBuster = `?cb=${new Date().getTime()}`;
+    // ${cacheBuster}
+    var data = await fetch(
+        `http://127.0.0.1:5000/users/imageproof`,
     {
         method: 'POST',
         headers: {
