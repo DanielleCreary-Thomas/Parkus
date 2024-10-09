@@ -260,7 +260,7 @@ def get_group_leader(groupid):
     )
     print(permitid_response.data[0])
 
-    if len(permitid_response.data)==1:
+    if len(permitid_response.data) == 1:
         userid_response = (
             supabase.table("parking_permits")
             .select("userid")
