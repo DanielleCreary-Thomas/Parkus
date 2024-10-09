@@ -240,14 +240,14 @@ def upload_etransfer_image(image_url, userid):
     :return:
     """
     if bridge.validate_userid(userid):
-        groupid = bridge.get_group_id(userid)
+        groupid = bridge.get_group_id(userid)['groupid']
         group_members = bridge.get_group_members(groupid)
         fully_paid = False
-        count = 0
+        max_group_count = 3
         for group_member in group_members:
             if check_paid_member(group_member['userid']):
-                count += 1
-        bridge.group_fully_paid(groupid, (count == len(group_members)))
+                max_group_count -= 1
+        bridge.group_fully_paid(groupid, (max_group_count == 0))
         result = bridge.upload_image_proof(image_url, userid)
         return {"urlUploaded": result}
     return None
