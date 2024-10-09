@@ -1,9 +1,12 @@
+// GroupSchedule.jsx
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabase.ts';
 import { Box, Typography } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
 import { useParams } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
+import JoinButton from './JoinButton/JoinButton';
 import './GroupSchedule.css';
 
 const GroupSchedule = () => {
@@ -176,6 +179,10 @@ const GroupSchedule = () => {
                     </div>
                 ))}
             </div>
+            {/* Add the JoinButton here */}
+            <Box sx={{ marginTop: 2, textAlign: 'center' }}>
+                <JoinButton groupId={groupId} />
+            </Box>
         </Box>
     );
 };

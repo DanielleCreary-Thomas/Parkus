@@ -298,11 +298,7 @@ def get_user_by_id(user_id):
     """Wrapper function to fetch user data."""
     return bridge.fetch_user_by_userid(user_id)
 
-<<<<<<< HEAD
 ########################### Profile ###########################
-=======
-
->>>>>>> origin/main
 def user_has_parking_permit(user_id):
     """Wrapper function to check if the user has a parking permit."""
     return bridge.check_parking_permit(user_id)
@@ -312,16 +308,22 @@ def add_parking_permit(user_id, permit_number, active_status, permit_type, activ
     """Wrapper function to insert a new parking permit."""
     return bridge.insert_parking_permit(user_id, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location)
 
-<<<<<<< HEAD
 def get_permit_id(user_id, permit_number):
     """Calls the bridge function to fetch the permit ID."""
     return bridge.fetch_permit_id(user_id, permit_number)
 
+def get_group_id_for_user(permit_id):
+    """Calls the bridge function to fetch the group ID."""
+    return bridge.fetch_group_id(permit_id)
+
+def update_user_groupid(userid, groupid):
+    """Wrapper function to update user group ID."""
+    return bridge.update_user_groupid(userid, groupid)
+
 def add_parking_group(permitid):
     """Calls the bridge function to insert a parking group using permitid."""
     return bridge.insert_parking_group(permitid)
-=======
->>>>>>> origin/main
+
 
 def get_parking_permits_by_userid(user_id):
     """Wrapper function to fetch all parking permits for a given user ID."""
@@ -353,7 +355,7 @@ def update_car_info(license_plate_number, province, year, make, model, color):
     
     return result
 
-<<<<<<< HEAD
+
 def update_permit_info(permitid, userid, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location):
     """
     Handles updating the permit information in the 'parking_permits' table.
@@ -374,20 +376,11 @@ def update_permit_info(permitid, userid, permit_number, active_status, permit_ty
     
     return result
 
-def is_user_permit_holder(user_id, group_id):
-    """
-    Wrapper function to check if the user is the permit holder for their group.
-    """
-    return bridge.is_user_permit_holder(user_id, group_id)
-
-
 ########################### Profile ###########################
 
 
 ########################### Signup ###########################
-=======
 
->>>>>>> origin/main
 def add_user_data(user_id, first_name, last_name, email, student_id, phone_number, license_plate_number):
     """
     Handles adding user data to the 'users' table and car data to the 'cars' table.
@@ -415,6 +408,17 @@ def add_user_data(user_id, first_name, last_name, email, student_id, phone_numbe
     return {'message': 'User and car data inserted successfully'}
 ########################### Signup ###########################
 
+def add_user_to_group(user_id, group_id):
+    """Wrapper function to add a user to a group."""
+    return bridge.add_user_to_group(user_id, group_id)
+
+def get_group_size(group_id):
+    """Wrapper function to get the size of a group."""
+    return bridge.get_group_size(group_id)
+
+def validate_groupid(group_id):
+    """Wrapper function to validate group ID."""
+    return bridge.validate_groupid(group_id)
 
 
 if __name__ == '__main__':
@@ -427,6 +431,5 @@ if __name__ == '__main__':
     # test = groups['members'][0]['schedule'][0]['start_time']
     for group in groups:
         print(group)
-
 
 

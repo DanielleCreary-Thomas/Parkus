@@ -162,6 +162,35 @@ def get_permit_id():
     except Exception as e:
         print(f"Error retrieving permit ID: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+    
+@app.route('/get-groupid', methods=['GET'])
+def get_group_id_for_user():
+    """API endpoint to retrieve group id based on permit id"""
+    permit_id = request.args.get('permitid')
+
+    if not permit_id:
+        return jsonify({"error": "Missing permit id"}), 400
+    
+    try: 
+        groupid = data_store.get_group_id_for_user(permit_id)
+
+        if groupid:
+            return jsonify({"groupid": groupid}), 200
+        else:
+            return jsonify({"error": "groupid not found"}), 404
+    except Exception as e:
+        print(f"Error retrieving group ID: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+
+@app.route('/update-user-groupid', methods=['POST'])
+def update_user_groupid():
+    """API to update user's groupid."""
+    data = request.json
+    user_id = data.get('userid')
+    group_id = data.get('groupid')
+
+    # Call your data store to update the user's groupid
+    return data_store.update_user_groupid(user_id, group_id)
 
 @app.route('/parking-group', methods=['POST'])
 def add_parking_group():
@@ -188,23 +217,6 @@ def get_user_permits(user_id):
         return jsonify(permits), 200
     else:
         return jsonify({"error": "No permits found"}), 404
-    
-@app.route('/is-permit-holder', methods=['GET'])
-def check_if_permit_holder():
-    """
-    API endpoint to check if the user is the permit holder for their group.
-    :return: Boolean result indicating if the user is the permit holder.
-    """
-    user_id = request.args.get('userid')
-    group_id = request.args.get('groupid')
-
-    if not user_id or not group_id:
-        return jsonify({"error": "Missing user ID or group ID"}), 400
-
-    is_holder = data_store.is_user_permit_holder(user_id, group_id)
-
-    return jsonify({"isPermitHolder": is_holder}), 200
-
     
 ########################### Profile ###########################
 
@@ -352,6 +364,36 @@ def get_group_schedule():
         "user_schedule": user_schedule_data
     }), 200
 
+@app.route('/join-group', methods=['POST', 'OPTIONS'])
+@cross_origin()
+def join_group():
+    data = request.json
+    group_id = data.get('group_id')
+    user_id = data.get('user_id')
+
+    if not group_id or not user_id:
+        return jsonify({"error": "Missing group_id or user_id"}), 400
+
+    # Check if the user is already in a group
+    if not data_store.validate_no_group(user_id):
+        return jsonify({"error": "User is already in a group"}), 400
+
+    # Check if the group exists
+    if not data_store.validate_groupid(group_id):
+        return jsonify({"error": "Group does not exist"}), 404
+
+    # Check if the group is full
+    group_size = data_store.get_group_size(group_id)
+    if group_size >= 3:
+        return jsonify({"error": "Group is full"}), 400
+
+    # Update the user's group_id
+    success = data_store.add_user_to_group(user_id, group_id)
+    if not success:
+        return jsonify({"error": "Failed to join group"}), 500
+
+    return jsonify({"message": "Successfully joined the group"}), 200
+
 @app.route('/groups/<group_id>/fully_paid', methods=['GET'])
 def check_group_fully_paid(group_id):
     """
@@ -372,7 +414,7 @@ def get_car_by_userid(user_id):
         return jsonify(car), 200
     else:
         return jsonify({"error": "No car information found for this user"}), 404
-    
+
 # POST Endpoint to update car info
 @app.route('/car', methods=['POST'])
 def update_car():
@@ -389,11 +431,12 @@ def update_car():
 
     # Call the data_store to update the car information
     result = data_store.update_car_info(license_plate_number, province, year, make, model, color)
-    
+
     if 'error' in result:
         return jsonify({'error': result['error']}), 400
-    
+
     return jsonify({"message": "Car information updated successfully"}), 201
+
 
 
 @app.route('/update_permit', methods=['POST'])
@@ -454,6 +497,5 @@ def add_user():
 if __name__ == '__main__':
 
     app.run()
-
 
 

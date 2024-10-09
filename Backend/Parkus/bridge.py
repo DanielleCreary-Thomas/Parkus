@@ -551,6 +551,24 @@ def insert_parking_group(permitid):
 
     return response.data is not None and len(response.data) > 0
 
+def fetch_group_id(permit_id):
+    """Fetches the group ID from parking_groups table."""
+    response = supabase.table("parking_groups").select("groupid").eq("permitid", permit_id).execute()
+
+    print("Supabase response:", response)  # Log the entire response for debugging
+    
+    # Check if the response contains data and log it
+    if response.data and len(response.data) > 0:
+        print("group id Data:", response.data[0])  # Log the group data
+        return response.data[0]['groupid']
+    else:
+        return None  # Return None if no data is found
+    
+def update_user_groupid(userid, groupid):
+    """Updates the user's group ID in the users table."""
+    response = supabase.table("users").update({"groupid": groupid}).eq("userid", userid).execute()
+
+    return response.data if response.data else None
 
 def fetch_users_by_groupid(group_id):
     """Fetch users belonging to a specific group."""
@@ -740,5 +758,34 @@ if __name__ == "__main__":
     # print(group_by_groupid(1))
     # print(groups_with_vacancies())
 
+def add_user_to_group(user_id, group_id):
+    """Updates the user's group_id in the database."""
+    response = (
+        supabase.table("users")
+        .update({"groupid": group_id})
+        .eq("userid", user_id)
+        .execute()
+    )
+    return len(response.data) > 0
+
+def get_group_size(group_id):
+    """Returns the number of users in a group."""
+    response = (
+        supabase.table('users')
+        .select('userid')
+        .eq("groupid", group_id)
+        .execute()
+    )
+    return len(response.data)
+
+def validate_groupid(group_id):
+    """Checks if the group ID exists."""
+    response = (
+        supabase.table('parking_groups')
+        .select('groupid')
+        .eq('groupid', group_id)
+        .execute()
+    )
+    return len(response.data) > 0
 
 

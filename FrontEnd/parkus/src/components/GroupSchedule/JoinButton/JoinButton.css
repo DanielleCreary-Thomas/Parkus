@@ -1,0 +1,27 @@
+/* JoinButton.css */
+
+.join-button-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.join-button {
+    background-color: #1D3557;
+    color: #FFFFFF;
+    font-family: 'Orelega One', sans-serif;
+    font-size: 18px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.join-button:hover {
+    background-color: #457B9D;
+}
+
+.join-button:disabled {
+    background-color: #A8A8A8;
+    cursor: not-allowed;
+}
