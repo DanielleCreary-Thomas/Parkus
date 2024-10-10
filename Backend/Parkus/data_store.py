@@ -375,6 +375,39 @@ def is_user_permit_holder(user_id, group_id):
     return bridge.is_user_permit_holder(user_id, group_id)
 
 
+ 
+
+def set_groupid_to_null(user_id):
+    """
+    Sets the groupid for the given user to null (leaves group).
+    :param user_id:
+    :return: {'success': True} if successful, {'success': False} otherwise
+    """
+    result = bridge.setGroupidTobeNull(user_id)
+    if result:
+        return {'success': True}
+    else:
+        return {'success': False}
+
+
+
+def delete_user_and_data(user_id):
+    """
+    Deletes a user and all their related data if conditions are met.
+    """
+    result = bridge.delete_user_and_data(user_id)
+    return {'success': result}
+
+
+
+
+
+
+
+
+
+
+
 ########################### Profile ###########################
 
 

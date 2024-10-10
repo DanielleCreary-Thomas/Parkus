@@ -13,6 +13,7 @@ import Layout from './components/Layout'; // Layout component with navbar
 import ProtectedRoute from './components/ProtectedRoute/protectedRoute'; // Import ProtectedRoute
 
 import GroupSchedule from './components/GroupSchedule/GroupSchedule';
+import Settings from './pages/Settings'; 
 
 function App() {
     return (
@@ -58,6 +59,11 @@ function App() {
                     <Route path="/group-schedule/:groupId" element={
                         <ProtectedRoute>
                             <GroupSchedule />
+                        </ProtectedRoute>
+                    } />
+                     <Route path="/settings" element={
+                        <ProtectedRoute>
+                            <Settings />
                         </ProtectedRoute>
                     } />
                 </Route>
