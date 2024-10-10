@@ -788,8 +788,8 @@ def setGroupidTobeNull(userid):
         response = (
             supabase.table("users")
             .update({'groupid': None})  # Set groupid to null
-            .eq('userid', userid)  # Ensure you're targeting the correct user
-            .execute()  # Execute the query
+            .eq('userid', userid) 
+            .execute() 
         )
 
         # Print response for debugging purposes
@@ -838,7 +838,7 @@ def delete_user_and_data(user_id):
             supabase.table("users").delete().eq("userid", user_id).execute()
             print("Deleted from users table")
 
-            # Delete user from Supabase Auth using the Admin API (service key required)
+            # Delete user from Supabase Auth using the Admin API (service key)
             print("Attempting to delete user from Supabase Auth")
             supabase_service.auth.admin.delete_user(user_id)  # Use the Admin API to delete the user from Auth
             print(f"Deleted user from Supabase Auth: {user_id}")
