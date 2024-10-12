@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabase.ts';
-import { fetchUser, checkParkingPermit, addParkingPermit, fetchParkingPermits, fetchCarByUserId, addCar, getPermitId, addParkingGroup, uploadETransfer, fetchGroupId, updatePermit, updateUserGroupId } from '../services/requests.js'; // Importing all functions
+import { fetchUser, checkParkingPermit, checkUserImageProof, getGroupId, getCurrUser, addParkingPermit, fetchParkingPermits, fetchCarByUserId, addCar, getPermitId, addParkingGroup, uploadETransfer, fetchGroupId, updatePermit, updateUserGroupId } from '../services/requests.js'; // Importing all functions
 import { Box, Card, Typography, Tabs, Tab, Button, TextField, Checkbox, Modal } from '@mui/material';
 import ProfileTitle from '../components/Profile/ProfileTitle/ProfileTitle.js';
 import EditPermitModal from '../components/Profile/EditPermitModal/EditPermitModal.js';
@@ -22,9 +22,11 @@ const Profile = () => {
   const [value, setValue] = useState(0);
   const [user, setUser] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [groupId, setGroupId] = useState(null);
   const [hasPermit, setHasPermit] = useState(false);
   const [permitInputEnabled, setPermitInputEnabled] = useState(false);
   const [permits, setPermits] = useState([]);
+  const [isMemberOfGroup, setIsMemberOfGroup] = useState(false);
   const [uploadImageUrl, setUploadImageUrl] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
@@ -92,6 +94,33 @@ const Profile = () => {
       }
     };
     fetchUserId();
+  }, []);
+
+  useEffect(() => {
+    async function init() {
+
+      var userid = await getCurrUser();
+      console.log(userid);
+
+      var groupid = await getGroupId(userid);
+      console.log(groupId);
+
+      var imageProof = await checkUserImageProof(userid)
+      console.log(imageProof)
+
+
+      if (groupid !== 'None') {
+        setIsMemberOfGroup(true)
+        setUserId(userid)
+        setUserImageProof(imageProof)
+        setGroupId(groupid)
+        console.log("member of group", isMemberOfGroup)
+      }
+
+    }
+    init();
+
+
   }, []);
 
   const fetchUserCar = async (userId) => {
@@ -272,40 +301,40 @@ const Profile = () => {
   };
 
 
-  const  handleSubmit = async () => {
+  const handleSubmit = async () => {
     if (!selectedImage) {
-        alert('Please select an image to upload.');
-        return;
+      alert('Please select an image to upload.');
+      return;
     }
 
     const url = await uploadProof(selectedImage);
 
-    console.log("outside",url)
+    console.log("outside", url)
 
-    if(url !== undefined){
-        const formData = new FormData();
-        formData.append('proofImageUrl', url);
-        formData.append('userid', userId)
-        try{
-            const response = await uploadETransfer(formData);
-            console.log(response);
-            if(response['urlUploaded'] === true){
-                console.log("image uploaded successfully")
-                // Reset the form
-                setSelectedImage(null);
-                setImagePreviewUrl(null);
-                setUploadImageUrl(null);
-                toast.success("Image uploaded successfully")
-            }
-
-        }catch(error){
-            console.log("error uploading image", error);
-            toast.error("An error occurred while uploading image, Try Again", error);
+    if (url !== undefined) {
+      const formData = new FormData();
+      formData.append('proofImageUrl', url);
+      formData.append('userid', userId)
+      try {
+        const response = await uploadETransfer(formData);
+        console.log(response);
+        if (response['urlUploaded'] === true) {
+          console.log("image uploaded successfully")
+          // Reset the form
+          setSelectedImage(null);
+          setImagePreviewUrl(null);
+          setUploadImageUrl(null);
+          toast.success("Image uploaded successfully")
         }
-    }else{
-        toast.error("An error occurred while uploading image, Try Again");
+
+      } catch (error) {
+        console.log("error uploading image", error);
+        toast.error("An error occurred while uploading image, Try Again", error);
+      }
+    } else {
+      toast.error("An error occurred while uploading image, Try Again");
     }
-};
+  };
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -317,28 +346,28 @@ const Profile = () => {
 
   async function uploadProof(file) {
     let outerError;
-    if(!userImageProof) {//if the user has no image proof
-        let {data, error} =
-            await supabase.storage.from('permit_confirmation').upload(userId, file)
-        outerError = error
+    if (!userImageProof) {//if the user has no image proof
+      let { data, error } =
+        await supabase.storage.from('permit_confirmation').upload(userId, file)
+      outerError = error
     } else {
-        let { data, error } =
-            await supabase.storage.from('permit_confirmation').update(userId, file)
-        outerError = error
+      let { data, error } =
+        await supabase.storage.from('permit_confirmation').update(userId, file)
+      outerError = error
     }
     if (outerError) {
-        // Handle error
-        console.log(outerError)
+      // Handle error
+      console.log(outerError)
     } else {
-        // Handle success
-        let data = supabase.storage.from('payment_proof').getPublicUrl(userId)
-        console.log("immediate after url call")
-        const url = data.data['publicUrl']
-        console.log(url)
-        return url
+      // Handle success
+      let data = supabase.storage.from('permit_confirmation').getPublicUrl(userId)
+      console.log("immediate after url call")
+      const url = data.data['publicUrl']
+      console.log(url)
+      return url
 
     }
-}
+  }
 
   return (
     <>
