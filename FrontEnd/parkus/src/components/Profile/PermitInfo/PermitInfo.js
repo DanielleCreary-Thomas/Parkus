@@ -87,8 +87,8 @@ const PermitInfo = ({
               <TextField label="Permit Number" name="permit_number" required value={permitData.permit_number} onChange={handlePermitInputChange} fullWidth margin="normal" />
               <TextField select label="Permit Type" name="permit_type" required value={permitData.permit_type} onChange={handlePermitInputChange} fullWidth margin="normal" SelectProps={{ native: true }}>
                 <option value=""></option>
-                <option value="Virtual">Virtual</option>
-                <option value="Physical">Physical</option>
+                <option value="Student">Student</option>
+                <option value="Faculty">Faculty</option>
               </TextField>
               <TextField label="Activation Date" type="date" name="activate_date" required value={permitData.activate_date} onChange={handlePermitInputChange} fullWidth margin="normal" InputLabelProps={{ shrink: true }} />
               <TextField label="Expiration Date" type="date" name="expiration_date" required value={permitData.expiration_date} onChange={handlePermitInputChange} fullWidth margin="normal" InputLabelProps={{ shrink: true }} />

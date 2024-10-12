@@ -19,8 +19,8 @@ const EditPermitModal = ({ openModal, handleCloseModal, permitData, handlePermit
         <Typography variant="h6" gutterBottom>Edit Permit Information</Typography>
         <TextField label="Permit Number" name="permit_number" value={permitData?.permit_number || ''} onChange={handlePermitInputChange} fullWidth margin="normal" InputLabelProps={{ shrink: true }} />
         <TextField select label="Permit Type" name="permit_type" value={permitData?.permit_type || ''} onChange={handlePermitInputChange} fullWidth margin="normal" SelectProps={{ native: true }} InputLabelProps={{ shrink: true }}>
-          <option value="Virtual">Virtual</option>
-          <option value="Physical">Physical</option>
+          <option value="Student">Student</option>
+          <option value="Faculty">Faculty</option>
         </TextField>
         <TextField label="Activation Date" type="date" name="activate_date" value={permitData?.activate_date || ''} onChange={handlePermitInputChange} fullWidth margin="normal" InputLabelProps={{ shrink: true }} />
         <TextField label="Expiration Date" type="date" name="expiration_date" value={permitData?.expiration_date || ''} onChange={handlePermitInputChange} fullWidth margin="normal" InputLabelProps={{ shrink: true }} />
