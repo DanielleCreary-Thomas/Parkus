@@ -64,12 +64,15 @@ class Schedule:
     def compare_times(self, member_time):
         """
         compares the time between the two schedule blocks checking for overlap
-        :param member_time: the schedule block of a User
-        :return: the amount overlap in hours between the schedule blocks
+        :param member_time: the schedule block of a Group Member
+        :return: 0(false) if there is a conflict or 1(true) if there is no conflict
         """
-        comparison = max(0, min(int(self.end_time.split(":")[0]), int(member_time.end_time.split(":")[0]))
-                         - max(int(self.start_time.split(":")[0]), int(member_time.start_time.split(":")[0])))
-        return comparison == 0
+
+        comp1 = member_time.start_time <= self.start_time < member_time.end_time
+        comp2 = member_time.end_time >= self.end_time > member_time.start_time
+        if member_time.start_time <= self.start_time < member_time.end_time or member_time.end_time >= self.end_time > member_time.start_time:
+            return 0
+        return 1
     def to_json(self):
         return {
             'schedule_id': self.id,
@@ -98,12 +101,19 @@ class Group:
                 self.add_member(member)
 
     def validate_group(self, potential_member):
+        """
+        checks the schedule block for each group member with the given user's schedule and returns
+        the group if there are no conflicts
+        :param potential_member:
+        :return: the group with no conflicts
+        """
         valid = True
         checked_members = 0
         while valid and checked_members < len(self.members):
             for member in self.members:
-                if not potential_member.compare_schedules(member):
+                if potential_member.compare_schedules(member):
                     valid = False
+                    break
                 checked_members += 1
         if valid:
             return self
