@@ -385,3 +385,55 @@ export async function addUserData(userData) {
         throw error;
     }
 }
+
+
+export async function setGroupidTobeNull(userId) {
+    /**
+     * Sets the groupid for the given user to null (leaves group).
+     * @param {string} userId - The ID of the user
+     * @returns {boolean} - Returns true if successful, false otherwise
+     */
+    let success = false;
+
+    await fetch(`http://127.0.0.1:5000/users/setgroupidnull/${userId}`, {
+        method: "POST",
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Set Group ID to Null Result:', data);
+            success = data.success; 
+        })
+        .catch(error => {
+            console.log('Error setting groupid to null:', error);
+            success = false;
+        });
+
+    return success;
+}
+
+
+
+export async function deactivateUser(userId) {
+    let success = false;
+    await fetch(`http://127.0.0.1:5000/users/deactivate/${userId}`, {
+        method: "POST",
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Deactivate User Result:', data);
+            success = data.success;
+        })
+        .catch(error => {
+            console.log('Error deactivating user:', error);
+            success = false;
+        });
+    return success;
+}
+
+
+

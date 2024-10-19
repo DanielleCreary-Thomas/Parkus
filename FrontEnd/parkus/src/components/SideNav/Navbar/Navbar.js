@@ -64,6 +64,15 @@ function Navbar() {
                     }}
             >Group</Button>
             
+             <Button className="navbutton"
+                    onClick={() => { navigate("/settings") }}
+                    sx={{
+                        fontFamily: "Orelega One",
+                        fontSize: "20px",
+                    }}
+            >Settings</Button> 
+
+            
             <Box sx={{ flexGrow: 1 }} /> {/* This will take up the remaining space and push signout button to the bottom */}
             <Button className="signout" onClick={handleSignout}>Signout</Button> {/* Added signout handler */}
         </Stack>

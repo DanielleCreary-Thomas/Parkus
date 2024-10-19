@@ -439,6 +439,42 @@ def update_car():
 
 
 
+@app.route('/users/setgroupidnull/<user_id>', methods=['POST', 'OPTIONS'])
+def set_groupid_to_null(user_id):
+    """
+    Updates the user's groupid to null (leaves group)
+    :param user_id:
+    :return: JSON response with success status
+    """
+    try:
+        result = data_store.set_groupid_to_null(user_id)
+        if result['success']:
+            return jsonify({'success': True}), 200
+        else:
+            return jsonify({'success': False}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+
+@app.route('/users/deactivate/<user_id>', methods=['POST', 'OPTIONS'])
+def deactivate_user(user_id):
+    """
+    Deactivates a user if they are not in a group and have not paid.
+    :param user_id: User ID
+    :return: JSON response with success status
+    """
+    result = data_store.delete_user_and_data(user_id)
+    if result['success']:
+        return jsonify({'success': True}), 200
+    else:
+        return jsonify({'success': False, 'message': 'User cannot be deactivated.'}), 400
+
+
+
+
+
+
 @app.route('/update_permit', methods=['POST'])
 def update_permit():
     """
@@ -495,7 +531,6 @@ def add_user():
 
 
 if __name__ == '__main__':
-
     app.run()
 
 
