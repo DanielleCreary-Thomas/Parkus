@@ -780,7 +780,6 @@ def setGroupidTobeNull(userid):
     """
     Sets the user's groupid to null (leaves group).
     :param userid: User ID
-    :return: Always returns True
     """
     try:
         print(f"Setting groupid to null for user: {userid}")
