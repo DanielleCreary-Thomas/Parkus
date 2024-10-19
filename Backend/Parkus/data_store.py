@@ -26,9 +26,23 @@ class User:
                                        block['end_time'][0:-3]))
 
     def compare_schedules(self, member):
-        for userBlock in self.schedule:
-            for memBlock in member.schedule:
-                return userBlock.compare_times(memBlock) != 0
+        """
+        compares the user blocks with each member block and returns true if they have no conflicts
+        :param member:
+        :return: True if they have conflicts and false otherwise
+        """
+        conflict = False
+        checkBlocks = len(self.schedule)
+        while conflict == False and checkBlocks > 0:
+            for userBlock in self.schedule:
+                for memBlock in member.schedule:
+                    if userBlock.dow == memBlock.dow:
+                        conflict = userBlock.compare_times(memBlock) == 0
+                        break
+                checkBlocks -= 1
+
+        return conflict
+
 
     def to_json(self):
         return {
