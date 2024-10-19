@@ -13,6 +13,9 @@ url = "https://rtneojaduhodjxqmymlq.supabase.co"
 key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0bmVvamFkdWhvZGp4cW15bWxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjU2NjUxMjQsImV4cCI6MjA0MTI0MTEyNH0.iq-IWDdhTBBcAQcBCC23Li9m2DVjOQDF_2uw8cpHYu0"
 supabase: Client = create_client(url, key)
 
+service_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0bmVvamFkdWhvZGp4cW15bWxxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNTY2NTEyNCwiZXhwIjoyMDQxMjQxMTI0fQ.KS3bmIEdXc44U_7o3drFsIYa2KgmCRzsG3pZanQ90Kw"
+supabase_service: Client = create_client(url, service_key)
+
 
 CONNECTION_STRING = "user=postgres.rtneojaduhodjxqmymlq password=NyidWTNcMUDH8Pn5 host=aws-0-ca-central-1.pooler.supabase.com port=6543 dbname=postgres"
 
@@ -787,5 +790,94 @@ def validate_groupid(group_id):
         .execute()
     )
     return len(response.data) > 0
+
+
+ 
+
+def setGroupidTobeNull(userid):
+    """
+    Sets the user's groupid to null (leaves group).
+    :param userid: User ID
+    """
+    try:
+        print(f"Setting groupid to null for user: {userid}")
+        # Execute the query to set the groupid to null
+        response = (
+            supabase.table("users")
+            .update({'groupid': None})  # Set groupid to null
+            .eq('userid', userid) 
+            .execute() 
+        )
+
+        # Print response for debugging purposes
+        print("Supabase response data:", response.data)
+
+    except Exception as e:
+        print(f"Error setting groupid to null: {str(e)}")
+
+    return True
+
+
+
+def delete_user_and_data(user_id):
+    """
+    Deletes a user and all their related data from the database and Supabase Auth system.
+    :param user_id: User ID
+    :return: True if deletion is successful, False otherwise
+    """
+    try:
+        print(f"Attempting to delete user: {user_id}")
+
+        # Check if the user is not in a group and has not paid
+        user_response = supabase.table("users").select("groupid", "image_proof_url").eq("userid", user_id).execute()
+        print(f"User data fetched for deletion: {user_response.data}")
+
+        if len(user_response.data) == 0:
+            print("User not found in the users table.")
+            return False
+
+        user = user_response.data[0]
+
+        if user["groupid"] is None and user["image_proof_url"] is None:
+            print("User is not in a group and has not paid. Proceeding with deletion.")
+
+            # Delete related data from all tables
+            supabase.table("schedule_blocks").delete().eq("userid", user_id).execute()
+            print("Deleted from schedule_blocks")
+
+            supabase.table("parking_permits").delete().eq("userid", user_id).execute()
+            print("Deleted from parking_permits")
+
+            supabase.table("cars").delete().eq("license_plate_number", user_id).execute()
+            print("Deleted from cars table")
+
+            # Delete user from custom users table
+            supabase.table("users").delete().eq("userid", user_id).execute()
+            print("Deleted from users table")
+
+            # Delete user from Supabase Auth using the Admin API (service key)
+            print("Attempting to delete user from Supabase Auth")
+            supabase_service.auth.admin.delete_user(user_id)  # Use the Admin API to delete the user from Auth
+            print(f"Deleted user from Supabase Auth: {user_id}")
+
+            return True
+
+        print("User cannot be deleted due to group or payment status.")
+        return False
+
+    except Exception as e:
+        print(f"Error deleting user data: {str(e)}")
+        return False
+
+
+
+
+
+
+
+
+
+
+
 
 

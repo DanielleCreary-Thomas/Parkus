@@ -1,0 +1,12 @@
+/* Center the content */
+.settings-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.settings-container {
+    text-align: center;
+    padding: 40px;
+}
