@@ -370,7 +370,7 @@ export async function setGroupidTobeNull(userId) {
         })
         .then(data => {
             console.log('Set Group ID to Null Result:', data);
-            success = data.success; // Ensure the backend returns { success: true/false }
+            success = data.success; 
         })
         .catch(error => {
             console.log('Error setting groupid to null:', error);
