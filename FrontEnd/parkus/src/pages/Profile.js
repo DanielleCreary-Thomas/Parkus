@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabase.ts';
-import { fetchUser, checkParkingPermit, addParkingPermit, fetchParkingPermits, fetchCarByUserId, addCar, getPermitId, addParkingGroup, uploadETransfer, updatePermit } from '../services/requests.js'; // Importing all functions
+import { fetchUser, checkParkingPermit, checkUserImageProof, getGroupId, getCurrUser, addParkingPermit, fetchParkingPermits, fetchCarByUserId, addCar, getPermitId, addParkingGroup, uploadETransfer, fetchGroupId, updatePermit, updateUserGroupId } from '../services/requests.js'; // Importing all functions
 import { Box, Card, Typography, Tabs, Tab, Button, TextField, Checkbox, Modal } from '@mui/material';
 import ProfileTitle from '../components/Profile/ProfileTitle/ProfileTitle.js';
 import EditPermitModal from '../components/Profile/EditPermitModal/EditPermitModal.js';
@@ -22,12 +22,15 @@ const Profile = () => {
   const [value, setValue] = useState(0);
   const [user, setUser] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [groupId, setGroupId] = useState(null);
   const [hasPermit, setHasPermit] = useState(false);
   const [permitInputEnabled, setPermitInputEnabled] = useState(false);
   const [permits, setPermits] = useState([]);
+  const [isMemberOfGroup, setIsMemberOfGroup] = useState(false);
   const [uploadImageUrl, setUploadImageUrl] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [userImageProof, setUserImageProof] = useState(false);
   const [permitData, setPermitData] = useState({
     permit_number: '',
     active_status: false,
@@ -93,6 +96,33 @@ const Profile = () => {
     fetchUserId();
   }, []);
 
+  useEffect(() => {
+    async function init() {
+
+      var userid = await getCurrUser();
+      console.log(userid);
+
+      var groupid = await getGroupId(userid);
+      console.log(groupId);
+
+      var imageProof = await checkUserImageProof(userid)
+      console.log(imageProof)
+
+
+      if (groupid !== 'None') {
+        setIsMemberOfGroup(true)
+        setUserId(userid)
+        setUserImageProof(imageProof)
+        setGroupId(groupid)
+        console.log("member of group", isMemberOfGroup)
+      }
+
+    }
+    init();
+
+
+  }, []);
+
   const fetchUserCar = async (userId) => {
     try {
       const car = await fetchCarByUserId(userId); // Using the utility function from requests.js
@@ -153,73 +183,84 @@ const Profile = () => {
 
   const handlePermitSubmit = async () => {
     if (!userId) {
-        toast.error('User ID is missing.');
-        return;
+      toast.error('User ID is missing.');
+      return;
     }
 
-    // Validate if any of the required fields are missing or empty
+    // Validate required fields
     if (!permitData.permit_number || permitData.permit_number.trim() === '') {
-        toast.error('Permit Number is missing.');
-        return;
+      toast.error('Permit Number is missing.');
+      return;
+    }
+    if (!permitData.permit_type || permitData.permit_type.trim() === '') {
+      toast.error('Permit Type is missing.');
+      return;
     }
 
-    if (!permitData.permit_type || permitData.permit_type.trim() === '') {
-        toast.error('Permit Type is missing.');
-        return;
+    if (new Date(permitData.activate_date) >= new Date(permitData.expiration_date)) {
+      toast.error('Activation date cannot be later than or equal to the expiration date.');
+      return;
     }
 
     if (!permitData.activate_date || permitData.activate_date.trim() === '') {
-        toast.error('Activation Date is missing.');
-        return;
+      toast.error('Activation Date is missing.');
+      return;
     }
-
     if (!permitData.expiration_date || permitData.expiration_date.trim() === '') {
-        toast.error('Expiration Date is missing.');
-        return;
+      toast.error('Expiration Date is missing.');
+      return;
     }
-
     if (!permitData.active_status) {
-        toast.error('Active Status is missing.');
-        return;
+      toast.error('Active Status is missing.');
+      return;
     }
-
     if (!permitData.campus_location || permitData.campus_location.trim() === '') {
-        toast.error('Campus Location is missing.');
-        return;
+      toast.error('Campus Location is missing.');
+      return;
     }
 
     try {
-        const checkPermitExists = await checkParkingPermit(userId); // Using the function from requests.js
-        if (checkPermitExists && checkPermitExists.has_permit) {
-            toast.error('Parking permit already exists for this user.');
-            return;
-        }
+      const checkPermitExists = await checkParkingPermit(userId); // Using the function from requests.js
+      if (checkPermitExists && checkPermitExists.has_permit) {
+        toast.error('Parking permit already exists for this user.');
+        return;
+      }
 
-        const permitResponse = await addParkingPermit({ userid: userId, ...permitData });
-        if (permitResponse) {
-            const permitIdResponse = await getPermitId({ userid: userId, permit_number: permitData.permit_number });
-            if (permitIdResponse && permitIdResponse.permitid) {
-                const groupResponse = await addParkingGroup(permitIdResponse.permitid);
-                if (groupResponse.error) {
-                    toast.error(`Error adding parking group: ${groupResponse.error}`);
-                } else {
-                    toast.success('Parking Info added successfully!');
-                    await fetchUserPermits();  // Re-fetch the permits
-                    setHasPermit(true);
-                    setPermitInputEnabled(false);
-                }
-            } else {
-                toast.error('Error retrieving permit ID.');
+      // Add parking permit
+      const permitResponse = await addParkingPermit({ userid: userId, ...permitData });
+      if (permitResponse) {
+        const permitIdResponse = await getPermitId({ userid: userId, permit_number: permitData.permit_number });
+
+        if (permitIdResponse && permitIdResponse.permitid) {
+          const groupResponse = await addParkingGroup(permitIdResponse.permitid);
+
+          if (groupResponse.error) {
+            toast.error(`Error adding parking group: ${groupResponse.error}`);
+          } else {
+            toast.success('Parking Info added successfully!');
+            await fetchUserPermits();  // Re-fetch the permits
+            setHasPermit(true);
+            setPermitInputEnabled(false);
+
+            // Fetch the group ID based on the permit ID
+            const groupIdResponse = await fetchGroupId({ permitId: permitIdResponse.permitid });
+
+            if (groupIdResponse && groupIdResponse.groupid) {
+              // Update the user's group ID in the backend, but don't show any error messages
+              await updateUserGroupId({ userid: userId, groupid: groupIdResponse.groupid });
             }
+          }
         } else {
-            toast.error('Error adding permit.');
+          toast.error('Error retrieving permit ID.');
         }
+      } else {
+        toast.error('Error adding permit.');
+      }
     } catch (error) {
-        console.error('Error adding permit or group:', error);
-        toast.error('Failed to add permit or parking group.');
+      console.error('Error adding permit or group:', error);
+      toast.error('Failed to add permit or parking group.');
     }
-};
-
+  };
 
   const handleCarSubmit = async () => {
     if (!userId) {
@@ -242,6 +283,12 @@ const Profile = () => {
   };
 
   const handlePermitUpdate = async () => {
+
+    if (new Date(permitData.activate_date) >= new Date(permitData.expiration_date)) {
+      toast.error('Activation date cannot be later than or equal to the expiration date.');
+      return;
+    }
+
     try {
       await updatePermit({ ...permitData });
       toast.success('Permit information updated successfully!');
@@ -253,28 +300,39 @@ const Profile = () => {
     }
   };
 
+
   const handleSubmit = async () => {
     if (!selectedImage) {
-      toast.error('Please select an image to upload.');
+      alert('Please select an image to upload.');
       return;
     }
-    try {
-      const url = await uploadProof(selectedImage);
+
+    const url = await uploadProof(selectedImage);
+
+    console.log("outside", url)
+
+    if (url !== undefined) {
       const formData = new FormData();
       formData.append('proofImageUrl', url);
-      formData.append('userid', userId);
-      const response = await uploadETransfer(formData);
-      if (response['urlUploaded'] === true) {
-        setSelectedImage(null);
-        setImagePreviewUrl(null);
-        setUploadImageUrl(null);
-        toast.success("Image uploaded successfully!");
-      } else {
-        toast.error("Failed to upload image. Please try again.");
+      formData.append('userid', userId)
+      try {
+        const response = await uploadETransfer(formData);
+        console.log(response);
+        if (response['urlUploaded'] === true) {
+          console.log("image uploaded successfully")
+          // Reset the form
+          setSelectedImage(null);
+          setImagePreviewUrl(null);
+          setUploadImageUrl(null);
+          toast.success("Image uploaded successfully")
+        }
+
+      } catch (error) {
+        console.log("error uploading image", error);
+        toast.error("An error occurred while uploading image, Try Again", error);
       }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error("An error occurred while uploading the image. Please try again.");
+    } else {
+      toast.error("An error occurred while uploading image, Try Again");
     }
   };
 
@@ -287,15 +345,28 @@ const Profile = () => {
   };
 
   async function uploadProof(file) {
-    let { data, error } =
-      await supabase.storage.from('permit_confirmation').upload(userId + file.name, file);
-    if (error) {
-      console.error(error);
-      return;
+    let outerError;
+    if (!userImageProof) {//if the user has no image proof
+      let { data, error } =
+        await supabase.storage.from('permit_confirmation').upload(userId, file)
+      outerError = error
+    } else {
+      let { data, error } =
+        await supabase.storage.from('permit_confirmation').update(userId, file)
+      outerError = error
     }
-    let response = supabase.storage.from('permit_confirmation').getPublicUrl(userId + file.name);
-    const url = response.data['publicUrl'];
-    return url;
+    if (outerError) {
+      // Handle error
+      console.log(outerError)
+    } else {
+      // Handle success
+      let data = supabase.storage.from('permit_confirmation').getPublicUrl(userId)
+      console.log("immediate after url call")
+      const url = data.data['publicUrl']
+      console.log(url)
+      return url
+
+    }
   }
 
   return (
@@ -336,6 +407,8 @@ const Profile = () => {
             selectedImage={selectedImage}
             handleSubmit={handleSubmit}
             user={user}
+            groupid={user?.groupid}
+            isPermitHolder={hasPermit}
           />
         </TabPanel>
       </Card>

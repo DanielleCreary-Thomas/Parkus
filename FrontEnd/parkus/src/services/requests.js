@@ -59,7 +59,10 @@ export async function uploadETransfer(formData){
     }
     body = JSON.stringify(body);
 
-    var data = await fetch(`http://127.0.0.1:5000/users/imageproof`,
+    // const cacheBuster = `?cb=${new Date().getTime()}`;
+    // ${cacheBuster}
+    var data = await fetch(
+        `http://127.0.0.1:5000/users/imageproof`,
     {
         method: 'POST',
         headers: {
@@ -97,6 +100,39 @@ export async function getPermitId({ userid, permit_number }) {
     .catch(error => console.log(error));
 
     return data;
+}
+
+export async function fetchGroupId({ permitId }) {
+    var data = await fetch(`http://127.0.0.1:5000/get-groupid?permitid=${permitId}`, {
+        method: 'GET',
+    })
+    .then(response => response.json())
+    .then(data => data)
+    .catch(error => console.log(error));
+    return data;
+}
+
+export async function updateUserGroupId({ userid, groupid }) {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/update-user-groupid', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userid, groupid }),
+        });
+
+        if (!response.ok) {
+            // Check if the response is not OK and throw an error with the status text
+            throw new Error(`Failed to update user group. Status: ${response.status} ${response.statusText}`);
+        }
+
+        const result = await response.json(); // Parse the JSON response
+        return result;
+    } catch (error) {
+        console.error('Error updating user group ID:', error);
+        throw error;
+    }
 }
 
 // Function to insert a parking group using the permit ID

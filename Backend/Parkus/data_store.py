@@ -240,14 +240,14 @@ def upload_etransfer_image(image_url, userid):
     :return:
     """
     if bridge.validate_userid(userid):
-        groupid = bridge.get_group_id(userid)
+        groupid = bridge.get_group_id(userid)['groupid']
         group_members = bridge.get_group_members(groupid)
         fully_paid = False
-        count = 0
+        max_group_count = 3
         for group_member in group_members:
             if check_paid_member(group_member['userid']):
-                count += 1
-        bridge.group_fully_paid(groupid, (count == len(group_members)))
+                max_group_count -= 1
+        bridge.group_fully_paid(groupid, (max_group_count == 0))
         result = bridge.upload_image_proof(image_url, userid)
         return {"urlUploaded": result}
     return None
@@ -311,6 +311,14 @@ def add_parking_permit(user_id, permit_number, active_status, permit_type, activ
 def get_permit_id(user_id, permit_number):
     """Calls the bridge function to fetch the permit ID."""
     return bridge.fetch_permit_id(user_id, permit_number)
+
+def get_group_id_for_user(permit_id):
+    """Calls the bridge function to fetch the group ID."""
+    return bridge.fetch_group_id(permit_id)
+
+def update_user_groupid(userid, groupid):
+    """Wrapper function to update user group ID."""
+    return bridge.update_user_groupid(userid, groupid)
 
 def add_parking_group(permitid):
     """Calls the bridge function to insert a parking group using permitid."""
@@ -463,6 +471,5 @@ if __name__ == '__main__':
     # test = groups['members'][0]['schedule'][0]['start_time']
     for group in groups:
         print(group)
-
 
 

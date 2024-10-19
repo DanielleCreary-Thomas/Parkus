@@ -162,6 +162,35 @@ def get_permit_id():
     except Exception as e:
         print(f"Error retrieving permit ID: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+    
+@app.route('/get-groupid', methods=['GET'])
+def get_group_id_for_user():
+    """API endpoint to retrieve group id based on permit id"""
+    permit_id = request.args.get('permitid')
+
+    if not permit_id:
+        return jsonify({"error": "Missing permit id"}), 400
+    
+    try: 
+        groupid = data_store.get_group_id_for_user(permit_id)
+
+        if groupid:
+            return jsonify({"groupid": groupid}), 200
+        else:
+            return jsonify({"error": "groupid not found"}), 404
+    except Exception as e:
+        print(f"Error retrieving group ID: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+
+@app.route('/update-user-groupid', methods=['POST'])
+def update_user_groupid():
+    """API to update user's groupid."""
+    data = request.json
+    user_id = data.get('userid')
+    group_id = data.get('groupid')
+
+    # Call your data store to update the user's groupid
+    return data_store.update_user_groupid(user_id, group_id)
 
 @app.route('/parking-group', methods=['POST'])
 def add_parking_group():
@@ -188,23 +217,6 @@ def get_user_permits(user_id):
         return jsonify(permits), 200
     else:
         return jsonify({"error": "No permits found"}), 404
-    
-@app.route('/is-permit-holder', methods=['GET'])
-def check_if_permit_holder():
-    """
-    API endpoint to check if the user is the permit holder for their group.
-    :return: Boolean result indicating if the user is the permit holder.
-    """
-    user_id = request.args.get('userid')
-    group_id = request.args.get('groupid')
-
-    if not user_id or not group_id:
-        return jsonify({"error": "Missing user ID or group ID"}), 400
-
-    is_holder = data_store.is_user_permit_holder(user_id, group_id)
-
-    return jsonify({"isPermitHolder": is_holder}), 200
-
     
 ########################### Profile ###########################
 
@@ -520,6 +532,5 @@ def add_user():
 
 if __name__ == '__main__':
     app.run()
-
 
 
