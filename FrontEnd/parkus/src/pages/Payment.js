@@ -191,86 +191,93 @@ function Payment() {
                             minWidth: '400px'
                         }}>
                         {isMemberOfGroup ? (//check to see if the current user is in a group
-                            <section>
+                            !userImageProof ? (//check to see if the current user has paid
                                 <section>
-                                    <h3> Select your Banking Institution below to login</h3>
-                                    <ul style={{listStyleType: "none"}}>
-                                        <li>
-                                            <button onClick={handleBMOClick} style={buttonStyle}>
+                                    <section>
+                                        <h3> Select your Banking Institution below to login</h3>
+                                        <ul style={{listStyleType: "none"}}>
+                                            <li>
+                                                <button onClick={handleBMOClick} style={buttonStyle}>
+                                                    <img
+                                                        src={"https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/BMO_Logo.svg/1200px-BMO_Logo.svg.png"}
+                                                        alt={"BMO Logo"}
+                                                        style={{height: '40px', marginRight: '8px'}}
+                                                    />
+                                                    Proceed to Login
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button onClick={handleScotiaClick} style={buttonStyle}>
+                                                    <img
+                                                        src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7ayPlli-1fIySOJFISHAy08cW8Spwixt0TA&s"}
+                                                        alt={"Scotiabank Logo"}
+                                                        style={{height: '40px', marginRight: '8px'}}
+                                                    />
+                                                    Proceed to Login
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button onClick={handleTDClick} style={buttonStyle}>
+                                                    <img
+                                                        src={"https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/TD_Bank.svg/2560px-TD_Bank.svg.png"}
+                                                        alt={"TD Logo"}
+                                                        style={{height: '40px', marginRight: '8px'}}
+                                                    />
+                                                    Proceed to Login
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button onClick={handleRBCClick} style={buttonStyle}>
+                                                    <img
+                                                        src={"https://crowd.adsy.me/images/tmfUE__rbc-royal-bank.svg"}
+                                                        alt={"RBC Logo"}
+                                                        style={{height: '40px', marginRight: '8px'}}
+                                                    />
+                                                    Proceed to Login
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button onClick={handleCIBCClick} style={buttonStyle}>
+                                                    <img
+                                                        src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi-F3zP_sJLpxuGWfGXhUR1zQpPRMeBtrPUw&s"}
+                                                        alt={"CIBC Logo"}
+                                                        style={{height: '40px', marginRight: '8px'}}
+                                                    />
+                                                    Proceed to Login
+                                                </button>
+                                            </li>
+                                        </ul>
+                                        <h3>... Or login to a different bank on your own</h3>
+                                    </section>
+                                    <section>
+                                        <Typography variant={"h4"}>Proof of eTransfer</Typography>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageUpload}
+                                            aria-label="Upload proof of eTransfer"
+                                        />
+                                        {imagePreviewUrl && (
+                                            <div>
+                                                <h3>Image Preview:</h3>
                                                 <img
-                                                    src={"https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/BMO_Logo.svg/1200px-BMO_Logo.svg.png"}
-                                                    alt={"BMO Logo"}
-                                                    style={{height: '40px', marginRight: '8px'}}
+                                                    src={imagePreviewUrl}
+                                                    alt="Selected Proof of eTransfer"
+                                                    style={{width: '300px', marginTop: '10px'}}
                                                 />
-                                                Proceed to Login
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button onClick={handleScotiaClick} style={buttonStyle}>
-                                                <img
-                                                    src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7ayPlli-1fIySOJFISHAy08cW8Spwixt0TA&s"}
-                                                    alt={"Scotiabank Logo"}
-                                                    style={{height: '40px', marginRight: '8px'}}
-                                                />
-                                                Proceed to Login
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button onClick={handleTDClick} style={buttonStyle}>
-                                                <img
-                                                    src={"https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/TD_Bank.svg/2560px-TD_Bank.svg.png"}
-                                                    alt={"TD Logo"}
-                                                    style={{height: '40px', marginRight: '8px'}}
-                                                />
-                                                Proceed to Login
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button onClick={handleRBCClick} style={buttonStyle}>
-                                                <img
-                                                    src={"https://crowd.adsy.me/images/tmfUE__rbc-royal-bank.svg"}
-                                                    alt={"RBC Logo"}
-                                                    style={{height: '40px', marginRight: '8px'}}
-                                                />
-                                                Proceed to Login
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button onClick={handleCIBCClick} style={buttonStyle}>
-                                                <img
-                                                    src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi-F3zP_sJLpxuGWfGXhUR1zQpPRMeBtrPUw&s"}
-                                                    alt={"CIBC Logo"}
-                                                    style={{height: '40px', marginRight: '8px'}}
-                                                />
-                                                Proceed to Login
-                                            </button>
-                                        </li>
-                                    </ul>
-                                    <h3>... Or login to a different bank on your own</h3>
+                                            </div>
+                                        )}
+                                        <button onClick={handleSubmit} disabled={!selectedImage}>
+                                            Submit
+                                        </button>
+                                    </section>
                                 </section>
-                                <section>
-                                    <Typography variant={"h4"}>Proof of eTransfer</Typography>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                        aria-label="Upload proof of eTransfer"
-                                    />
-                                    {imagePreviewUrl && (
-                                        <div>
-                                            <h3>Image Preview:</h3>
-                                            <img
-                                                src={imagePreviewUrl}
-                                                alt="Selected Proof of eTransfer"
-                                                style={{width: '300px', marginTop: '10px'}}
-                                            />
-                                        </div>
-                                    )}
-                                    <button onClick={handleSubmit} disabled={!selectedImage}>
-                                        Submit
-                                    </button>
-                                </section>
-                            </section>
+                                ) : (
+                                    <section>
+                                        <h1>Uh Oh!</h1>
+                                        <h3> You have already paid your group leader, review in Group Tab</h3>
+                                    </section>
+                                )
                         ) : (
                             <section>
                                 <h1>Uh Oh!</h1>
@@ -278,10 +285,9 @@ function Payment() {
                             </section>
                         )}
                     </Stack>
-                    <ToastContainer />
+                    <ToastContainer/>
                 </div>
             </div>
-
 
 
     )
