@@ -38,9 +38,9 @@ class User:
                 for memBlock in member.schedule:
                     if userBlock.dow == memBlock.dow:
                         conflict = userBlock.compare_times(memBlock) == 0
-                        break
+                        if conflict:
+                            return conflict
                 checkBlocks -= 1
-
         return conflict
 
 
@@ -68,9 +68,9 @@ class Schedule:
         :return: 0(false) if there is a conflict or 1(true) if there is no conflict
         """
 
-        comp1 = member_time.start_time <= self.start_time < member_time.end_time
-        comp2 = member_time.end_time >= self.end_time > member_time.start_time
-        if member_time.start_time <= self.start_time < member_time.end_time or member_time.end_time >= self.end_time > member_time.start_time:
+        comp1 = self.start_time >= member_time.start_time and self.start_time < member_time.end_time
+        comp2 = self.end_time <= member_time.end_time and self.end_time > member_time.start_time
+        if comp1 or comp2:
             return 0
         return 1
     def to_json(self):
