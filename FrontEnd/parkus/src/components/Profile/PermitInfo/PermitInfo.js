@@ -23,9 +23,6 @@ const PermitInfo = ({
   if (groupid && !isPermitHolder) {
     return (
       <Box sx={{ flex: 1 }}>
-        <Button onClick={() => window.open('https://epark.sheridancollege.ca/', '_blank')} fullWidth>
-          Apply for Parking Permit
-        </Button>
         <Typography variant="h6" color="error">
           Sorry, you are already in a group. 
           <br/>

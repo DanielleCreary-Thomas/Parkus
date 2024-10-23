@@ -3,6 +3,7 @@ import { Select, InputLabel, FormControl, Box, Button, Dialog, DialogTitle, Dial
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { supabase } from '../../../utils/supabase.ts';
+import { fetchScheduleByScheduleId, fetchScheduleByUserAndDay, updateScheduleBlock, insertScheduleBlock, deleteScheduleBlock} from '../../../services/requests.js';
 
 const dayToNumber = { 'Monday': '1', 'Tuesday': '2', 'Wednesday': '3', 'Thursday': '4', 'Friday': '5' };
 
@@ -15,8 +16,8 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
     const [dayOfWeek, setDayOfWeek] = useState('');
 
     const colorOptions = [
-        '#FF5733', '#33FF57', '#3357FF', '#F1C40F',
-        '#8E44AD', '#E67E22', '#1ABC9C', '#2C3E50'
+        '#C5B6DD', '#A9B7C4', '#A2BBF3', '#8CD3D0',
+        '#AEF1C8', '#E4DEA7', '#E9C8A8', '#D7B0AE'
     ];
 
     useEffect(() => {
@@ -24,38 +25,48 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
             if (isEdit && scheduleid) {
                 // Load existing schedule data when editing
                 const fetchScheduleData = async () => {
-                    const { data, error } = await supabase
-                        .from('schedule_blocks')
-                        .select('*')
-                        .eq('scheduleid', scheduleid)
-                        .single();
-
-                    if (error) {
-                        toast.error('Error fetching schedule data: ' + error.message);
-                        return;
-                    }
-
-                    if (data) {
-                        // Pre-load existing data
-                        setDescription(data.description);
-                        setDayOfWeek(Object.keys(dayToNumber).find(key => dayToNumber[key] === data.dow)); // Convert numeric dow to day name
-                        setStartTime(data.start_time ? data.start_time.toString() : ''); // Ensure it matches dropdown format
-                        setEndTime(data.end_time ? data.end_time.toString() : ''); // Ensure it matches dropdown format
-                        setSelectedColor(data.block_color);
+                    try {
+                        const response = await fetchScheduleByScheduleId(scheduleid);
+    
+                        // Log the response data for debugging
+                        console.log("Fetched schedule data:", response);
+    
+                        if (response.error) {
+                            toast.error('Error fetching schedule data: ' + response.error);
+                            return;
+                        }
+    
+                        if (response.scheduleblocks) {
+                            const data = response.scheduleblocks[0]; // If the response returns an array
+                            
+                            // Log data being set for debugging
+                            console.log("Pre-loading data into modal:", data);
+    
+                            // Pre-load existing data into the form
+                            setDescription(data.description);
+                            setDayOfWeek(Object.keys(dayToNumber).find(key => dayToNumber[key] === data.dow)); // Convert numeric dow to day name
+                            setStartTime(data.start_time ? data.start_time.toString() : ''); 
+                            setEndTime(data.end_time ? data.end_time.toString() : ''); 
+                            setSelectedColor(data.block_color);
+                        }
+                    } catch (error) {
+                        toast.error('An error occurred while fetching schedule data.');
+                        console.error("Fetch error:", error);
                     }
                 };
-
+    
                 fetchScheduleData();
             } else {
                 // Reset fields for adding a new schedule
                 setDescription('');
-                setStartTime(selectedTime || ''); // Set start time from props
+                setStartTime(selectedTime || ''); 
                 setEndTime('');
-                setDayOfWeek(selectedDay || ''); // Keep day as string here for display purposes
+                setDayOfWeek(selectedDay || ''); 
                 setSelectedColor('#FF5733');
             }
         }
     }, [isModalOpen, selectedTime, selectedDay, isEdit, scheduleid]);
+    
 
     const generateTimeOptions = () => {
         const timeOptions = [];
@@ -71,95 +82,73 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
             toast.error('Please provide all details.');
             return;
         }
-    
+
         if (endTime <= startTime) {
             toast.error('End time must be after start time.');
             return;
         }
-    
+
         const { data: { user }, error } = await supabase.auth.getUser();
         if (error) {
             toast.error('Error fetching user information.');
             return;
         }
-    
+
         const userId = user.id;
-    
+
         try {
             // Convert day name to number
-            const numericDayOfWeek = dayToNumber[dayOfWeek]; 
-            
-            // Fetch existing schedule blocks for the same day of the week
-            const { data: existingBlocks, error: fetchError } = await supabase
-                .from('schedule_blocks')
-                .select('*')
-                .eq('userid', userId)
-                .eq('dow', numericDayOfWeek); // Use numeric day of the week
-    
-            if (fetchError) {
-                toast.error('Error fetching existing schedule blocks: ' + fetchError.message);
+            const numericDayOfWeek = dayToNumber[dayOfWeek];
+
+            // Fetch existing schedule blocks for the same day of the week from backend API
+            const existingBlocks = await fetchScheduleByUserAndDay(userId, numericDayOfWeek);
+
+            if (existingBlocks.length === 0) {
+                toast.error('No existing schedule blocks found for this day.');
                 return;
             }
-    
+
             // Convert times to Date objects for accurate comparison
             const newStartTime = new Date(`1970-01-01T${startTime}:00Z`);
             const newEndTime = new Date(`1970-01-01T${endTime}:00Z`);
-    
+
             const hasOverlap = existingBlocks.some(block => {
                 // Skip current block if editing
                 if (block.scheduleid === scheduleid) return false;
-    
+
                 // Convert existing times to Date objects
                 const existingStart = new Date(`1970-01-01T${block.start_time}Z`);
                 const existingEnd = new Date(`1970-01-01T${block.end_time}Z`);
-    
+
                 // Check if the new time block overlaps with any existing block
-                return (
-                    (newStartTime < existingEnd && newEndTime > existingStart)
-                );
+                return (newStartTime < existingEnd && newEndTime > existingStart);
             });
-    
+
             if (hasOverlap) {
                 toast.error('The selected time overlaps with an existing block.');
                 return;
             }
-    
-            let supabaseResponse;
+
+            let response;
+            const scheduleData = {
+                userid: userId,
+                description,
+                dow: numericDayOfWeek,
+                start_time: startTime,
+                end_time: endTime,
+                block_color: selectedColor
+            };
+
             if (isEdit && scheduleid) {
-                // Update existing schedule block
-                supabaseResponse = await supabase
-                    .from('schedule_blocks')
-                    .update({
-                        description,
-                        dow: numericDayOfWeek, 
-                        start_time: startTime,
-                        end_time: endTime,
-                        block_color: selectedColor
-                    })
-                    .eq('scheduleid', scheduleid);
+                // Update existing schedule block using requests.js
+                response = await updateScheduleBlock(scheduleid, scheduleData);
             } else {
-                supabaseResponse = await supabase
-                    .from('schedule_blocks')
-                    .insert([{
-                        userid: userId,
-                        description,
-                        dow: numericDayOfWeek, 
-                        start_time: startTime,
-                        end_time: endTime,
-                        block_color: selectedColor
-                    }]);
+                response = await insertScheduleBlock(scheduleData)
             }
-    
-            const { error: supabaseError } = supabaseResponse;
-    
-            if (supabaseError) {
-                toast.error('Error saving schedule block: ' + supabaseError.message);
-                return;
-            }
-    
+
             toast.success(isEdit ? 'Schedule block updated successfully!' : 'Schedule block added successfully!');
             onSave({ description, startTime, endTime, day: numericDayOfWeek, color: selectedColor });
-    
+
             closeModal();
         } catch (error) {
             toast.error('An error occurred: ' + error.message);
@@ -173,23 +162,23 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
         }
 
         try {
-            const { error } = await supabase
-                .from('schedule_blocks')
-                .delete()
-                .eq('scheduleid', scheduleid);
-
-            if (error) {
-                toast.error('Error deleting schedule block: ' + error.message);
+            const result = await deleteScheduleBlock(scheduleid);
+        
+            if (result.error) {
+                toast.error('Error deleting schedule block: ' + result.error);
                 return;
             }
-
+        
+            // Success case
             toast.success('Schedule block deleted successfully!');
             setIsConfirmDeleteOpen(false);
             closeModal();
             onDelete();
         } catch (error) {
+            // Handle unexpected errors, like network issues
             toast.error('An error occurred: ' + error.message);
         }
+        
     };
 
     const formatTime = (time) => {
