@@ -499,21 +499,31 @@ def fetch_schedule_by_user_and_day(userid, dow):
     schedule_data = bridge.get_schedule_by_user_and_day(userid, dow)
     return schedule_data
 
-def update_schedule_block(scheduleid, description, dow, start_time, end_time, block_color):
+def update_schedule_block(scheduleid, data):
     """Update schedule block via bridge."""
-    return bridge.update_schedule_block(scheduleid, description, dow, start_time, end_time, block_color)
-
-def insert_schedule_block(userid, description, dow, start_time, end_time, block_color):
-    """
-    Insert new schedule block via bridge.
-    """
-    return bridge.insert_schedule_block(userid, description, dow, start_time, end_time, block_color)
+    return bridge.update_schedule_block(scheduleid, data)
 
 def delete_schedule_block(scheduleid):
     """
-    Delete schedule block via bridge.
+    Wrapper function for deleting a schedule block.
+    Calls the bridge function to execute the delete operation.
+    :param scheduleid: ID of the schedule block to be deleted
+    :return: Response from the bridge layer
     """
     return bridge.delete_schedule_block(scheduleid)
+
+def insert_schedule_block(userid, description, dow, start_time, end_time, block_color):
+    """
+    Wrapper function to insert a new schedule block.
+    :param userid: User ID for the schedule block
+    :param description: Description of the schedule block
+    :param dow: Day of the week (0-6)
+    :param start_time: Start time of the schedule block
+    :param end_time: End time of the schedule block
+    :param block_color: Color for the schedule block
+    :return: Result from the bridge insert
+    """
+    return bridge.insert_schedule_block(userid, description, dow, start_time, end_time, block_color)
 
 if __name__ == '__main__':
     ##Test get members

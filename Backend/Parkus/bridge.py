@@ -751,31 +751,41 @@ def update_schedule_block(scheduleid, data):
     response = supabase.table('schedule_blocks').update(data).eq('scheduleid', scheduleid).execute()
     return response
 
-def insert_schedule_block(userid, description, dow, start_time, end_time, block_color):
-    """
-    Insert a new schedule block into the 'schedule_blocks' table in Supabase.
-    """
-    response = supabase.table('schedule_blocks').insert([{
-        'userid': userid,
-        'description': description,
-        'dow': dow,
-        'start_time': start_time,
-        'end_time': end_time,
-        'block_color': block_color
-    }]).execute()
-
-    return {'data': response.data}
-
 def delete_schedule_block(scheduleid):
     """
-    Delete a schedule block from the 'schedule_blocks' table in Supabase.
+    Deletes a schedule block from the 'schedule_blocks' table in Supabase.
+    :param scheduleid: ID of the schedule block to be deleted
+    :return: Response from Supabase
     """
+        # Run the delete query for the specific scheduleid
     response = supabase.table('schedule_blocks').delete().eq('scheduleid', scheduleid).execute()
+    return response
 
-    if response.error:
-        return {'error': response.error.message}
+def insert_schedule_block(userid, description, dow, start_time, end_time, block_color):
+    """
+    Inserts a new schedule block into the 'schedule_blocks' table in Supabase.
+    :param userid: User ID for the schedule block
+    :param description: Description of the schedule block
+    :param dow: Day of the week (0-6)
+    :param start_time: Start time of the schedule block
+    :param end_time: End time of the schedule block
+    :param block_color: Color for the schedule block
+    :return: Response from Supabase
+    """
+    try:
+        # Run the insert query for the schedule block
+        response = supabase.table('schedule_blocks').insert([{
+            'userid': userid,
+            'description': description,
+            'dow': dow,
+            'start_time': start_time,
+            'end_time': end_time,
+            'block_color': block_color
+        }]).execute()
 
-    return {'message': 'Schedule block deleted successfully!'}
+        return response
+    except Exception as e:
+        return {'error': str(e)}
 
 if __name__ == "__main__":
     ##Testing has member paid
