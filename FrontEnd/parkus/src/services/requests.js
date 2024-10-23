@@ -436,4 +436,178 @@ export async function deactivateUser(userId) {
 }
 
 
+export const fetchUserScheduleBlocks = async (userId) => {
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/scheduleblocks/${userId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
 
+        // Check if the response is OK
+        if (!response.ok) {
+            console.error("Error fetching schedule blocks:", response.statusText);
+            return [];
+        }
+
+        const data = await response.json();
+
+        // Ensure data is an array
+        if (!Array.isArray(data.scheduleblocks)) {
+            console.error("Data is not an array:", data);
+            return [];
+        }
+
+        return data.scheduleblocks; // Return array of schedule blocks
+    } catch (error) {
+        console.error("Network error:", error);
+        return [];
+    }
+};
+
+export async function fetchScheduleByScheduleId(scheduleid) {
+    var data = await fetch(`http://127.0.0.1:5000/users/schedule/${scheduleid}`, 
+        { method: "GET" })
+        .then(response => response.json())
+        .then(data => data)
+        .catch(error => console.log('Error fetching schedule:', error));
+    
+    return data;
+}
+
+export const fetchScheduleByUserAndDay = async (userId, numericDayOfWeek) => {
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/schedule/user/${userId}/day/${numericDayOfWeek}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            console.error("Error fetching schedule blocks:", response.statusText);
+            return [];
+        }
+
+        const data = await response.json();
+
+        // Ensure data is an array
+        if (!Array.isArray(data.scheduleblocks)) {
+            console.error("Fetched data is not an array:", data);
+            return [];
+        }
+
+        return data.scheduleblocks; // Return array of schedule blocks
+    } catch (error) {
+        console.error("Network error:", error);
+        return [];
+    }
+};
+
+export const updateScheduleBlock = async (scheduleid, scheduleData) => {
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/scheduleblocks/update/${scheduleid}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(scheduleData),
+        });
+
+        if (!response.ok) {
+            console.error('Error updating schedule block:', response.statusText);
+            return { error: 'Failed to update schedule block' };
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Network error:', error);
+        return { error: 'Network error while updating schedule block' };
+    }
+};
+
+export const insertScheduleBlock = async (scheduleData) => {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/scheduleblocks/insert', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(scheduleData),
+        });
+
+        // Check if the response is OK (status code in the 200-299 range)
+        if (!response.ok) {
+            const errorText = await response.text(); // Try to read the error as text
+            throw new Error(`Failed to insert schedule block: ${errorText}`);
+        }
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Error inserting schedule block:', error);
+        throw error;
+    }
+};
+
+export const deleteScheduleBlock = async (scheduleid) => {
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/scheduleblocks/delete/${scheduleid}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to delete schedule block.');
+        }
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        throw new Error('Error deleting schedule block: ' + error.message);
+    }
+};
+
+
+export const fetchGroupSize = async (groupId) => {
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/group-size/${groupId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch group size.');
+        }
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Error fetching group size:', error);
+        throw error;
+    }
+};
+
+export const checkUserGroupStatus = async (userId) => {
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/user-group-check/${userId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Failed to check user group status');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error checking user group status:', error);
+        throw error;
+    }
+};
