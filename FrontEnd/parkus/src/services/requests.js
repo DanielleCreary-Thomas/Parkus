@@ -102,6 +102,49 @@ export async function getPermitId({ userid, permit_number }) {
     return data;
 }
 
+
+export async function isPermitExpired({ userid, permit_number }) {
+    /**
+     * Checks if the permit for the given user and permit number is expired
+     * @param {string} userid - The ID of the user
+     * @param {string} permit_number - The permit number for the user
+     * @returns {boolean} - Returns true if the permit is expired, false otherwise
+     */
+    try {
+        // Step 1: Get permit ID using the existing getPermitId function
+        const permitIdData = await getPermitId({ userid, permit_number });
+        const permitId = permitIdData.permitid;
+
+        if (!permitId) {
+            console.error("Permit ID not found.");
+            return false; // If permit ID is not found, assume not expired
+        }
+
+        // Step 2: Fetch the expiration date of the permit using the permit ID
+        const permitResponse = await fetch(`http://127.0.0.1:5000/permits/${permitId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        const permitData = await permitResponse.json();
+        const expirationDate = new Date(permitData.expiration_date);
+
+        if (!expirationDate) {
+            console.error("Expiration date not found.");
+            return false; // Assume not expired if expiration date is missing
+        }
+
+        // Step 3: Compare expiration date with the current date
+        const currentDate = new Date();
+        return expirationDate < currentDate; // Return true if expired
+    } catch (error) {
+        console.error("Error checking permit expiration:", error);
+        return false; // Default to not expired in case of an error
+    }
+}
+
+
 export async function fetchGroupId({ permitId }) {
     var data = await fetch(`http://127.0.0.1:5000/get-groupid?permitid=${permitId}`, {
         method: 'GET',
@@ -385,6 +428,33 @@ export async function addUserData(userData) {
         throw error;
     }
 }
+
+
+export async function isGroupLeader(userId, groupId) {
+    /**
+     * Checks if the given user is the leader of the group with the given groupId
+     * @param {string} userId - The ID of the current user
+     * @param {string} groupId - The ID of the group
+     * @returns {boolean} - Returns true if the user is the group leader, false otherwise
+     */
+    try {
+        const data = await fetch(`http://127.0.0.1:5000/permits/userid/${groupId}`, {
+            method: "GET"
+        })
+            .then(response => response.json())
+            .then(data => data)
+            .catch(error => console.log(error));
+
+        console.log('Group Leader data:', data);
+
+        // Compare the current user's ID with the group's leader ID
+        return data['userid'] === userId;
+    } catch (error) {
+        console.error("Error checking group leader status:", error);
+        return false;  // Default to false in case of an error
+    }
+}
+
 
 
 export async function setGroupidTobeNull(userId) {
