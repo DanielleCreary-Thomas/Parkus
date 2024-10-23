@@ -121,7 +121,7 @@ const GroupSchedule = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <BackButton />
                 <Typography variant="h4" align="center">
-                    Group Schedule
+                    SpotSharing Generation
                 </Typography>
                 <JoinButton groupId={groupId} />
             </div>
