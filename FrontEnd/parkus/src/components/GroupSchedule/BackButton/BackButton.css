@@ -1,6 +1,6 @@
-/* src/components/GroupSchedule/JoinButton/JoinButton.css */
+/* src/components/GroupSchedule/BackButton/BackButton.css */
 
-.join-button {
+.back-button {
     background-color: #1D3557;
     color: #FFFFFF;
     font-family: 'Orelega One', sans-serif;
@@ -10,15 +10,16 @@
     border-radius: 25px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    margin-top: 20px;
     text-transform: none;
-    margin-right: 20px;
+    margin-left: 20px;
 }
 
-.join-button:hover {
+.back-button:hover {
     background-color: #457B9D;
 }
 
-.join-button:disabled {
+.back-button:disabled {
     background-color: #A8A8A8;
     cursor: not-allowed;
 }

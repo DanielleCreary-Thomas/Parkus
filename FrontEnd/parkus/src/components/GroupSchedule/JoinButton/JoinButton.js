@@ -1,7 +1,6 @@
 // src/components/GroupSchedule/JoinButton/JoinButton.js
 
 import React from 'react';
-import { Button } from '@mui/material';
 import { supabase } from '../../../utils/supabase.ts';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -12,7 +11,10 @@ const JoinButton = ({ groupId }) => {
 
     const handleJoinGroup = async () => {
         // Get the current user ID
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const {
+            data: { session },
+            error: sessionError,
+        } = await supabase.auth.getSession();
         if (sessionError || !session) {
             toast.error('You need to log in to join a group.');
             return;
@@ -27,8 +29,8 @@ const JoinButton = ({ groupId }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     group_id: groupId,
-                    user_id: userId
-                })
+                    user_id: userId,
+                }),
             });
 
             if (!response.ok) {
@@ -48,9 +50,9 @@ const JoinButton = ({ groupId }) => {
     };
 
     return (
-        <Button variant="contained" color="primary" onClick={handleJoinGroup}>
+        <button className="join-button" onClick={handleJoinGroup}>
             Join Group
-        </Button>
+        </button>
     );
 };
 
