@@ -27,26 +27,26 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                 const fetchScheduleData = async () => {
                     try {
                         const response = await fetchScheduleByScheduleId(scheduleid);
-    
+
                         // Log the response data for debugging
                         console.log("Fetched schedule data:", response);
-    
+
                         if (response.error) {
                             toast.error('Error fetching schedule data: ' + response.error);
                             return;
                         }
-    
+
                         if (response.scheduleblocks) {
                             const data = response.scheduleblocks[0]; // If the response returns an array
-                            
+
                             // Log data being set for debugging
                             console.log("Pre-loading data into modal:", data);
-    
+
                             // Pre-load existing data into the form
                             setDescription(data.description);
                             setDayOfWeek(Object.keys(dayToNumber).find(key => dayToNumber[key] === data.dow)); // Convert numeric dow to day name
-                            setStartTime(data.start_time ? data.start_time.toString() : ''); 
-                            setEndTime(data.end_time ? data.end_time.toString() : ''); 
+                            setStartTime(data.start_time ? data.start_time.toString() : '');
+                            setEndTime(data.end_time ? data.end_time.toString() : '');
                             setSelectedColor(data.block_color);
                         }
                     } catch (error) {
@@ -54,19 +54,19 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                         console.error("Fetch error:", error);
                     }
                 };
-    
+
                 fetchScheduleData();
             } else {
                 // Reset fields for adding a new schedule
                 setDescription('');
-                setStartTime(selectedTime || ''); 
+                setStartTime(selectedTime || '');
                 setEndTime('');
-                setDayOfWeek(selectedDay || ''); 
+                setDayOfWeek(selectedDay || '');
                 setSelectedColor('#FF5733');
             }
         }
     }, [isModalOpen, selectedTime, selectedDay, isEdit, scheduleid]);
-    
+
 
     const generateTimeOptions = () => {
         const timeOptions = [];
@@ -103,11 +103,6 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
             // Fetch existing schedule blocks for the same day of the week from backend API
             const existingBlocks = await fetchScheduleByUserAndDay(userId, numericDayOfWeek);
 
-            if (existingBlocks.length === 0) {
-                toast.error('No existing schedule blocks found for this day.');
-                return;
-            }
-
             // Convert times to Date objects for accurate comparison
             const newStartTime = new Date(`1970-01-01T${startTime}:00Z`);
             const newEndTime = new Date(`1970-01-01T${endTime}:00Z`);
@@ -138,9 +133,8 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                 end_time: endTime,
                 block_color: selectedColor
             };
-
             if (isEdit && scheduleid) {
-                // Update existing schedule block using requests.js
+                // Update existing schedule block
                 response = await updateScheduleBlock(scheduleid, scheduleData);
             } else {
                 response = await insertScheduleBlock(scheduleData)
@@ -163,22 +157,19 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
 
         try {
             const result = await deleteScheduleBlock(scheduleid);
-        
+
             if (result.error) {
                 toast.error('Error deleting schedule block: ' + result.error);
                 return;
             }
-        
-            // Success case
+
             toast.success('Schedule block deleted successfully!');
             setIsConfirmDeleteOpen(false);
             closeModal();
             onDelete();
         } catch (error) {
-            // Handle unexpected errors, like network issues
             toast.error('An error occurred: ' + error.message);
         }
-        
     };
 
     const formatTime = (time) => {
