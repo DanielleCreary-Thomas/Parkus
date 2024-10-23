@@ -460,6 +460,36 @@ def validate_groupid(group_id):
     """Wrapper function to validate group ID."""
     return bridge.validate_groupid(group_id)
 
+def fetch_schedule(user_id):
+    """Fetch the schedule blocks via data store."""
+    schedule_data = bridge.get_scheduleblocks(user_id)
+    return schedule_data
+
+def fetch_schedule_by_schedule_id(scheduleid):
+    """Fetch the schedule blocks via data store."""
+    schedule_data = bridge.get_scheduleblocks_by_schedule_id(scheduleid)
+    return schedule_data
+
+def fetch_schedule_by_user_and_day(userid, dow):
+    """Fetch the schedule blocks via data store."""
+    schedule_data = bridge.get_schedule_by_user_and_day(userid, dow)
+    return schedule_data
+
+def update_schedule_block(scheduleid, description, dow, start_time, end_time, block_color):
+    """Update schedule block via bridge."""
+    return bridge.update_schedule_block(scheduleid, description, dow, start_time, end_time, block_color)
+
+def insert_schedule_block(userid, description, dow, start_time, end_time, block_color):
+    """
+    Insert new schedule block via bridge.
+    """
+    return bridge.insert_schedule_block(userid, description, dow, start_time, end_time, block_color)
+
+def delete_schedule_block(scheduleid):
+    """
+    Delete schedule block via bridge.
+    """
+    return bridge.delete_schedule_block(scheduleid)
 
 if __name__ == '__main__':
     ##Test get members

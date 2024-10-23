@@ -730,11 +730,57 @@ def insert_license_plate_number(license_plate_number):
         return response
     except Exception as e:
         return {'error': str(e)}
+    
+def get_scheduleblocks(user_id):
+    """Fetch schedule blocks for a specific user id."""
+    response = supabase.table('schedule_blocks').select('*').eq('userid', user_id).execute()
+    return response
 
+def get_scheduleblocks_by_schedule_id(scheduleid):
+    """Fetch schedule blocks for a specific schedule id."""
+    response = supabase.table('schedule_blocks').select('*').eq('scheduleid', scheduleid).execute()
+    return response
+
+def get_schedule_by_user_and_day(userid, dow):
+    """Fetch schedule blocks by user ID and day of the week."""
+    response = supabase.table('schedule_blocks').select('*').eq('userid', userid).eq('dow', dow).execute()
+    return response.data
+
+def update_schedule_block(scheduleid, data):
+    """Update schedule block for a specific schedule ID."""
+    response = supabase.table('schedule_blocks').update(data).eq('scheduleid', scheduleid).execute()
+    return response
+
+def insert_schedule_block(userid, description, dow, start_time, end_time, block_color):
+    """
+    Insert a new schedule block into the 'schedule_blocks' table in Supabase.
+    """
+    response = supabase.table('schedule_blocks').insert([{
+        'userid': userid,
+        'description': description,
+        'dow': dow,
+        'start_time': start_time,
+        'end_time': end_time,
+        'block_color': block_color
+    }]).execute()
+
+    return {'data': response.data}
+
+def delete_schedule_block(scheduleid):
+    """
+    Delete a schedule block from the 'schedule_blocks' table in Supabase.
+    """
+    response = supabase.table('schedule_blocks').delete().eq('scheduleid', scheduleid).execute()
+
+    if response.error:
+        return {'error': response.error.message}
+
+    return {'message': 'Schedule block deleted successfully!'}
 
 if __name__ == "__main__":
     ##Testing has member paid
     print(check_paid_member('33d6127f-3a9e-4681-83a2-92c98db0881c'))
+    print(get_scheduleblocks('3ad62301-57a9-4d68-b094-5e1dfb15622b'))
 
     ##Testing Get Car info
     print(get_car_info('ABC123'))
