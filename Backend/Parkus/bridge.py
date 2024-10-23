@@ -740,13 +740,6 @@ def fetch_users_by_groupids(group_id):
         print(f"Exception in fetch_users_by_groupids: {e}")
         return None
 
-def fetch_schedule_blocks_by_useridss(user_ids):
-    try:
-        response = supabase.table("schedule_blocks").select("*").in_("userid", user_ids).execute()
-        return response.data
-    except Exception as e:
-        print(f"Exception in fetch_schedule_blocks_by_userids: {e}")
-        return None
 
 def fetch_schedule_blocks_by_useridss(user_id):
     try:
