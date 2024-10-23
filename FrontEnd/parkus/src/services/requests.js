@@ -528,6 +528,28 @@ export const updateScheduleBlock = async (scheduleid, scheduleData) => {
     }
 };
 
+export const deleteScheduleBlock = async (scheduleid) => {
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/scheduleblocks/delete/${scheduleid}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to delete schedule block: ${errorText}`);
+        }
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Error deleting schedule block:', error);
+        throw error;
+    }
+};
+
 export const insertScheduleBlock = async (scheduleData) => {
     try {
         const response = await fetch('http://127.0.0.1:5000/scheduleblocks/insert', {
@@ -551,27 +573,6 @@ export const insertScheduleBlock = async (scheduleData) => {
         throw error;
     }
 };
-
-export const deleteScheduleBlock = async (scheduleid) => {
-    try {
-        const response = await fetch(`http://127.0.0.1:5000/scheduleblocks/delete/${scheduleid}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to delete schedule block.');
-        }
-
-        const result = await response.json();
-        return result;
-    } catch (error) {
-        throw new Error('Error deleting schedule block: ' + error.message);
-    }
-};
-
 
 export const fetchGroupSize = async (groupId) => {
     try {
