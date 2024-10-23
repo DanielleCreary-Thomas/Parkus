@@ -13,16 +13,10 @@ import PaidMemberCard from "../components/Group/MemberCard/PaidMemberCard";
 import UnpaidMemberCard from "../components/Group/MemberCard/UnpaidMemberCard";
 import GroupTitle from "../components/Group/GroupTitle/GroupTitle";
 
-function MemberView({members, userInfoGroup, permitImageUrl, isGroupLeader, isPaidMember}){
+function MemberView({members, userInfoGroup, permitImageUrl, isGroupLeader, isPaidMember, userId}){
     if (isGroupLeader){
-        for (const member in members) {
-            if(member['image_proof_url'] == null){
-                member['image_proof_url'] =
-                    "https://rtneojaduhodjxqmymlq.supabase.co/storage/v1/object/public/payment_proof/UnpaidDefault.webp"
-            }
-        }
         console.log(members)
-        return (<LeaderCard data={members} permitData={permitImageUrl} />)
+        return (<LeaderCard data={members} permitData={permitImageUrl} currUserID={userId} />)
     }
     else{
         if(isPaidMember && userInfoGroup && permitImageUrl){
@@ -110,6 +104,7 @@ export default function Group(){
                                 isGroupLeader={checkGroupLeader()}
                                 isPaidMember={isMemberPaid}
                                 permitImageUrl={permitImageUrl}
+                                userId={userId}
                     />
                 </section>
             </div>

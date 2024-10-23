@@ -26,9 +26,23 @@ class User:
                                        block['end_time'][0:-3]))
 
     def compare_schedules(self, member):
-        for userBlock in self.schedule:
-            for memBlock in member.schedule:
-                return userBlock.compare_times(memBlock) != 0
+        """
+        compares the user blocks with each member block and returns true if they have no conflicts
+        :param member:
+        :return: True if they have conflicts and false otherwise
+        """
+        conflict = False
+        checkBlocks = len(self.schedule)
+        while conflict == False and checkBlocks > 0:
+            for userBlock in self.schedule:
+                for memBlock in member.schedule:
+                    if userBlock.dow == memBlock.dow:
+                        conflict = userBlock.compare_times(memBlock) == 0
+                        if conflict:
+                            return conflict
+                checkBlocks -= 1
+        return conflict
+
 
     def to_json(self):
         return {
@@ -50,12 +64,15 @@ class Schedule:
     def compare_times(self, member_time):
         """
         compares the time between the two schedule blocks checking for overlap
-        :param member_time: the schedule block of a User
-        :return: the amount overlap in hours between the schedule blocks
+        :param member_time: the schedule block of a Group Member
+        :return: 0(false) if there is a conflict or 1(true) if there is no conflict
         """
-        comparison = max(0, min(int(self.end_time.split(":")[0]), int(member_time.end_time.split(":")[0]))
-                         - max(int(self.start_time.split(":")[0]), int(member_time.start_time.split(":")[0])))
-        return comparison == 0
+
+        comp1 = self.start_time >= member_time.start_time and self.start_time < member_time.end_time
+        comp2 = self.end_time <= member_time.end_time and self.end_time > member_time.start_time
+        if comp1 or comp2:
+            return 0
+        return 1
     def to_json(self):
         return {
             'schedule_id': self.id,
@@ -84,12 +101,19 @@ class Group:
                 self.add_member(member)
 
     def validate_group(self, potential_member):
+        """
+        checks the schedule block for each group member with the given user's schedule and returns
+        the group if there are no conflicts
+        :param potential_member:
+        :return: the group with no conflicts
+        """
         valid = True
         checked_members = 0
         while valid and checked_members < len(self.members):
             for member in self.members:
-                if not potential_member.compare_schedules(member):
+                if potential_member.compare_schedules(member):
                     valid = False
+                    break
                 checked_members += 1
         if valid:
             return self
@@ -460,6 +484,36 @@ def validate_groupid(group_id):
     """Wrapper function to validate group ID."""
     return bridge.validate_groupid(group_id)
 
+def fetch_schedule(user_id):
+    """Fetch the schedule blocks via data store."""
+    schedule_data = bridge.get_scheduleblocks(user_id)
+    return schedule_data
+
+def fetch_schedule_by_schedule_id(scheduleid):
+    """Fetch the schedule blocks via data store."""
+    schedule_data = bridge.get_scheduleblocks_by_schedule_id(scheduleid)
+    return schedule_data
+
+def fetch_schedule_by_user_and_day(userid, dow):
+    """Fetch the schedule blocks via data store."""
+    schedule_data = bridge.get_schedule_by_user_and_day(userid, dow)
+    return schedule_data
+
+def update_schedule_block(scheduleid, description, dow, start_time, end_time, block_color):
+    """Update schedule block via bridge."""
+    return bridge.update_schedule_block(scheduleid, description, dow, start_time, end_time, block_color)
+
+def insert_schedule_block(userid, description, dow, start_time, end_time, block_color):
+    """
+    Insert new schedule block via bridge.
+    """
+    return bridge.insert_schedule_block(userid, description, dow, start_time, end_time, block_color)
+
+def delete_schedule_block(scheduleid):
+    """
+    Delete schedule block via bridge.
+    """
+    return bridge.delete_schedule_block(scheduleid)
 
 if __name__ == '__main__':
     ##Test get members
