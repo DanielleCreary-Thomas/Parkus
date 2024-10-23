@@ -564,12 +564,28 @@ def get_schedule_by_user_and_day(userid, dow):
 def update_scheduleblock(scheduleid):
     """Update schedule block in Supabase."""
     data = request.get_json()
-    update_result = bridge.update_schedule_block(scheduleid, data)
+    update_result = data_store.update_schedule_block(scheduleid, data)
 
     if 'error' in update_result:
         return jsonify({"error": "Failed to update schedule block"}), 500
     
     return jsonify({"message": "Schedule block updated successfully"}), 200
+
+@app.route('/scheduleblocks/delete/<scheduleid>', methods=['POST'])
+def delete_schedule_block(scheduleid):
+    """
+    API endpoint to delete a schedule block by its ID.
+    :param scheduleid: The ID of the schedule block to be deleted
+    :return: JSON response with success or error message
+    """
+    try:
+        # Call data_store to delete the schedule block using the provided scheduleid
+        response = data_store.delete_schedule_block(scheduleid)
+        if 'error' in response:
+            return jsonify({'error': response['error']}), 400
+        return jsonify({'message': 'Schedule block deleted successfully!'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/scheduleblocks/insert', methods=['POST'])
 def insert_schedule_block():
@@ -584,21 +600,13 @@ def insert_schedule_block():
     end_time = data.get('end_time')
     block_color = data.get('block_color')
 
+    # Call the data store to insert the schedule block
     response = data_store.insert_schedule_block(userid, description, dow, start_time, end_time, block_color)
 
-    return jsonify({'message': 'Schedule block inserted successfully!'}), 201
-
-@app.route('/scheduleblocks/delete/<scheduleid>', methods=['DELETE'])
-def delete_schedule_block(scheduleid):
-    """
-    API endpoint to delete a schedule block.
-    """
-    response = data_store.delete_schedule_block(scheduleid)
-
     if 'error' in response:
-        return jsonify({'error': response['error']}), 500
+        return jsonify({'error': response['error']}), 400
 
-    return jsonify({'message': 'Schedule block deleted successfully!'}), 200
+    return jsonify({'message': 'Schedule block inserted successfully!'}), 201
 
 @app.route('/group-size/<groupid>', methods=['GET'])
 def get_group_size(groupid):
