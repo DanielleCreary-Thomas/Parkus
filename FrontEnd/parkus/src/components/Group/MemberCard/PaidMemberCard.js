@@ -1,4 +1,6 @@
-import {Card, CardContent, CardMedia, Stack, Typography} from "@mui/material";
+import {Card, CardContent, CardMedia, Chip, Divider, Stack, Typography} from "@mui/material";
+import {Person} from "@mui/icons-material";
+import React from "react";
 
 
 export default function PaidMemberCard({memberData, permitData}){
@@ -29,38 +31,70 @@ export default function PaidMemberCard({memberData, permitData}){
 
         return (
             <Card sx={{ maxWidth: 345, minWidth:600 }}>
-                <CardMedia
-                    component="img"
-                    height="140"
-                    src = {memberData['image_proof_url']}
-                    alt="eTransfer Image"
-                    title="eTransfer Proof"
-                >
-                    {/*<Image src={memberData.imageUrl} alt={"eTransfer Image"}/>*/}
-                </CardMedia>
+                {memberData['image_proof_url'] == null ? (
+                    <CardMedia
+                        component="img"
+                        height="140"
+                        src = "https://rtneojaduhodjxqmymlq.supabase.co/storage/v1/object/public/payment_proof/UnpaidDefault.webp"
+                        alt="default unpaid eTransfer Image"
+                        title="Unpaid eTransfer"
+                    >
+                        {/*<Image src={memberData.imageUrl} alt={"eTransfer Image"}/>*/}
+                    </CardMedia>
+                ) : (
+                    <CardMedia
+                        component="img"
+                        height="140"
+                        src = {memberData['image_proof_url']}
+                        alt="eTransfer Image"
+                        title="eTransfer Proof"
+                    >
+                        {/*<Image src={memberData.imageUrl} alt={"eTransfer Image"}/>*/}
+                    </CardMedia>
+                )}
+
 
                 <CardContent>
-                    <Typography gutterBottom variant="h5" component="div">
-                        {memberData['first_name'] + " " + memberData['last_name']}
-                    </Typography>
-                    <Stack direction="row" spacing={2}>
+                    <Stack direction="row"
+                           spacing={2}
+                           sx={{
+                               justifyContent: "space-between",
+                               alignItems: "center",
+
+                           }}>
+                        <Typography gutterBottom variant="h5" component="div">
+                            {memberData['first_name'] + " " + memberData['last_name']}
+                        </Typography>
+                    </Stack>
+                    <Divider></Divider>
+                    <br/>
+                    <Stack direction="row" spacing={6}>
                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                            {memberData['license_plate_number']}<br/>
-                            {memberData['email']}<br/>
+                            Plate Number: <br/>{memberData['license_plate_number']}<br/><br/>
+                            Email: <br/>{memberData['email']}<br/>
 
                         </Typography>
+                        <Divider orientation="vertical" flexItem />
                         <Stack>
-                            <Typography gutterBottom variant="h5" component="div">
+                            <Typography gutterBottom variant="h5" component="div"
+                                        sx={{backgroundColor: "#e6eff5",
+                                            padding:0.5,
+                                            borderRadius:4,
+                                        }}>
                                 Car Info
                             </Typography>
-                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                {memberData['car']['license_plate_number']}<br/>
-                                {memberData['car']['province']}<br/>
-                                {memberData['car']['year']}<br/>
-                                {memberData['car']['make']}<br/>
-                                {memberData['car']['model']}<br/>
-                                {memberData['car']['color']}<br/>
-                            </Typography>
+                            <Stack direction="row" spacing={2}>
+                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                    Plate Number: {memberData['car']['license_plate_number']}<br/>
+                                    Province: {memberData['car']['province']}<br/>
+                                    Year: {memberData['car']['year']}<br/>
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                    Make: {memberData['car']['make']}<br/>
+                                    Model: {memberData['car']['model']}<br/>
+                                    Color: {memberData['car']['color']}<br/>
+                                </Typography>
+                            </Stack>
                         </Stack>
 
                     </Stack>
