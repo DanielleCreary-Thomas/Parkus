@@ -18,6 +18,10 @@ const SignUp = () => {
     const [openDialog, setOpenDialog] = useState(false);
     const navigate = useNavigate();
 
+    const handleLogoClick = () => {
+        navigate('/'); // Navigate to landing page
+    };
+
     const handleSignUp = async (e) => {
         e.preventDefault();
 
@@ -77,7 +81,14 @@ const SignUp = () => {
         <div className="sign-up-page">
             <CssBaseline />
             <div className="sign-up-card">
-                <h1>Sign Up for Parkus</h1>
+                {/* Make the image clickable */}
+                <img 
+                    src={`${process.env.PUBLIC_URL}/1.jpg`} 
+                    alt="illustration" 
+                    style={{ width: '50px', cursor: 'pointer' }} // Add cursor pointer for clickability
+                    onClick={handleLogoClick} // Add click event handler
+                />
+                <h1>Sign Up</h1>
 
                 <TextField
                     label="First Name"
