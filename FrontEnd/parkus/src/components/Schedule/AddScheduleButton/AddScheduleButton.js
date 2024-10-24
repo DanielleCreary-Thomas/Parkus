@@ -162,14 +162,17 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                 toast.error('Error deleting schedule block: ' + result.error);
                 return;
             }
-
+        
+            // Success case
             toast.success('Schedule block deleted successfully!');
             setIsConfirmDeleteOpen(false);
             closeModal();
             onDelete();
         } catch (error) {
+            // Handle unexpected errors, like network issues
             toast.error('An error occurred: ' + error.message);
         }
+        
     };
 
     const formatTime = (time) => {
