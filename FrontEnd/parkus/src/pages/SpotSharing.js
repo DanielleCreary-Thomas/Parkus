@@ -71,7 +71,7 @@ function SpotSharing() {
                     {completedSchedule ? (//check if they have schedule blocks
                         <section>
                             {availableGroups ? (//matchmake completed
-                                noAvailableGroups ? (
+                                !noAvailableGroups ? (
                                     <section>
                                         <h1>Uh Oh!</h1>
                                         <h3> There are no available groups for you to join, head to the Profile tab
