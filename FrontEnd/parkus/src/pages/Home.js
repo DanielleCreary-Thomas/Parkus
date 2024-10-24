@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+
 import { getCurrUser, fetchUser, getGroupMembers, fetchUserSchedule, fetchGroupMembersSchedules, hasMemberPaid, isGroupLeader, isPermitExpired } from '../services/requests'; // Import the isGroupLeader and hasMemberPaid function
+
 import './styles/home.css';
 
 // Notification component

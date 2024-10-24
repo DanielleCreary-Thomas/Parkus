@@ -13,15 +13,12 @@ function SpotSharing() {
     const [availableGroups, setAvailableGroups] = useState(false);
     const [completedSchedule, setCompletedSchedule] = useState(false);
     const [notMemberOfGroup, setNotMemberOfGroup] = useState(false);
-    const [noAvailableGroups, setNoAvailableGroups] = useState(false);
-
 
     async function handleMatchmakeClick() {
         const currUser = await getCurrUser();
         if (currUser) {
             setAvailableGroups( await matchmake(currUser).then(data => data.availableGroups))
             console.log(availableGroups)
-            if (availableGroups === false) {setNoAvailableGroups(true)}
         }
     }
 
@@ -71,18 +68,10 @@ function SpotSharing() {
                     {completedSchedule ? (//check if they have schedule blocks
                         <section>
                             {availableGroups ? (//matchmake completed
-                                noAvailableGroups ? (
-                                    <section>
-                                        <h1>Uh Oh!</h1>
-                                        <h3> There are no available groups for you to join, head to the Profile tab
-                                        to purchase a permit and start your own!</h3>
-                                    </section>
-                                ): (
-                                    <section>
-                                        <MatchmakingButton handleMatchmakeClick={handleMatchmakeClick}/>
-                                        <MatchmakingGroups data={availableGroups} handleGroupClick={handleGroupClick}></MatchmakingGroups>
-                                    </section>
-                                )
+                                <section>
+                                    <MatchmakingButton handleMatchmakeClick={handleMatchmakeClick}/>
+                                    <MatchmakingGroups data={availableGroups} handleGroupClick={handleGroupClick}></MatchmakingGroups>
+                                </section>
                             ):(//matchmake hasn't been completed
                                 <section>
                                     <MatchmakingButton handleMatchmakeClick={handleMatchmakeClick}/>

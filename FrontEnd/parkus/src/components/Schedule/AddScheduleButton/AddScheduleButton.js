@@ -3,7 +3,7 @@ import { Select, InputLabel, FormControl, Box, Button, Dialog, DialogTitle, Dial
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { supabase } from '../../../utils/supabase.ts';
-import { fetchScheduleByScheduleId, fetchScheduleByUserAndDay, updateScheduleBlock, insertScheduleBlock, deleteScheduleBlock} from '../../../services/requests.js';
+import { fetchScheduleByScheduleId, fetchScheduleByUserAndDay, updateScheduleBlock, insertScheduleBlock, deleteScheduleBlock } from '../../../services/requests.js';
 
 const dayToNumber = { 'Monday': '1', 'Tuesday': '2', 'Wednesday': '3', 'Thursday': '4', 'Friday': '5' };
 
@@ -183,7 +183,12 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
         <Box>
             <ToastContainer />
             {isEdit ? (
-                <Dialog open={isModalOpen} onClose={closeModal}>
+                <Dialog open={isModalOpen} onClose={closeModal}
+                    PaperProps={{
+                        style: {
+                            marginLeft: '30%', // This adds the 70% margin to the left
+                        }
+                    }}>
                     <DialogTitle>
                         <Typography variant="h6" align="center">
                             Edit or Delete Schedule
@@ -297,7 +302,15 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                     </DialogActions>
                 </Dialog>
             ) : (
-                <Dialog open={isModalOpen} onClose={closeModal}>
+                <Dialog
+                    open={isModalOpen}
+                    onClose={closeModal}
+                    PaperProps={{
+                        style: {
+                            marginLeft: '30%', // This adds the 70% margin to the left
+                        }
+                    }}
+                >
                     <DialogTitle>
                         <Typography variant="h6" align="center">
                             Add Schedule
@@ -336,15 +349,6 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                                 select
                                 value={startTime}
                                 onChange={(e) => setStartTime(e.target.value)}
-                                SelectProps={{
-                                    MenuProps: {
-                                        sx: {
-                                            '.MuiMenuItem-root': {
-                                                fontSize: '1rem',
-                                            },
-                                        },
-                                    },
-                                }}
                                 InputLabelProps={{
                                     shrink: true,
                                     style: { paddingTop: '0.5rem', fontSize: '1rem' }
@@ -363,15 +367,6 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                                 select
                                 value={endTime}
                                 onChange={(e) => setEndTime(e.target.value)}
-                                SelectProps={{
-                                    MenuProps: {
-                                        sx: {
-                                            '.MuiMenuItem-root': {
-                                                fontSize: '1rem',
-                                            },
-                                        },
-                                    },
-                                }}
                                 InputLabelProps={{
                                     shrink: true,
                                     style: { paddingTop: '0.5rem', fontSize: '1rem' }
@@ -410,6 +405,7 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                         </Button>
                     </DialogActions>
                 </Dialog>
+
             )}
 
             <Dialog open={isConfirmDeleteOpen} onClose={() => setIsConfirmDeleteOpen(false)}>
