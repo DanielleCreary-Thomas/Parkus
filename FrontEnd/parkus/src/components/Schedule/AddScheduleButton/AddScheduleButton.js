@@ -3,7 +3,7 @@ import { Select, InputLabel, FormControl, Box, Button, Dialog, DialogTitle, Dial
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { supabase } from '../../../utils/supabase.ts';
-import { fetchScheduleByScheduleId, fetchScheduleByUserAndDay, updateScheduleBlock, insertScheduleBlock, deleteScheduleBlock} from '../../../services/requests.js';
+import { fetchScheduleByScheduleId, fetchScheduleByUserAndDay, updateScheduleBlock, insertScheduleBlock, deleteScheduleBlock } from '../../../services/requests.js';
 
 const dayToNumber = { 'Monday': '1', 'Tuesday': '2', 'Wednesday': '3', 'Thursday': '4', 'Friday': '5' };
 
@@ -27,26 +27,26 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                 const fetchScheduleData = async () => {
                     try {
                         const response = await fetchScheduleByScheduleId(scheduleid);
-    
+
                         // Log the response data for debugging
                         console.log("Fetched schedule data:", response);
-    
+
                         if (response.error) {
                             toast.error('Error fetching schedule data: ' + response.error);
                             return;
                         }
-    
+
                         if (response.scheduleblocks) {
                             const data = response.scheduleblocks[0]; // If the response returns an array
-                            
+
                             // Log data being set for debugging
                             console.log("Pre-loading data into modal:", data);
-    
+
                             // Pre-load existing data into the form
                             setDescription(data.description);
                             setDayOfWeek(Object.keys(dayToNumber).find(key => dayToNumber[key] === data.dow)); // Convert numeric dow to day name
-                            setStartTime(data.start_time ? data.start_time.toString() : ''); 
-                            setEndTime(data.end_time ? data.end_time.toString() : ''); 
+                            setStartTime(data.start_time ? data.start_time.toString() : '');
+                            setEndTime(data.end_time ? data.end_time.toString() : '');
                             setSelectedColor(data.block_color);
                         }
                     } catch (error) {
@@ -54,19 +54,19 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                         console.error("Fetch error:", error);
                     }
                 };
-    
+
                 fetchScheduleData();
             } else {
                 // Reset fields for adding a new schedule
                 setDescription('');
-                setStartTime(selectedTime || ''); 
+                setStartTime(selectedTime || '');
                 setEndTime('');
-                setDayOfWeek(selectedDay || ''); 
+                setDayOfWeek(selectedDay || '');
                 setSelectedColor('#FF5733');
             }
         }
     }, [isModalOpen, selectedTime, selectedDay, isEdit, scheduleid]);
-    
+
 
     const generateTimeOptions = () => {
         const timeOptions = [];
@@ -157,7 +157,7 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
 
         try {
             const result = await deleteScheduleBlock(scheduleid);
-        
+
             if (result.error) {
                 toast.error('Error deleting schedule block: ' + result.error);
                 return;
@@ -186,7 +186,12 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
         <Box>
             <ToastContainer />
             {isEdit ? (
-                <Dialog open={isModalOpen} onClose={closeModal}>
+                <Dialog open={isModalOpen} onClose={closeModal}
+                    PaperProps={{
+                        style: {
+                            marginLeft: '30%', // This adds the 70% margin to the left
+                        }
+                    }}>
                     <DialogTitle>
                         <Typography variant="h6" align="center">
                             Edit or Delete Schedule
@@ -300,7 +305,15 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                     </DialogActions>
                 </Dialog>
             ) : (
-                <Dialog open={isModalOpen} onClose={closeModal}>
+                <Dialog
+                    open={isModalOpen}
+                    onClose={closeModal}
+                    PaperProps={{
+                        style: {
+                            marginLeft: '30%', // This adds the 70% margin to the left
+                        }
+                    }}
+                >
                     <DialogTitle>
                         <Typography variant="h6" align="center">
                             Add Schedule
@@ -339,15 +352,6 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                                 select
                                 value={startTime}
                                 onChange={(e) => setStartTime(e.target.value)}
-                                SelectProps={{
-                                    MenuProps: {
-                                        sx: {
-                                            '.MuiMenuItem-root': {
-                                                fontSize: '1rem',
-                                            },
-                                        },
-                                    },
-                                }}
                                 InputLabelProps={{
                                     shrink: true,
                                     style: { paddingTop: '0.5rem', fontSize: '1rem' }
@@ -366,15 +370,6 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                                 select
                                 value={endTime}
                                 onChange={(e) => setEndTime(e.target.value)}
-                                SelectProps={{
-                                    MenuProps: {
-                                        sx: {
-                                            '.MuiMenuItem-root': {
-                                                fontSize: '1rem',
-                                            },
-                                        },
-                                    },
-                                }}
                                 InputLabelProps={{
                                     shrink: true,
                                     style: { paddingTop: '0.5rem', fontSize: '1rem' }
@@ -413,6 +408,7 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
                         </Button>
                     </DialogActions>
                 </Dialog>
+
             )}
 
             <Dialog open={isConfirmDeleteOpen} onClose={() => setIsConfirmDeleteOpen(false)}>
