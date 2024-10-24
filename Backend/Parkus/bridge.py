@@ -730,11 +730,67 @@ def insert_license_plate_number(license_plate_number):
         return response
     except Exception as e:
         return {'error': str(e)}
+    
+def get_scheduleblocks(user_id):
+    """Fetch schedule blocks for a specific user id."""
+    response = supabase.table('schedule_blocks').select('*').eq('userid', user_id).execute()
+    return response
 
+def get_scheduleblocks_by_schedule_id(scheduleid):
+    """Fetch schedule blocks for a specific schedule id."""
+    response = supabase.table('schedule_blocks').select('*').eq('scheduleid', scheduleid).execute()
+    return response
+
+def get_schedule_by_user_and_day(userid, dow):
+    """Fetch schedule blocks by user ID and day of the week."""
+    response = supabase.table('schedule_blocks').select('*').eq('userid', userid).eq('dow', dow).execute()
+    return response.data
+
+def update_schedule_block(scheduleid, data):
+    """Update schedule block for a specific schedule ID."""
+    response = supabase.table('schedule_blocks').update(data).eq('scheduleid', scheduleid).execute()
+    return response
+
+def delete_schedule_block(scheduleid):
+    """
+    Deletes a schedule block from the 'schedule_blocks' table in Supabase.
+    :param scheduleid: ID of the schedule block to be deleted
+    :return: Response from Supabase
+    """
+        # Run the delete query for the specific scheduleid
+    response = supabase.table('schedule_blocks').delete().eq('scheduleid', scheduleid).execute()
+    return response
+
+def insert_schedule_block(userid, description, dow, start_time, end_time, block_color):
+    """
+    Inserts a new schedule block into the 'schedule_blocks' table in Supabase.
+    :param userid: User ID for the schedule block
+    :param description: Description of the schedule block
+    :param dow: Day of the week (0-6)
+    :param start_time: Start time of the schedule block
+    :param end_time: End time of the schedule block
+    :param block_color: Color for the schedule block
+    :return: Response from Supabase
+    """
+    try:
+        # Run the insert query for the schedule block
+        response = supabase.table('schedule_blocks').insert([{
+            'userid': userid,
+            'description': description,
+            'dow': dow,
+            'start_time': start_time,
+            'end_time': end_time,
+            'block_color': block_color
+        }]).execute()
+
+        return response
+    except Exception as e:
+        return {'error': str(e)}
 
 if __name__ == "__main__":
     ##Testing has member paid
     print(check_paid_member('33d6127f-3a9e-4681-83a2-92c98db0881c'))
+    print(get_scheduleblocks('3ad62301-57a9-4d68-b094-5e1dfb15622b'))
 
     ##Testing Get Car info
     print(get_car_info('ABC123'))

@@ -1,0 +1,29 @@
+.dynamic-text span {
+  display: inline-block;
+  opacity: 0;
+}
+
+
+@keyframes fadeInOut {
+  0%, 30%, 100% { opacity: 0; }
+  10%, 20% { opacity: 1; }
+}
+
+.word-one {
+  color: #fbd1a2;
+  animation: fadeInOut 9s ease-in-out infinite;
+}
+
+
+.word-two {
+  color: #7dcfb6; 
+  animation: fadeInOut 9s ease-in-out infinite;
+  animation-delay: 3s; 
+}
+
+
+.word-three {
+  color: #ee6c4d; 
+  animation: fadeInOut 9s ease-in-out infinite;
+  animation-delay: 6s;
+}
