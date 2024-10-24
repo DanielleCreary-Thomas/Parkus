@@ -242,6 +242,7 @@ def get_group_id(user_id):
         return data_store.get_group_id(user_id)
     return {'groupid': 'None'}
 
+
 @app.route('/users/group/<group_id>', methods=['GET', 'OPTIONS'])
 def get_group_members(group_id):
     """
@@ -462,13 +463,13 @@ def update_permit():
 
     # Call the data_store to update the car information
     result = data_store.update_permit_info(permitid, userid, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location)
-    
+
     if 'error' in result:
         return jsonify({'error': result['error']}), 400
-    
+
     return jsonify({"message": "Car information updated successfully"}), 201
 
-    
+
 @app.route('/add-user', methods=['POST'])
 def add_user():
     """
@@ -498,6 +499,7 @@ def add_user():
         return jsonify({'error': result['error']}), 400
 
     return jsonify({'message': 'User and car data inserted successfully'}), 201
+
 
 @app.route('/scheduleblocks/<user_id>', methods=['GET'])
 def get_scheduleblocks(user_id):
@@ -613,5 +615,4 @@ def check_user_group(user_id):
 
 if __name__ == '__main__':
     app.run()
-
 
