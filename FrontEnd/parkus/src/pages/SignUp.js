@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { Button, TextField, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import {
+    Button,
+    TextField,
+    CssBaseline,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    Typography
+} from '@mui/material';
 import { supabase } from '../utils/supabase.ts';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
@@ -88,13 +98,16 @@ const SignUp = () => {
                     style={{ width: '50px', cursor: 'pointer' }} // Add cursor pointer for clickability
                     onClick={handleLogoClick} // Add click event handler
                 />
-                <h1>Sign Up</h1>
+                <Typography variant="h1" component="div" fontFamily={"Orelega One"} color={'#84b5d3'}
+                            fontSize={80}>
+                    Sign Up
+                </Typography>
 
                 <TextField
                     label="First Name"
                     variant="outlined"
                     fullWidth
-                    margin="normal"
+                    margin="dense"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     required
@@ -103,7 +116,7 @@ const SignUp = () => {
                     label="Last Name"
                     variant="outlined"
                     fullWidth
-                    margin="normal"
+                    margin="dense"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     required
@@ -112,7 +125,7 @@ const SignUp = () => {
                     label="Student ID"
                     variant="outlined"
                     fullWidth
-                    margin="normal"
+                    margin="dense"
                     value={studentID}
                     onChange={(e) => setStudentID(e.target.value)}
                     required
@@ -121,7 +134,7 @@ const SignUp = () => {
                     label="Phone Number"
                     variant="outlined"
                     fullWidth
-                    margin="normal"
+                    margin="dense"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                 />
@@ -129,7 +142,7 @@ const SignUp = () => {
                     label="License Plate Number"
                     variant="outlined"
                     fullWidth
-                    margin="normal"
+                    margin="dense"
                     value={licensePlateNumber}
                     onChange={(e) => setLicensePlateNumber(e.target.value)}
                     required
@@ -138,7 +151,7 @@ const SignUp = () => {
                     label="Email"
                     variant="outlined"
                     fullWidth
-                    margin="normal"
+                    margin="dense"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -148,17 +161,19 @@ const SignUp = () => {
                     type="password"
                     variant="outlined"
                     fullWidth
-                    margin="normal"
+                    margin="dense"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                 />
+
                 <Button
                     variant="contained"
                     color="primary"
                     size="large"
                     onClick={handleSignUp}
                     className="sign-up-button"
+
                 >
                     Sign Up
                 </Button>
