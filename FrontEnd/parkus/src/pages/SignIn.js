@@ -25,10 +25,21 @@ const SignIn = () => {
         navigate('/signup'); // Redirect to the sign-up page
     };
 
+    const handleLogoClick = () => {
+        navigate('/'); // Navigate to landing page
+    };
+
     return (
         <div className="sign-in-page">
             <CssBaseline />
             <div className="sign-in-content">
+                {/* Make the image clickable */}
+                <img 
+                    src={`${process.env.PUBLIC_URL}/1.jpg`} 
+                    alt="illustration" 
+                    style={{ width: '50px', cursor: 'pointer' }} // Add cursor pointer for clickability
+                    onClick={handleLogoClick} // Add click event handler
+                />
                 <h1>Sign In</h1>
                 <TextField
                     label="Email"

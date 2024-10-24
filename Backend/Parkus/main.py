@@ -242,7 +242,6 @@ def get_group_id(user_id):
         return data_store.get_group_id(user_id)
     return {'groupid': 'None'}
 
-
 @app.route('/users/group/<group_id>', methods=['GET', 'OPTIONS'])
 def get_group_members(group_id):
     """
@@ -499,6 +498,117 @@ def add_user():
         return jsonify({'error': result['error']}), 400
 
     return jsonify({'message': 'User and car data inserted successfully'}), 201
+
+@app.route('/scheduleblocks/<user_id>', methods=['GET'])
+def get_scheduleblocks(user_id):
+    """API endpoint to get schedule blocks from Supabase."""
+    scheduleblocks = data_store.fetch_schedule(user_id)
+    
+    print("Schedule Blocks Data: ", scheduleblocks.data)  
+
+    if 'error' in scheduleblocks:
+        return jsonify({"error": "Failed to fetch schedule blocks"}), 500
+    
+   
+    return jsonify({"scheduleblocks": scheduleblocks.data}), 200 
+
+@app.route('/users/schedule/<scheduleid>', methods=['GET'])
+def get_scheduleblocks_by_schedule_id(scheduleid):
+    """API endpoint to get schedule blocks from Supabase."""
+    scheduleblocks = data_store.fetch_schedule_by_schedule_id(scheduleid)
+    
+    print("Schedule Blocks Data: ", scheduleblocks.data)  
+
+    if 'error' in scheduleblocks:
+        return jsonify({"error": "Failed to fetch schedule blocks"}), 500
+    
+    return jsonify({"scheduleblocks": scheduleblocks.data}), 200 
+
+@app.route('/schedule/user/<userid>/day/<dow>', methods=['GET'])
+def get_schedule_by_user_and_day(userid, dow):
+    """API endpoint to get schedule blocks by user ID and day of the week."""
+    scheduleblocks = data_store.fetch_schedule_by_user_and_day(userid, dow)
+
+    return jsonify({"scheduleblocks": scheduleblocks}), 200
+
+@app.route('/scheduleblocks/update/<scheduleid>', methods=['PUT'])
+def update_scheduleblock(scheduleid):
+    """Update schedule block in Supabase."""
+    data = request.get_json()
+    update_result = data_store.update_schedule_block(scheduleid, data)
+
+    if 'error' in update_result:
+        return jsonify({"error": "Failed to update schedule block"}), 500
+    
+    return jsonify({"message": "Schedule block updated successfully"}), 200
+
+@app.route('/scheduleblocks/delete/<scheduleid>', methods=['POST'])
+def delete_schedule_block(scheduleid):
+    """
+    API endpoint to delete a schedule block by its ID.
+    :param scheduleid: The ID of the schedule block to be deleted
+    :return: JSON response with success or error message
+    """
+    try:
+        # Call data_store to delete the schedule block using the provided scheduleid
+        response = data_store.delete_schedule_block(scheduleid)
+        if 'error' in response:
+            return jsonify({'error': response['error']}), 400
+        return jsonify({'message': 'Schedule block deleted successfully!'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/scheduleblocks/insert', methods=['POST'])
+def insert_schedule_block():
+    """
+    API endpoint to insert a new schedule block.
+    """
+    data = request.json
+    userid = data.get('userid')
+    description = data.get('description')
+    dow = data.get('dow')
+    start_time = data.get('start_time')
+    end_time = data.get('end_time')
+    block_color = data.get('block_color')
+
+    # Call the data store to insert the schedule block
+    response = data_store.insert_schedule_block(userid, description, dow, start_time, end_time, block_color)
+
+    if 'error' in response:
+        return jsonify({'error': response['error']}), 400
+
+    return jsonify({'message': 'Schedule block inserted successfully!'}), 201
+
+@app.route('/group-size/<groupid>', methods=['GET'])
+def get_group_size(groupid):
+    """API endpoint to get the size of the group."""
+    group_size = data_store.get_group_size(groupid)
+    
+    # Assuming group_size is an integer, you can return it directly
+    return jsonify({'group_size': group_size}), 200
+
+@app.route('/user-group-check/<user_id>', methods=['GET', 'OPTIONS'])
+def check_user_group(user_id):
+    """
+    API to check if a user is in a group and return their group information.
+    If user is not in a group, return {'groupid': None}
+    """
+    try:
+        # Fetch the user's group ID from the data store
+        user_group = data_store.get_group_id(user_id)
+        
+        if not user_group or 'groupid' not in user_group:
+            # If the user has no group, return groupid as None
+            return jsonify({'groupid': None}), 200
+        
+        # Return the groupid if found
+        group_id = user_group['groupid']
+        return jsonify({'groupid': group_id}), 200
+    
+    except Exception as e:
+        # Log the error and return an appropriate message
+        print(f"Error checking group for user {user_id}: {str(e)}")
+        return jsonify({'error': 'An error occurred while checking the group.'}), 500
 
 
 if __name__ == '__main__':

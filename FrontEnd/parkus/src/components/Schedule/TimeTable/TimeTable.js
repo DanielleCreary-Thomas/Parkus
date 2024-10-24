@@ -3,6 +3,9 @@ import { Box, TableCell, TableContainer, Table, TableHead, TableRow, TableBody, 
 import AddScheduleButton from '../AddScheduleButton/AddScheduleButton';
 import { supabase } from '../../../utils/supabase.ts';
 import './TimeTable.css';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { fetchUserScheduleBlocks, checkUserGroupStatus, fetchGroupSize } from '../../../services/requests.js';
 
 const timeSlots = [
     '07:00', '08:00', '09:00', '10:00',
@@ -28,43 +31,40 @@ const TimeTable = () => {
     // Function to fetch the schedule data from the database
     const fetchScheduleData = async () => {
         const { data: { session }, error } = await supabase.auth.getSession();
-
+    
         if (error || !session) {
             console.error('Error fetching session or user not authenticated:', error);
             return;
         }
-
+    
         setUserId(session.user.id);
-
+    
         // Create an empty schedule object based on timeSlots and daysOfWeek
         const emptySchedule = timeSlots.reduce((acc, time) => {
-            // Convert daysOfWeek object keys to an array
             acc[time] = Object.keys(daysOfWeek).reduce((week, day) => {
                 week[day] = { text: '', isBooked: false };
                 return week;
             }, {});
             return acc;
         }, {});
-
-        const { data: scheduleBlocks, error: scheduleError } = await supabase
-            .from('schedule_blocks')
-            .select('*')
-            .eq('userid', session.user.id);
-
-        if (scheduleError) {
-            console.error("Error fetching schedule data:", scheduleError);
+    
+        const scheduleBlocks = await fetchUserScheduleBlocks(session.user.id);
+    
+        // Check if scheduleBlocks is valid and log it
+        if (!Array.isArray(scheduleBlocks)) {
+            console.error("scheduleBlocks is not an array:", scheduleBlocks);
             return;
         }
-
+    
+        // Process the scheduleBlocks array
         scheduleBlocks.forEach((block) => {
             const { scheduleid, description, dow, start_time, end_time, block_color } = block;
             const startHour = parseInt(start_time.split(':')[0], 10);
             const endHour = parseInt(end_time.split(':')[0], 10) - 1; // Adjust endHour to avoid overlapping issues
             const numSlots = (endHour - startHour) + 1; // Calculate the correct rowSpan
-
-            // Convert numeric dow back to day string
+    
             const dayString = Object.keys(daysOfWeek).find(key => daysOfWeek[key] === dow);
-
+    
             for (let hour = startHour; hour <= endHour; hour++) {
                 const timeString = hour.toString().padStart(2, '0') + ':00';
                 if (hour === startHour) {
@@ -87,9 +87,10 @@ const TimeTable = () => {
                 }
             }
         });
-
+    
         setSchedule(emptySchedule);
     };
+    
 
     // Fetch schedule data on component mount
     useEffect(() => {
@@ -101,25 +102,54 @@ const TimeTable = () => {
         return `${hours}:${minutes}`;
     };
 
-    const handleCellClick = (time, day) => {
+    const handleCellClick = async (time, day) => {
         const slot = schedule[time][day];
         setCurrentTime(time);
         setCurrentDay(day);
-
-        if (!slot.isBooked) {
-            setSelectedCell({ time, day });
-            setIsEdit(false);
-            setExistingDescription('');
-            setCurrentScheduleId(null);
-        } else {
-            setSelectedCell({ time, day });
-            setIsEdit(true);
-            setExistingDescription(slot.text);
-            setCurrentScheduleId(slot.scheduleid);
+    
+        try {
+            // Call the function that checks the user's group status
+            const groupCheckResult = await checkUserGroupStatus(userId);
+            console.log('Group Check Result:', groupCheckResult); // Debugging log
+    
+            // Check if the user is part of a group
+            if (groupCheckResult && groupCheckResult.groupid) {
+                console.log('User is in a group, checking group size...');
+    
+                const groupSizeData = await fetchGroupSize(groupCheckResult.groupid);
+                console.log('Group Size Data:', groupSizeData); // Debugging log
+    
+                // Prevent editing if the group size is more than 1
+                if (groupSizeData.group_size > 1) {
+                    toast.error('Cannot change schedule. You already joined a group or paid.');
+                    return;
+                }
+            } else {
+                // If the user is not in a group, allow them to edit the schedule
+                console.log('User is not in a group, allowing schedule edit.');
+            }
+    
+            // Proceed with editing or adding the schedule block
+            if (!slot.isBooked) {
+                setSelectedCell({ time, day });
+                setIsEdit(false);
+                setExistingDescription('');
+                setCurrentScheduleId(null);
+            } else {
+                setSelectedCell({ time, day });
+                setIsEdit(true);
+                setExistingDescription(slot.text);
+                setCurrentScheduleId(slot.scheduleid);
+            }
+    
+            setIsModalOpen(true);
+        } catch (error) {
+            console.error('Error checking group status:', error);
+            toast.error('Error checking group status.');
         }
-
-        setIsModalOpen(true);
     };
+    
+    
 
     const handleSaveTimeBlock = (newTimeBlock) => {
         const { day, startTime, endTime, description, color } = newTimeBlock;
@@ -208,8 +238,9 @@ const TimeTable = () => {
         );
     };
 
-    return (
+    return ( 
         <Box sx={{ display: 'flex', justifyContent: 'center', margin: '2rem' }}>
+            <ToastContainer />
             <TableContainer
                 component={Paper}
                 sx={{ width:'95%' ,maxWidth: '75rem', borderRadius: '30px', overflow: 'hidden' }} // Apply borderRadius and overflow

@@ -198,7 +198,7 @@ const Profile = () => {
     }
 
     if (new Date(permitData.activate_date) >= new Date(permitData.expiration_date)) {
-      toast.error('Activation date cannot be later than or equal to the expiration date.');
+      toast.error('Expiration Date must be later than Activation date');
       return;
     }
 

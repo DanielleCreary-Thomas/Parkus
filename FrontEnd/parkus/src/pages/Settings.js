@@ -11,6 +11,8 @@ function Settings() {
     const [userId, setUserId] = useState(''); // Store user ID
     const [openDialog, setOpenDialog] = useState(false); // State to control dialog visibility
     const [deactivationDialog, setDeactivationDialog] = useState({ open: false, message: '' }); // Track the deactivation result
+    const [confirmLeaveGroup, setConfirmLeaveGroup] = useState(false); // Track confirmation for leaving group
+    const [confirmDeactivateAccount, setConfirmDeactivateAccount] = useState(false); // Track confirmation for deactivating account
     const navigate = useNavigate();
 
     // Fetch the user ID, payment status, and group ID when the Settings page loads
@@ -41,7 +43,7 @@ function Settings() {
         fetchUserInfo(); // Trigger user info fetching when the component mounts
     }, []);
 
-    // Handle Leave Group action
+    // Handle Leave Group action after confirmation
     const handleLeaveGroup = async () => {
         if (isPaid) {
             console.log("User has paid, can't leave the group.");
@@ -57,14 +59,10 @@ function Settings() {
         } else {
             console.log('Error leaving group.');
         }
+        setConfirmLeaveGroup(false); // Close the confirmation dialog
     };
 
-    // Handle closing the dialog
-    const handleCloseDialog = () => {
-        setOpenDialog(false); // Close the dialog when the user clicks OK
-    };
-
-    // Handle Deactivate Account action
+    // Handle Deactivate Account action after confirmation
     const handleDeactivateAccount = async () => {
         // First, check if the user is in a group
         const groupId = await getGroupId(userId);
@@ -103,6 +101,29 @@ function Settings() {
                 message: "An error occurred while deactivating your account. Please try again."
             });
         }
+        setConfirmDeactivateAccount(false); // Close the confirmation dialog
+    };
+
+    // Handle opening confirmation dialogs
+    const handleConfirmLeaveGroup = () => {
+        setConfirmLeaveGroup(true); // Show confirmation dialog for leaving group
+    };
+
+    const handleConfirmDeactivateAccount = () => {
+        setConfirmDeactivateAccount(true); // Show confirmation dialog for deactivating account
+    };
+
+    // Handle closing the confirmation dialogs
+    const handleCloseLeaveGroupConfirmation = () => {
+        setConfirmLeaveGroup(false);
+    };
+
+    const handleCloseDeactivateAccountConfirmation = () => {
+        setConfirmDeactivateAccount(false);
+    };
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false); // Close the dialog when the user clicks OK
     };
 
     const handleCloseDeactivationDialog = () => {
@@ -114,10 +135,50 @@ function Settings() {
     }
 
     return (
-
         <div className="settings-wrapper">
             <div className="settings-container">
 
+                {/* Confirmation Dialog for Leaving Group */}
+                <Dialog
+                    open={confirmLeaveGroup}
+                    onClose={handleCloseLeaveGroupConfirmation}
+                    aria-labelledby="confirm-leave-group-title"
+                    aria-describedby="confirm-leave-group-description"
+                    maxWidth="sm"
+                    fullWidth
+                >
+                    <DialogTitle id="confirm-leave-group-title">Leave Group</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText id="confirm-leave-group-description">
+                            Are you sure you want to leave the group?
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleCloseLeaveGroupConfirmation} color="primary">No</Button>
+                        <Button onClick={handleLeaveGroup} color="secondary" autoFocus>Yes</Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Confirmation Dialog for Deactivating Account */}
+                <Dialog
+                    open={confirmDeactivateAccount}
+                    onClose={handleCloseDeactivateAccountConfirmation}
+                    aria-labelledby="confirm-deactivate-account-title"
+                    aria-describedby="confirm-deactivate-account-description"
+                    maxWidth="sm"
+                    fullWidth
+                >
+                    <DialogTitle id="confirm-deactivate-account-title">Deactivate Account</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText id="confirm-deactivate-account-description">
+                            Are you sure you want to deactivate your account?
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleCloseDeactivateAccountConfirmation} color="primary">No</Button>
+                        <Button onClick={handleDeactivateAccount} color="secondary" autoFocus>Yes</Button>
+                    </DialogActions>
+                </Dialog>
 
                 {/* Success Dialog for Leaving Group */}
                 <Dialog
@@ -167,7 +228,7 @@ function Settings() {
                     <Button
                         variant="contained"
                         color="warning"
-                        onClick={handleLeaveGroup}
+                        onClick={handleConfirmLeaveGroup} // Trigger confirmation dialog
                         disabled={!hasGroupId || isPaid} // Disable the button if the user has no group ID or has paid
                         size="large" // Make the button size large
                         sx={{
@@ -176,26 +237,29 @@ function Settings() {
                             width: '400px'
                         }}
                     >
-                        {!hasGroupId ? 'Not In A Group' : isPaid ? 'Cannot Leave Group (Paid)' : 'Leave Group'}
+                        {!hasGroupId ? 'Leave Group (Not In A Group)' : isPaid ? 'Cannot Leave Group (Paid)' : 'Leave Group'}
                     </Button>
                     <Button
                         variant="contained"
                         color="error"
-                        onClick={handleDeactivateAccount}
+                        onClick={handleConfirmDeactivateAccount} // Trigger confirmation dialog
+                        disabled={hasGroupId || isPaid} // Disable the button if the user is in a group or has paid
                         size="large" // Make the button size large
                         sx={{
                             height: '85px', // Increase the button height
                             fontSize: '18px', // Increase the font size
                             width: '400px',
+                            backgroundColor: (hasGroupId || isPaid) ? 'grey' : undefined, // Grey out if disabled
+                            color: (hasGroupId || isPaid) ? 'white' : undefined, // Ensure text is visible
                         }}
                     >
-                        Deactivate Account
+                        {hasGroupId ? 'Cannot Deactivate (In Group)' : isPaid ? 'Cannot Deactivate (Paid)' : 'Deactivate Account'}
                     </Button>
                 </Stack>
+
             </div>
         </div>
     );
-
 }
 
 export default Settings;
