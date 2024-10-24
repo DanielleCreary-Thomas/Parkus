@@ -731,7 +731,79 @@ def insert_license_plate_number(license_plate_number):
     except Exception as e:
         return {'error': str(e)}
 
+def get_scheduleblocks(user_id):
+    """Fetch schedule blocks for a specific user id."""
+    response = supabase.table('schedule_blocks').select('*').eq('userid', user_id).execute()
+    return response
 
+#RAM
+def fetch_users_by_groupids(group_id):
+    try:
+        response = supabase.table("users").select("userid, first_name, last_name").eq("groupid", group_id).execute()
+        return response.data  # Assuming response has a data attribute
+    except Exception as e:
+        print(f"Exception in fetch_users_by_groupids: {e}")
+        return None
+
+
+def fetch_schedule_blocks_by_useridss(user_id):
+    try:
+        response = supabase.table("schedule_blocks").select("*").eq("userid", user_id).execute()
+        return response.data
+    except Exception as e:
+        print(f"Exception in fetch_schedule_blocks_by_useridss: {e}")
+        return None
+
+def validate_no_groups(user_id):
+    try:
+        response = supabase.table('users').select('groupid').eq('userid', user_id).execute()
+        groupid = response.data[0]['groupid']
+        return groupid is None
+    except Exception as e:
+        print(f"Exception in validate_no_group: {e}")
+        return False
+
+def validate_groupids(group_id):
+    try:
+        response = supabase.table('users').select('groupid').eq('groupid', group_id).execute()
+        if hasattr(response, 'error') and response.error:
+            return False
+        exists = len(response.data) > 0
+        return exists
+    except Exception as e:
+        return False
+
+def get_group_sizes(group_id):
+    try:
+        response = supabase.table('users').select('userid').eq('groupid', group_id).execute()
+        return len(response.data)
+    except Exception as e:
+        print(f"Exception in get_group_sizes: {e}")
+        return 0
+
+def add_user_to_group(user_id, group_id):
+    try:
+        response = supabase.table('users').update({"groupid": group_id}).eq('userid', user_id).execute()
+        return True
+    except Exception as e:
+        print(f"Error in add_user_to_group: {e}")
+        return False
+
+#RAM
+def get_scheduleblocks_by_schedule_id(scheduleid):
+    """Fetch schedule blocks for a specific schedule id."""
+    response = supabase.table('schedule_blocks').select('*').eq('scheduleid', scheduleid).execute()
+    return response
+
+def get_schedule_by_user_and_day(userid, dow):
+    """Fetch schedule blocks by user ID and day of the week."""
+    response = supabase.table('schedule_blocks').select('*').eq('userid', userid).eq('dow', dow).execute()
+    return response.data
+
+def update_schedule_block(scheduleid, data):
+    """Update schedule block for a specific schedule ID."""
+    response = supabase.table('schedule_blocks').update(data).eq('scheduleid', scheduleid).execute()
+    return response
 
 def delete_schedule_block(scheduleid):
     """

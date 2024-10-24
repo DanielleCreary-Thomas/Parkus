@@ -448,17 +448,48 @@ def add_user_data(user_id, first_name, last_name, email, student_id, phone_numbe
     return {'message': 'User and car data inserted successfully'}
 ########################### Signup ###########################
 
+#######################RAM
+def get_group_schedule_and_user_schedule(group_id, user_id):
+    # Fetch users in the group
+    users_data = bridge.fetch_users_by_groupids(group_id)
+    if users_data is None:
+        return None, None, None  # Indicate error
+
+    user_ids = [user['userid'] for user in users_data]
+
+    # Fetch group schedule blocks
+    group_schedule_data = bridge.fetch_schedule_blocks_by_userids(user_ids)
+    if group_schedule_data is None:
+        return None, None, None
+
+    # Fetch user's own schedule blocks
+    user_schedule_data = bridge.fetch_schedule_blocks_by_useridss(user_id)
+    if user_schedule_data is None:
+        return None, None, None
+
+    return users_data, group_schedule_data, user_schedule_data
+
+def can_user_join_group(user_id, group_id):
+    # Check if the user is already in a group
+    if not bridge.validate_no_groups(user_id):
+        return False, "User is already in a group"
+
+    # Check if the group exists
+    if not bridge.validate_groupids(group_id):
+        return False, "Group does not exist"
+
+    # Check if the group is full
+    group_size = bridge.get_group_sizes(group_id)
+    if group_size >= 3:
+        return False, "Group is full"
+
+    return True, None
+
 def add_user_to_group(user_id, group_id):
-    """Wrapper function to add a user to a group."""
-    return bridge.add_user_to_group(user_id, group_id)
+    success = bridge.add_user_to_group(user_id, group_id)
+    return success
 
-def get_group_size(group_id):
-    """Wrapper function to get the size of a group."""
-    return bridge.get_group_size(group_id)
-
-def validate_groupid(group_id):
-    """Wrapper function to validate group ID."""
-    return bridge.validate_groupid(group_id)
+#####################
 
 
 def fetch_schedule(user_id):

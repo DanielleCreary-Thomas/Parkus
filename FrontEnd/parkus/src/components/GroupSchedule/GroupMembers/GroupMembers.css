@@ -1,0 +1,18 @@
+.group-members-container {
+    display: flex;
+    justify-content: flex-start; /* Align items to the start for consistency */
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.group-member-card {
+    color: #000000; /* Changed from white to black for better contrast */
+    padding: 10px 15px;
+    margin: 5px;
+    border-radius: 8px;
+    min-width: 120px;
+    text-align: center;
+    font-weight: bold;
+    font-family: 'Orelega One', sans-serif;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
