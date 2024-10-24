@@ -5,7 +5,6 @@ import flask
 from flask import jsonify, render_template, send_from_directory, make_response
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
-import bridge
 # bridge should be removed from main.py
 
 app = Flask(__name__)
@@ -325,18 +324,9 @@ def image_proof_upload():
     return jsonify(response)
 
 
-# Update the '/group-schedule' endpoint to handle OPTIONS requests and configure CORS
-@app.route('/group-schedule', methods=['POST', 'OPTIONS'])
-@cross_origin()
+# RAM GROUP-SCHEDULE
+@app.route('/group-schedule', methods=['POST'])
 def get_group_schedule():
-    if request.method == 'OPTIONS':
-        # Build a response object for the OPTIONS preflight request
-        response = make_response()
-        response.headers.add("Access-Control-Allow-Origin", "*")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
-        response.headers.add("Access-Control-Allow-Methods", "POST,OPTIONS")
-        return response, 200
-
     data = request.json
     group_id = data.get('group_id')
     user_id = data.get('user_id')
@@ -344,19 +334,10 @@ def get_group_schedule():
     if not group_id or not user_id:
         return jsonify({"error": "Missing group_id or user_id"}), 400
 
-    users_data = bridge.fetch_users_by_groupid(group_id)
-    if not users_data:
-        return jsonify({"error": "Failed to fetch users."}), 500
+    users_data, group_schedule_data, user_schedule_data = data_store.get_group_schedule_and_user_schedule(group_id, user_id)
 
-    user_ids = [user['userid'] for user in users_data]
-
-    group_schedule_data = bridge.fetch_schedule_blocks_by_userids(user_ids)
-    if group_schedule_data is None:
-        return jsonify({"error": "Failed to fetch group schedule blocks."}), 500
-
-    user_schedule_data = bridge.fetch_schedule_blocks_by_userid(user_id)
-    if user_schedule_data is None:
-        return jsonify({"error": "Failed to fetch user schedule."}), 500
+    if users_data is None or group_schedule_data is None or user_schedule_data is None:
+        return jsonify({"error": "Failed to fetch data."}), 500
 
     return jsonify({
         "users": users_data,
@@ -364,8 +345,7 @@ def get_group_schedule():
         "user_schedule": user_schedule_data
     }), 200
 
-@app.route('/join-group', methods=['POST', 'OPTIONS'])
-@cross_origin()
+@app.route('/join-group', methods=['POST'])
 def join_group():
     data = request.json
     group_id = data.get('group_id')
@@ -374,26 +354,17 @@ def join_group():
     if not group_id or not user_id:
         return jsonify({"error": "Missing group_id or user_id"}), 400
 
-    # Check if the user is already in a group
-    if not data_store.validate_no_group(user_id):
-        return jsonify({"error": "User is already in a group"}), 400
+    can_join, error_message = data_store.can_user_join_group(user_id, group_id)
+    if not can_join:
+        return jsonify({"error": error_message}), 400
 
-    # Check if the group exists
-    if not data_store.validate_groupid(group_id):
-        return jsonify({"error": "Group does not exist"}), 404
-
-    # Check if the group is full
-    group_size = data_store.get_group_size(group_id)
-    if group_size >= 3:
-        return jsonify({"error": "Group is full"}), 400
-
-    # Update the user's group_id
     success = data_store.add_user_to_group(user_id, group_id)
     if not success:
         return jsonify({"error": "Failed to join group"}), 500
 
     return jsonify({"message": "Successfully joined the group"}), 200
 
+##########################
 @app.route('/groups/<group_id>/fully_paid', methods=['GET'])
 def check_group_fully_paid(group_id):
     """

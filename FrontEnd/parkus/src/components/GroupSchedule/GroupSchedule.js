@@ -1,5 +1,3 @@
-// GroupSchedule.jsx
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabase.ts';
 import { Box, Typography } from '@mui/material';
@@ -7,6 +5,8 @@ import { toast, ToastContainer } from 'react-toastify';
 import { useParams } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import JoinButton from './JoinButton/JoinButton';
+import BackButton from './BackButton/BackButton';
+import './GroupMembers/GroupMembers.css'; // CSS for group member cards
 import './GroupSchedule.css';
 
 const GroupSchedule = () => {
@@ -15,14 +15,18 @@ const GroupSchedule = () => {
     const [userScheduleBlocks, setUserScheduleBlocks] = useState([]);
     const [classColorMap, setClassColorMap] = useState({});
     const [userId, setUserId] = useState(null);
+    const [users, setUsers] = useState([]);
 
-    const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+    const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 // Get current user from Supabase
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                const {
+                    data: { session },
+                    error: sessionError,
+                } = await supabase.auth.getSession();
                 if (sessionError || !session) {
                     toast.error('You need to log in to see your schedule.');
                     return;
@@ -36,8 +40,8 @@ const GroupSchedule = () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         group_id: groupId,
-                        user_id: currentUserId
-                    })
+                        user_id: currentUserId,
+                    }),
                 });
 
                 if (!scheduleResponse.ok) {
@@ -48,12 +52,12 @@ const GroupSchedule = () => {
 
                 const data = await scheduleResponse.json();
 
+                setUsers(data.users);
                 setScheduleBlocks(data.group_schedule);
                 setUserScheduleBlocks(data.user_schedule);
 
                 const allScheduleBlocks = [...data.group_schedule, ...data.user_schedule];
                 generateClassColorMap(allScheduleBlocks);
-
             } catch (error) {
                 console.error('Error fetching data:', error);
                 toast.error('An error occurred while fetching data.');
@@ -75,10 +79,12 @@ const GroupSchedule = () => {
         const colorMap = {};
         let colorIndex = 0;
 
-        blocks.forEach(block => {
-            const classKey = block.description || block.scheduleid;
-            if (!colorMap[classKey]) {
-                colorMap[classKey] = lightColors[colorIndex % lightColors.length];
+        // Extract unique user IDs from the blocks
+        const uniqueUserIds = [...new Set(blocks.map((block) => block.userid))];
+
+        uniqueUserIds.forEach((userId) => {
+            if (!colorMap[userId]) {
+                colorMap[userId] = lightColors[colorIndex % lightColors.length];
                 colorIndex++;
             }
         });
@@ -110,9 +116,37 @@ const GroupSchedule = () => {
     return (
         <Box sx={{ padding: 3 }}>
             <ToastContainer />
-            <Typography variant="h4" align="center" gutterBottom>
-                Schedule for Group ID: {groupId}
-            </Typography>
+
+            {/* Back and Join Buttons */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <BackButton />
+                <Typography variant="h4" align="center">
+                    SpotSharing Generation
+                </Typography>
+                <JoinButton groupId={groupId} />
+            </div>
+
+            {/* Group Member Cards */}
+            {users && users.length > 0 ? (
+                <div className="group-members-container">
+                    {users.map((user) => (
+                        <div
+                            key={user.userid}
+                            className="group-member-card"
+                            style={{
+                                backgroundColor: classColorMap[user.userid] || '#FFCCBC',
+                            }}
+                        >
+                            {user.first_name} {user.last_name}
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <Typography variant="body1" align="center" sx={{ marginTop: 2 }}>
+                    No group members found.
+                </Typography>
+            )}
+
             <div className="schedule-grid">
                 <div className="time-column">
                     <div className="time-header">Time</div>
@@ -128,11 +162,10 @@ const GroupSchedule = () => {
                         <div className="day-header">{dayName}</div>
                         <div className="day-content">
                             {scheduleBlocks
-                                .filter(block => parseInt(block.dow) === dayIdx + 1 && block.userid !== userId)
-                                .map(block => {
+                                .filter((block) => parseInt(block.dow) === dayIdx + 1 && block.userid !== userId)
+                                .map((block) => {
                                     const style = calculateBlockStyle(block.start_time, block.end_time);
-                                    const classKey = block.description || block.scheduleid;
-                                    const blockColor = classColorMap[classKey] || '#FFCCBC';
+                                    const blockColor = classColorMap[block.userid] || '#FFCCBC';
 
                                     return (
                                         <div
@@ -146,17 +179,16 @@ const GroupSchedule = () => {
                                             <span className="block-title">{block.description}</span>
                                             <br />
                                             <span className="block-time">
-                                                {block.start_time} - {block.end_time}
-                                            </span>
+                        {block.start_time} - {block.end_time}
+                      </span>
                                         </div>
                                     );
                                 })}
                             {userScheduleBlocks
-                                .filter(block => parseInt(block.dow) === dayIdx + 1)
-                                .map(block => {
+                                .filter((block) => parseInt(block.dow) === dayIdx + 1)
+                                .map((block) => {
                                     const style = calculateBlockStyle(block.start_time, block.end_time);
-                                    const classKey = block.description || block.scheduleid;
-                                    const blockColor = classColorMap[classKey] || '#FFCCBC';
+                                    const blockColor = '#A5D6A7'; // A distinct color for the user's own blocks
 
                                     return (
                                         <div
@@ -170,8 +202,8 @@ const GroupSchedule = () => {
                                             <span className="block-title">{block.description} (You)</span>
                                             <br />
                                             <span className="block-time">
-                                                {block.start_time} - {block.end_time}
-                                            </span>
+                        {block.start_time} - {block.end_time}
+                      </span>
                                         </div>
                                     );
                                 })}
@@ -179,10 +211,6 @@ const GroupSchedule = () => {
                     </div>
                 ))}
             </div>
-            {/* Add the JoinButton here */}
-            <Box sx={{ marginTop: 2, textAlign: 'center' }}>
-                <JoinButton groupId={groupId} />
-            </Box>
         </Box>
     );
 };
