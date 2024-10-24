@@ -537,7 +537,7 @@ def fetch_permit_id(user_id, permit_number):
     response = supabase.table("parking_permits").select("permitid").eq("userid", user_id).eq("permit_number", permit_number).execute()
 
     print("Supabase response:", response)  # Log the entire response for debugging
-    
+
     # Check if the response contains data and log it
     if response.data and len(response.data) > 0:
         print("Permit Data:", response.data[0])  # Log the permit data
@@ -559,14 +559,14 @@ def fetch_group_id(permit_id):
     response = supabase.table("parking_groups").select("groupid").eq("permitid", permit_id).execute()
 
     print("Supabase response:", response)  # Log the entire response for debugging
-    
+
     # Check if the response contains data and log it
     if response.data and len(response.data) > 0:
         print("group id Data:", response.data[0])  # Log the group data
         return response.data[0]['groupid']
     else:
         return None  # Return None if no data is found
-    
+
 def update_user_groupid(userid, groupid):
     """Updates the user's group ID in the users table."""
     response = supabase.table("users").update({"groupid": groupid}).eq("userid", userid).execute()
@@ -601,7 +601,7 @@ def update_permit_info(permitid, userid, permit_number, active_status, permit_ty
 
         # Print response for debugging purposes
         print("Supabase response:", response)
-        
+
         return response
     except Exception as e:
         print(f"Error updating car information: {str(e)}")
@@ -654,9 +654,9 @@ def fetch_car_by_userid(user_id):
         user_response = supabase.table("users").select("license_plate_number").eq("userid", user_id).execute()
         if not user_response.data or not user_response.data[0]["license_plate_number"]:
             return None
-        
+
         license_plate_number = user_response.data[0]["license_plate_number"]
-        
+
         # Fetch car info using the license plate number
         car_response = supabase.table("cars").select("*").eq("license_plate_number", license_plate_number).execute()
         if car_response.data:
@@ -685,7 +685,7 @@ def update_car_info(license_plate_number, province, year, make, model, color):
 
         # Print response for debugging purposes
         print("Supabase response:", response)
-        
+
         return response
     except Exception as e:
         print(f"Error updating car information: {str(e)}")
@@ -706,7 +706,7 @@ def insert_user_data(user_id, first_name, last_name, email, student_id, phone_nu
             'phone_number': phone_number,
             'license_plate_number': license_plate_number
         }]).execute()
-        
+
         return response
     except Exception as e:
         return {'error': str(e)}
@@ -726,30 +726,12 @@ def insert_license_plate_number(license_plate_number):
             'model': '',
             'color': ''
         }]).execute()
-        
+
         return response
     except Exception as e:
         return {'error': str(e)}
-    
-def get_scheduleblocks(user_id):
-    """Fetch schedule blocks for a specific user id."""
-    response = supabase.table('schedule_blocks').select('*').eq('userid', user_id).execute()
-    return response
 
-def get_scheduleblocks_by_schedule_id(scheduleid):
-    """Fetch schedule blocks for a specific schedule id."""
-    response = supabase.table('schedule_blocks').select('*').eq('scheduleid', scheduleid).execute()
-    return response
 
-def get_schedule_by_user_and_day(userid, dow):
-    """Fetch schedule blocks by user ID and day of the week."""
-    response = supabase.table('schedule_blocks').select('*').eq('userid', userid).eq('dow', dow).execute()
-    return response.data
-
-def update_schedule_block(scheduleid, data):
-    """Update schedule block for a specific schedule ID."""
-    response = supabase.table('schedule_blocks').update(data).eq('scheduleid', scheduleid).execute()
-    return response
 
 def delete_schedule_block(scheduleid):
     """
@@ -787,10 +769,10 @@ def insert_schedule_block(userid, description, dow, start_time, end_time, block_
     except Exception as e:
         return {'error': str(e)}
 
+
 if __name__ == "__main__":
     ##Testing has member paid
     print(check_paid_member('33d6127f-3a9e-4681-83a2-92c98db0881c'))
-    print(get_scheduleblocks('3ad62301-57a9-4d68-b094-5e1dfb15622b'))
 
     ##Testing Get Car info
     print(get_car_info('ABC123'))
@@ -848,7 +830,7 @@ def validate_groupid(group_id):
     return len(response.data) > 0
 
 
- 
+
 
 def setGroupidTobeNull(userid):
     """
@@ -861,8 +843,8 @@ def setGroupidTobeNull(userid):
         response = (
             supabase.table("users")
             .update({'groupid': None})  # Set groupid to null
-            .eq('userid', userid) 
-            .execute() 
+            .eq('userid', userid)
+            .execute()
         )
 
         # Print response for debugging purposes
@@ -924,7 +906,6 @@ def delete_user_and_data(user_id):
     except Exception as e:
         print(f"Error deleting user data: {str(e)}")
         return False
-
 
 
 
