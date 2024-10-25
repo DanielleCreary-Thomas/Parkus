@@ -1,18 +1,39 @@
 import React, { useEffect, useState } from 'react';
-
-import { getCurrUser, fetchUser, getGroupMembers, fetchUserSchedule, fetchGroupMembersSchedules, hasMemberPaid, isGroupLeader, isPermitExpired } from '../services/requests'; // Import the isGroupLeader and hasMemberPaid function
-
+import { useNavigate } from 'react-router-dom';
+import { getCurrUser, fetchUser, getGroupMembers, fetchUserSchedule, fetchGroupMembersSchedules, hasMemberPaid, isGroupLeader, checkPermitExpiration } from '../services/requests'; // Import the necessary functions
 import './styles/home.css';
 
-// Notification component
-function NotificationBanner() {
+
+
+// Notification banner for permit expiring soon
+function ExpiringSoonBanner() {
   return (
-      <div className="notification-banner">
-        <div className="notification-icon">!</div>
-        <div className="notification-text">Payment Pending</div>
+      <div className="notification-banner expiring-soon">
+        <div className="notification-icon">⚠</div>
+        <div className="notification-text">Your parking permit is expiring soon!</div>
       </div>
   );
 }
+
+// Notification component
+function NotificationBanner({ message }) {
+  return (
+      <div className="notification-banner">
+        <div className="notification-icon">!</div>
+        <div className="notification-text">{message}</div>
+      </div>
+  );
+}
+
+function formatCurrentDate(date) {
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const formattedDate = date.toLocaleDateString(undefined, options);
+
+  // Custom reordering of the date components
+  const parts = formattedDate.split(" ");
+  return `${parts[0]} ${parts[2]} ${parts[1]} ${parts[3]}`; // Reorder the day and month
+}
+
 
 function Home() {
   const [firstName, setFirstName] = useState('');
@@ -25,7 +46,9 @@ function Home() {
   const [error, setError] = useState('');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showNotification, setShowNotification] = useState(false);
-
+  const [notificationMessage, setNotificationMessage] = useState(''); // New state for the notification message
+  const [showExpiringSoonNotification, setShowExpiringSoonNotification] = useState(false);
+  const navigate = useNavigate();  // Initialize the navigate hook
   const getCurrentDayOfWeek = () => currentDate.getDay();
 
   const normalizeDow = (dow) => {
@@ -55,72 +78,78 @@ function Home() {
   const fetchUserData = async () => {
     setLoading(true);
     try {
-      const userId = await getCurrUser();  // Fetch userId using getCurrUser
+      const userId = await getCurrUser();
       if (userId !== -1) {
-        setUserId(userId);  // Set the userId state
+        setUserId(userId);
         const userData = await fetchUser(userId);
         if (userData) {
           setFirstName(userData.first_name);
           setLastName(userData.last_name);
 
-          // Fetch the current user's schedule
-          try {
-            const userScheduleData = await fetchUserSchedule(userId); // Fetch the schedule by userId
-            if (userScheduleData) {
-              const currentDay = getCurrentDayOfWeek();
-              const todayUserSchedules = userScheduleData.filter(
-                  (block) => block && normalizeDow(block.dow) === currentDay
-              );
-              setGroupSchedules(todayUserSchedules); // Use the same groupSchedules state
-            }
-          } catch (err) {
-            setError("Failed to fetch user's schedule.");
-          }
-
           if (userData.groupid) {
             setGroupId(userData.groupid);
+
+            // Check the permit expiration status
+            const permitStatus = await checkPermitExpiration(userData.groupid);
+
+            // Console logs for debugging the expiration date and current date
+            console.log("Current Date:", new Date());
+            if (permitStatus.expiration_date) {
+              console.log("Expiration Date:", new Date(permitStatus.expiration_date));
+            }
+
+            if (permitStatus.status === 'expired') {
+              console.log("Group deactivated because the permit has expired.");
+              alert("Your group's permit has expired, and the group has been deactivated.");
+              navigate("/signin");
+              return; // Stop further processing as the group is deactivated
+            } else if (permitStatus.status === 'expiring_soon') {
+              setShowExpiringSoonNotification(true);  // Show expiring soon banner
+              setNotificationMessage("Your parking permit is expiring soon!");
+            } else {
+              console.log("Permit is valid.");
+            }
 
             // Check if the current user is the group leader
             const isLeader = await isGroupLeader(userId, userData.groupid);
             console.log("is a leader?" + isLeader);
-
-            // If the user is the leader, never show the banner
-            if (isLeader) {
-              setShowNotification(false);
-            } else {
-              // Check the user's individual payment status using hasMemberPaid
+            if (!isLeader) {
               const hasUserPaid = await checkUserPaymentStatus(userId);
+              if (!hasUserPaid) {
+                // If payment is pending, show the notification for payment
+                setNotificationMessage("Payment Pending");
+                setShowNotification(true);
+              }
+            } else {
+              setShowNotification(false); // If leader, no payment notification
+            }
+          }
 
-              // Show the banner only if the user has not paid
-              setShowNotification(!hasUserPaid);
+          // Fetch the user's schedule
+          const userScheduleData = await fetchUserSchedule(userId);
+          if (userScheduleData) {
+            const currentDay = getCurrentDayOfWeek();
+            const todayUserSchedules = userScheduleData.filter(
+                (block) => block && normalizeDow(block.dow) === currentDay
+            );
+            setGroupSchedules(todayUserSchedules);
+          }
+
+          // Fetch group members and schedules if the user is in a group
+          if (userData.groupid) {
+            const membersData = await getGroupMembers(userData.groupid);
+            if (membersData) {
+              const validMembers = membersData.filter((member) => member.first_name && member.last_name);
+              setGroupMembers(validMembers || []);
             }
 
-            // Fetch group members
-            try {
-              const membersData = await getGroupMembers(userData.groupid);
-              if (membersData) {
-                const validMembers = membersData.filter(
-                    (member) => member.first_name && member.last_name
-                );
-                setGroupMembers(validMembers || []);
-              }
-            } catch (err) {
-              setError("Failed to fetch group members.");
-            }
-
-            // Fetch group schedules
-            try {
-              const schedulesData = await fetchGroupMembersSchedules(userData.groupid);
-              if (schedulesData) {
-                const currentDay = getCurrentDayOfWeek();
-                const todaySchedules = schedulesData.filter(
-                    (block) => block && normalizeDow(block.dow) === currentDay
-                );
-                // Merge the current user's schedule with the group schedules
-                setGroupSchedules((prev) => [...prev, ...todaySchedules]);
-              }
-            } catch (err) {
-              setError("Failed to fetch group schedules.");
+            const schedulesData = await fetchGroupMembersSchedules(userData.groupid);
+            if (schedulesData) {
+              const currentDay = getCurrentDayOfWeek();
+              const todaySchedules = schedulesData.filter(
+                  (block) => block && normalizeDow(block.dow) === currentDay
+              );
+              setGroupSchedules((prev) => [...prev, ...todaySchedules]);
             }
           }
         } else {
@@ -145,9 +174,12 @@ function Home() {
         <div className="home-header-panel">
           <div className="home-header">
             <h1>Welcome, {firstName} {lastName}</h1>
-            {showNotification && <NotificationBanner />} {/* Conditionally show the banner */}
+            {showNotification && <NotificationBanner message={notificationMessage} />}
+            {showExpiringSoonNotification && <ExpiringSoonBanner />} {/* Show expiring soon banner if set */}
           </div>
         </div>
+
+
 
         <div className="home-main-content">
           <div className="home-left-panel">
@@ -172,8 +204,8 @@ function Home() {
           </div>
 
           <div className="home-right-panel">
-            <h2>Today's Schedule</h2>
-
+            {/* Display the current date as part of the header */}
+            <h2>{formatCurrentDate(currentDate)}</h2>
             <div className="home-calendar">
               <div className="home-calendar-timeline">
                 {Array.from({ length: 14 }, (_, i) => (
@@ -182,7 +214,6 @@ function Home() {
                     </div>
                 ))}
               </div>
-
               <div className="home-calendar-events">
                 {groupSchedules.length > 0 ? (
                     groupSchedules.map((block, index) => {
