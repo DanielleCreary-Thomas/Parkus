@@ -385,34 +385,6 @@ def is_user_permit_holder(user_id, group_id):
 
 
 
-def set_groupid_to_null(user_id):
-    """
-    Sets the groupid for the given user to null (leaves group).
-    :param user_id:
-    :return: {'success': True} if successful, {'success': False} otherwise
-    """
-    result = bridge.setGroupidTobeNull(user_id)
-    if result:
-        return {'success': True}
-    else:
-        return {'success': False}
-
-
-
-def delete_user_and_data(user_id):
-    """
-    Deletes a user and all their related data if conditions are met.
-    """
-    result = bridge.delete_user_and_data(user_id)
-    return {'success': result}
-
-
-
-
-
-
-
-
 
 
 
@@ -532,6 +504,52 @@ def insert_schedule_block(userid, description, dow, start_time, end_time, block_
     :return: Result from the bridge insert
     """
     return bridge.insert_schedule_block(userid, description, dow, start_time, end_time, block_color)
+
+
+
+
+def set_groupid_to_null(user_id):
+    """
+    Sets the groupid for the given user to null (leaves group).
+    :param user_id:
+    :return: {'success': True} if successful, {'success': False} otherwise
+    """
+    result = bridge.setGroupidTobeNull(user_id)
+    if result:
+        return {'success': True}
+    else:
+        return {'success': False}
+
+
+
+def delete_user_and_data(user_id):
+    """
+    Deletes a user and all their related data if conditions are met.
+    """
+    result = bridge.delete_user_and_data(user_id)
+    return {'success': result}
+
+
+
+def get_permit_expiration(groupid):
+    """
+    Get the expiration date of the permit associated with the group.
+    :param groupid: The ID of the group
+    :return: expiration_date if found, else None
+    """
+    return bridge.fetch_permit_expiration(groupid)
+
+
+
+
+def deactivate_group(groupid):
+    return bridge.deactivate_group(groupid)
+
+def get_permit_and_check_expiration(groupid):
+    return bridge.fetch_permit_and_check_expiration(groupid)
+
+
+
 
 
 if __name__ == '__main__':

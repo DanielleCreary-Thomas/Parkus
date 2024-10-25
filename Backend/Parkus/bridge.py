@@ -904,6 +904,110 @@ def validate_groupid(group_id):
 
 
 
+
+def deactivate_group(group_id):
+    """
+    Deletes a group and all its members' related data from the database and Supabase Auth system.
+    :param group_id: The ID of the group
+    :return: True if deletion is successful, False otherwise
+    """
+    try:
+        print(f"Attempting to delete group: {group_id}")
+
+        # Fetch the permit for the group
+        permit_response = supabase.table("parking_groups").select("permitid").eq("groupid", group_id).execute()
+        if len(permit_response.data) == 0:
+            print("Permit not found for the group.")
+            return False
+
+        permit_id = permit_response.data[0]["permitid"]
+
+        # Fetch all members of the group
+        members_response = supabase.table("users").select("userid", "first_name", "last_name").eq("groupid", group_id).execute()
+        if len(members_response.data) == 0:
+            print("No members found for the group.")
+            return False
+
+        members = members_response.data
+
+        # Step 1: Set groupid to NULL for all users to avoid foreign key conflict
+        supabase.table("users").update({"groupid": None}).eq("groupid", group_id).execute()
+        print(f"Updated users to remove group association for group: {group_id}")
+
+        # Step 2: Delete the group from parking_groups table
+        supabase.table("parking_groups").delete().eq("groupid", group_id).execute()
+        print(f"Deleted group from parking_groups table: {group_id}")
+
+        # Step 3: After the group has been deleted, delete the associated permit
+        supabase.table("parking_permits").delete().eq("permitid", permit_id).execute()
+        print(f"Deleted permit for group: {group_id}")
+
+        # Step 4: Loop through all members and delete their data
+        for member in members:
+            user_id = member["userid"]
+            print(f"Deleting data for user: {user_id}, {member['first_name']} {member['last_name']}")
+
+            # Delete all associated data for each member
+            supabase.table("schedule_blocks").delete().eq("userid", user_id).execute()
+            print(f"Deleted schedule blocks for user: {user_id}")
+
+            supabase.table("cars").delete().eq("license_plate_number", user_id).execute()
+            print(f"Deleted car info for user: {user_id}")
+
+            # Delete user from custom users table
+            supabase.table("users").delete().eq("userid", user_id).execute()
+            print(f"Deleted user from users table: {user_id}")
+
+            # Delete user from Supabase Auth using the Admin API (service key)
+            supabase_service.auth.admin.delete_user(user_id)  # Use the Admin API to delete the user from Auth
+            print(f"Deleted user from Supabase Auth: {user_id}")
+
+        return True
+
+    except Exception as e:
+        print(f"Error deleting group and members data: {str(e)}")
+        return False
+
+
+
+from datetime import datetime
+
+def fetch_permit_and_check_expiration(groupid):
+    """
+    Fetch the expiration date of the permit associated with the given groupid and handle expiration logic.
+    :param groupid: The ID of the group
+    :return: Tuple with (expiration_date, is_expiring_soon, is_expired)
+    """
+    try:
+        # Fetch permitid from parking_groups using groupid
+        group_response = supabase.table('parking_groups').select('permitid').eq('groupid', groupid).execute()
+        if not group_response.data or len(group_response.data) == 0:
+            return None, False, False  # No permit found for the group
+
+        permitid = group_response.data[0]['permitid']
+
+        # Fetch expiration_date from parking_permits using permitid
+        permit_response = supabase.table('parking_permits').select('expiration_date').eq('permitid', permitid).execute()
+        if not permit_response.data or len(permit_response.data) == 0:
+            return None, False, False  # No expiration date found
+
+        expiration_date_str = permit_response.data[0]['expiration_date']
+        expiration_date = datetime.strptime(expiration_date_str, '%Y-%m-%d').date()
+        current_date = datetime.now().date()
+
+        # Determine if the permit is expiring soon or expired
+        days_until_expiration = (expiration_date - current_date).days
+        is_expiring_soon = 0 < days_until_expiration <= 7
+        is_expired = days_until_expiration <= 0
+
+        return expiration_date_str, is_expiring_soon, is_expired
+    except Exception as e:
+        print(f"Error fetching permit expiration date: {e}")
+        return None, False, False
+
+
+
+
 def setGroupidTobeNull(userid):
     """
     Sets the user's groupid to null (leaves group).
