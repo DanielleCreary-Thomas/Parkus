@@ -207,7 +207,6 @@ def add_parking_group():
     else:
         return jsonify({"error": "Failed to add parking group"}), 500
 
-
 @app.route('/parking-permits/<user_id>', methods=['GET'])
 def get_user_permits(user_id):
     """API endpoint to fetch all parking permits for a given user ID."""
@@ -323,6 +322,21 @@ def image_proof_upload():
     response = data_store.upload_etransfer_image(image_url, userid)
     return jsonify(response)
 
+##POST Endpoints
+@app.route('/users/permitImageProof', methods=['POST'])
+def permit_image_proof_upload():
+    """uploads a user's image proof url
+    :return: the user's image proof url
+    """
+    #assert formData == request.form
+    print(request.data)
+    json_data = request.get_json()
+    print(json_data)
+    image_url = json_data["proofImageUrl"]
+    userid = json_data['userId']
+    response = data_store.upload_etransfer_image(image_url, userid)
+    return jsonify(response)
+
 
 # RAM GROUP-SCHEDULE
 @app.route('/group-schedule', methods=['POST'])
@@ -408,7 +422,27 @@ def update_car():
 
     return jsonify({"message": "Car information updated successfully"}), 201
 
+# POST Endpoint to update user info
+@app.route('/user/update-user-info', methods=['POST'])
+def update_user_info():
+    """
+    API endpoint to update the user information based on the userid.
+    """
+    data = request.json
+    userid = data.get('userid')
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    studentid = data.get('studentid')
+    phone_number = data.get('phone_number')
+    email = data.get('email')
 
+    # Call the data_store to update the user information
+    result = data_store.update_user_info(userid, first_name, last_name, studentid, phone_number, email)
+
+    if 'error' in result:
+        return jsonify({'error': result['error']}), 400
+
+    return jsonify({"message": "Car information updated successfully"}), 201
 
 @app.route('/users/setgroupidnull/<user_id>', methods=['POST', 'OPTIONS'])
 def set_groupid_to_null(user_id):
@@ -642,7 +676,7 @@ def insert_schedule_block():
 @app.route('/group-size/<groupid>', methods=['GET'])
 def get_group_size(groupid):
     """API endpoint to get the size of the group."""
-    group_size = data_store.get_group_size(groupid)
+    group_size = data_store.get_group_sizes(groupid)
     
     # Assuming group_size is an integer, you can return it directly
     return jsonify({'group_size': group_size}), 200
@@ -673,4 +707,3 @@ def check_user_group(user_id):
 
 if __name__ == '__main__':
     app.run()
-

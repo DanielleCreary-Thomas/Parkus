@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button, Checkbox, TextField } from '@mui/material';
+import { getCurrUser, checkScheduleCompleted } from '../../../services/requests';
 
 const PermitInfo = ({
   hasPermit,
@@ -15,17 +16,47 @@ const PermitInfo = ({
   selectedImage,
   handleSubmit,
   user,
-  groupid, 
-  isPermitHolder 
+  groupid,
+  isPermitHolder
 }) => {
+  const [scheduleCompleted, setScheduleCompleted] = useState(true);
 
-  // If the user is in a group but not the permit holder, show the restricted message
-  if (groupid && !isPermitHolder) {
+  useEffect(() => {
+    if (user?.userid) {
+      console.log("User ID detected:", user.userid);
+      checkScheduleCompleted(user.userid).then(data => {
+        console.log("Schedule data response:", data); // Log the API response
+        setScheduleCompleted(data?.scheduleComplete ?? false); // Use the correct property name
+        console.log("Updated scheduleCompleted state:", data?.scheduleComplete ?? false);
+      }).catch(error => console.error("Error fetching schedule data:", error));
+    }
+  }, [user]);
+  
+
+  // Adding cache buster to the image URL
+  const cacheBustedImageUrl = user?.image_proof_url ? `${user.image_proof_url}?cb=${new Date().getTime()}` : null;
+  console.log("Cache busted image URL:", cacheBustedImageUrl);
+
+  // Show message if schedule is incomplete
+  console.log("Schedule completed status before render:", scheduleCompleted);
+  if (!scheduleCompleted) {
     return (
       <Box sx={{ flex: 1 }}>
         <Typography variant="h6" color="error">
-          Sorry, you are already in a group. 
-          <br/>
+          Oh no! You need to complete your schedule before submitting a parking permit.
+        </Typography>
+      </Box>
+    );
+  }
+
+  // If the user is in a group but not the permit holder, show the restricted message
+  if (groupid && !isPermitHolder) {
+    console.log("User is in a group but not the permit holder.");
+    return (
+      <Box sx={{ flex: 1 }}>
+        <Typography variant="h6" color="error">
+          Sorry, you are already in a group.
+          <br />
           Please exit the group and come back to apply and submit permit info.
         </Typography>
       </Box>
@@ -34,6 +65,7 @@ const PermitInfo = ({
 
   return (
     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+      {console.log("Render condition - hasPermit:", hasPermit)}
       {hasPermit ? (
         <Box sx={{ flex: 1 }}>
           {permits.length > 0 ? (
@@ -46,27 +78,15 @@ const PermitInfo = ({
                   <Typography><strong>Expiration Date:</strong> {permit.expiration_date}</Typography>
                   <Typography><strong>Campus Location:</strong> {permit.campus_location}</Typography>
                   <Typography><strong>Active Status:</strong> {permit.active_status ? 'Active' : 'Inactive'}</Typography>
+                  {user && cacheBustedImageUrl && (
+                    <div>
+                      <h3>Uploaded Proof of Permit:</h3>
+                      <img src={cacheBustedImageUrl} alt="Uploaded Proof" style={{ width: '300px', marginTop: '10px' }} />
+                    </div>
+                  )}
                   <Button variant="contained" onClick={() => handleOpenModal(permit)} sx={{ mt: 1 }}>
                     Edit Permit
                   </Button>
-                  {/* File Upload Section */}
-                  <section>
-                    <Typography variant={"h6"}>Upload your proof of permit</Typography>
-                    <input type="file" accept="image/*" onChange={handleImageUpload} aria-label="Upload proof of permit" />
-                    <button onClick={handleSubmit} disabled={!selectedImage}>Submit</button>
-                    {imagePreviewUrl && (
-                      <div>
-                        <h3>Image Preview:</h3>
-                        <img src={imagePreviewUrl} alt="Selected Proof" style={{ width: '300px', marginTop: '10px' }} />
-                      </div>
-                    )}
-                    {user && user.image_proof_url && (
-                      <div>
-                        <h3>Uploaded Proof of Permit:</h3>
-                        <img src={user.image_proof_url} alt="Uploaded Proof" style={{ width: '300px', marginTop: '10px' }} />
-                      </div>
-                    )}
-                  </section>
                 </Box>
               ))}
             </Box>
@@ -99,7 +119,27 @@ const PermitInfo = ({
                 <option value="Trafalgar Campus">Trafalgar Campus</option>
                 <option value="Davis Campus">Davis Campus</option>
               </TextField>
-              <Button variant="contained" onClick={handlePermitSubmit} fullWidth>
+              {/* File Upload Section */}
+              <section>
+                <Typography variant="h6">Upload your proof of permit</Typography>
+                <input type="file" accept="image/*" onChange={handleImageUpload} aria-label="Upload proof of permit" />
+                {imagePreviewUrl && (
+                  <div>
+                    <h3>Image Preview:</h3>
+                    <img src={imagePreviewUrl} alt="Selected Proof" style={{ width: '300px', marginTop: '10px' }} />
+                  </div>
+                )}
+              </section>
+              <Button 
+                variant="contained" 
+                onClick={async () => {
+                  await handlePermitSubmit();
+                  await getCurrUser();
+                  await handleSubmit();
+                }}
+                fullWidth
+                disabled={!selectedImage} // Disable button if no image is selected
+              >
                 Submit Permit Info
               </Button>
             </Box>
