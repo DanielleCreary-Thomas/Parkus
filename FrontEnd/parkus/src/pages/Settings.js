@@ -5,7 +5,7 @@ import { hasMemberPaid, getCurrUser, getGroupId, setGroupidTobeNull, deactivateU
 import './styles/settings.css';
 
 function Settings() {
-    const [isPaid, setIsPaid] = useState(false); // Track if the user has paid (via eTransfer, etc.)
+    const [isPaid, setIsPaid] = useState(false);
     const [hasGroupId, setHasGroupId] = useState(false); // Track if the user has a group ID
     const [loading, setLoading] = useState(true); // Track loading state
     const [userId, setUserId] = useState(''); // Store user ID
@@ -225,20 +225,26 @@ function Settings() {
                 </Dialog>
 
                 <Stack direction="column" spacing={2}>
-                    <Button
-                        variant="contained"
-                        color="warning"
-                        onClick={handleConfirmLeaveGroup} // Trigger confirmation dialog
-                        disabled={!hasGroupId || isPaid} // Disable the button if the user has no group ID or has paid
-                        size="large" // Make the button size large
-                        sx={{
-                            height: '85px', // Increase the button height
-                            fontSize: '18px', // Increase the font size
-                            width: '400px'
-                        }}
-                    >
-                        {!hasGroupId ? 'Leave Group (Not In A Group)' : isPaid ? 'Cannot Leave Group (Paid)' : 'Leave Group'}
-                    </Button>
+                <Button
+                    variant="contained"
+                    color="warning"
+                    onClick={handleConfirmLeaveGroup} // Trigger confirmation dialog
+                    disabled={!hasGroupId || isPaid} // Disable the button if the user has no group ID or has paid
+                    size="large" // Make the button size large
+                    sx={{
+                        height: '85px', // Increase the button height
+                        fontSize: '18px', // Increase the font size
+                        width: '400px'
+                    }}
+                >
+                    {isPaid
+                        ? 'Cannot Leave Group (Paid)'
+                        : !hasGroupId
+                        ? 'Leave Group'
+                        : 'Leave Group'}
+                </Button>
+
+
                     <Button
                         variant="contained"
                         color="error"

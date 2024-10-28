@@ -39,6 +39,7 @@ export default function LeaderCard({data, permitData, currUserID}) {
 
     const MemberCard = ({memberData})=>
     {
+        const cacheBustedMemberData = `${memberData['image_proof_url']}?cachebuster=${new Date().getTime()}`;
         console.log("memberData:", memberData)//data for a single member
         const cacheBustedMemberData = `${memberData['image_proof_url']}?cachebuster=${new Date().getTime()}`;
 

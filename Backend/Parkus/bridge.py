@@ -931,6 +931,92 @@ def validate_groupid(group_id):
 
  
 
+
+def deactivate_group(group_id):
+    """
+    Deactivates a group by setting users' groupid to NULL, clearing image_proof_url,
+    and deleting parking permits and the group itself.
+    :param group_id: The ID of the group
+    :return: True if the operation is successful, False otherwise
+    """
+    try:
+        print(f"Attempting to deactivate group: {group_id}")
+
+        # Fetch the permit for the group
+        permit_response = supabase.table("parking_groups").select("permitid").eq("groupid", group_id).execute()
+        if len(permit_response.data) == 0:
+            print(f"Permit not found for the group: {group_id}")
+            return False
+
+        permit_id = permit_response.data[0]["permitid"]
+        print(f"Fetched permit ID: {permit_id} for group: {group_id}")
+
+        # Fetch all members of the group
+        members_response = supabase.table("users").select("userid", "first_name", "last_name").eq("groupid", group_id).execute()
+        if len(members_response.data) == 0:
+            print(f"No members found for the group: {group_id}")
+            return False
+
+        print(f"Members found for group {group_id}: {members_response.data}")
+
+        # Step 1: Set groupid and image_proof_url to NULL for all users
+        update_response = supabase.table("users").update({"groupid": None, "image_proof_url": None}).eq("groupid", group_id).execute()
+        print(f"Updated users to remove group association and cleared image proof for group {group_id}. Update response: {update_response}")
+
+        # Step 2: Delete the group from parking_groups table
+        delete_group_response = supabase.table("parking_groups").delete().eq("groupid", group_id).execute()
+        print(f"Deleted group from parking_groups table: {group_id}. Delete response: {delete_group_response}")
+
+        # Step 3: After the group has been deleted, delete the associated permit
+        delete_permit_response = supabase.table("parking_permits").delete().eq("permitid", permit_id).execute()
+        print(f"Deleted permit with permit ID: {permit_id} for group {group_id}. Delete response: {delete_permit_response}")
+
+        return True
+
+    except Exception as e:
+        print(f"Error deactivating group {group_id}: {str(e)}")
+        return False
+
+
+
+from datetime import datetime
+
+def fetch_permit_and_check_expiration(groupid):
+    """
+    Fetch the expiration date of the permit associated with the given groupid and handle expiration logic.
+    :param groupid: The ID of the group
+    :return: Tuple with (expiration_date, is_expiring_soon, is_expired)
+    """
+    try:
+        # Fetch permitid from parking_groups using groupid
+        group_response = supabase.table('parking_groups').select('permitid').eq('groupid', groupid).execute()
+        if not group_response.data or len(group_response.data) == 0:
+            return None, False, False  # No permit found for the group
+
+        permitid = group_response.data[0]['permitid']
+
+        # Fetch expiration_date from parking_permits using permitid
+        permit_response = supabase.table('parking_permits').select('expiration_date').eq('permitid', permitid).execute()
+        if not permit_response.data or len(permit_response.data) == 0:
+            return None, False, False  # No expiration date found
+
+        expiration_date_str = permit_response.data[0]['expiration_date']
+        expiration_date = datetime.strptime(expiration_date_str, '%Y-%m-%d').date()
+        current_date = datetime.now().date()
+
+        # Determine if the permit is expiring soon or expired
+        days_until_expiration = (expiration_date - current_date).days
+        is_expiring_soon = 0 < days_until_expiration <= 7
+        is_expired = days_until_expiration <= 0
+
+        return expiration_date_str, is_expiring_soon, is_expired
+    except Exception as e:
+        print(f"Error fetching permit expiration date: {e}")
+        return None, False, False
+
+
+
+
 def setGroupidTobeNull(userid):
     """
     Sets the user's groupid to null (leaves group).
