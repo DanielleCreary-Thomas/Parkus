@@ -16,8 +16,6 @@ import {Person} from '@mui/icons-material';
 import React from "react";
 import {getCurrUser} from "../../../services/requests";
 
-
-
 export default function LeaderCard({data, permitData, currUserID}) {
     console.log("leader card data", data)//a group id
 
@@ -39,8 +37,8 @@ export default function LeaderCard({data, permitData, currUserID}) {
 
     const MemberCard = ({memberData})=>
     {
-        console.log("memberData:", memberData)//data for a single member
         const cacheBustedMemberData = `${memberData['image_proof_url']}?cachebuster=${new Date().getTime()}`;
+        console.log("memberData:", memberData)//data for a single member
 
         return (
             <Card sx={{ maxWidth: 345, minWidth:600 }}>
