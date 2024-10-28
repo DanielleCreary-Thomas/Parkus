@@ -1,12 +1,13 @@
+// src/components/GroupSchedule/GroupSchedule.js
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabase.ts';
-import { Box, Typography } from '@mui/material';
+import Box from '@mui/material/Box';
 import { toast, ToastContainer } from 'react-toastify';
 import { useParams } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import JoinButton from './JoinButton/JoinButton';
 import BackButton from './BackButton/BackButton';
-import './GroupMembers/GroupMembers.css'; // CSS for group member cards
 import './GroupSchedule.css';
 
 const GroupSchedule = () => {
@@ -16,13 +17,11 @@ const GroupSchedule = () => {
     const [classColorMap, setClassColorMap] = useState({});
     const [userId, setUserId] = useState(null);
     const [users, setUsers] = useState([]);
-
     const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Get current user from Supabase
                 const {
                     data: { session },
                     error: sessionError,
@@ -52,6 +51,19 @@ const GroupSchedule = () => {
 
                 const data = await scheduleResponse.json();
 
+                if (!data.users.some((user) => user.userid === currentUserId)) {
+                    const { data: currentUserData, error: currentUserError } = await supabase
+                        .from('users')
+                        .select('userid, first_name, last_name')
+                        .eq('userid', currentUserId)
+                        .single();
+                    if (currentUserError) {
+                        console.error('Error fetching current user:', currentUserError);
+                    } else {
+                        data.users.push(currentUserData);
+                    }
+                }
+
                 setUsers(data.users);
                 setScheduleBlocks(data.group_schedule);
                 setUserScheduleBlocks(data.user_schedule);
@@ -79,7 +91,6 @@ const GroupSchedule = () => {
         const colorMap = {};
         let colorIndex = 0;
 
-        // Extract unique user IDs from the blocks
         const uniqueUserIds = [...new Set(blocks.map((block) => block.userid))];
 
         uniqueUserIds.forEach((userId) => {
@@ -100,9 +111,13 @@ const GroupSchedule = () => {
 
         const startMinutes = getMinutesSinceMidnight(startTime);
         const endMinutes = getMinutesSinceMidnight(endTime);
-        const scheduleStartMinutes = 7 * 60;
-        const heightPerHour = 60;
-        const pixelsPerMinute = heightPerHour / 60;
+        const scheduleStartMinutes = 7 * 60; // 7:00 AM
+        const scheduleEndMinutes = 23 * 60;  // 11:00 PM
+
+        const totalScheduleMinutes = scheduleEndMinutes - scheduleStartMinutes;
+        const scheduleHeight = 960; // Height of .day-content in CSS
+
+        const pixelsPerMinute = scheduleHeight / totalScheduleMinutes;
 
         const top = (startMinutes - scheduleStartMinutes) * pixelsPerMinute;
         const height = (endMinutes - startMinutes) * pixelsPerMinute;
@@ -117,36 +132,63 @@ const GroupSchedule = () => {
         <Box sx={{ padding: 3 }}>
             <ToastContainer />
 
-            {/* Back and Join Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <BackButton />
-                <Typography variant="h4" align="center">
-                    SpotSharing Generation
-                </Typography>
-                <JoinButton groupId={groupId} />
+            {/* Header Container */}
+            <div className="header-container">
+                {/* Back Button at the top left */}
+                <div className="back-button-container">
+                    <BackButton />
+                </div>
+
+                {/* Title */}
+                <Box
+                    className="scheduleTitle"
+                    bgcolor="#FFFFFF"
+                    sx={{
+                        width: "90%",
+                        maxWidth: "75rem",
+                        border: "3px solid black",
+                        borderRadius: 7,
+                        alignItems: "center",
+                        display: "flex",
+                        justifyContent: "center",
+                        margin: "2rem auto",
+                    }}
+                >
+                    <h1 style={{ fontFamily: "Orelega One", fontSize: "2rem" }}>SpotSharing Generation</h1>
+                </Box>
             </div>
 
-            {/* Group Member Cards */}
-            {users && users.length > 0 ? (
+            {/* Group Members Container with Join Button on the right */}
+            <div className="group-members-box">
+                <h2 className="group-members-title">Group Members</h2>
                 <div className="group-members-container">
-                    {users.map((user) => (
-                        <div
-                            key={user.userid}
-                            className="group-member-card"
-                            style={{
-                                backgroundColor: classColorMap[user.userid] || '#FFCCBC',
-                            }}
-                        >
-                            {user.first_name} {user.last_name}
-                        </div>
-                    ))}
+                    {/* Group Members List */}
+                    <div className="group-members-list">
+                        {users && users.length > 0 ? (
+                            users.map((user) => (
+                                <div
+                                    key={user.userid}
+                                    className="group-member-card"
+                                    style={{
+                                        backgroundColor: classColorMap[user.userid] || '#FFCCBC',
+                                    }}
+                                >
+                                    {user.first_name} {user.last_name}
+                                    {user.userid === userId ? ' (you)' : ''}
+                                </div>
+                            ))
+                        ) : (
+                            <p>No group members found.</p>
+                        )}
+                    </div>
+                    {/* Join Button on the right */}
+                    <div className="join-button-container">
+                        <JoinButton groupId={groupId} />
+                    </div>
                 </div>
-            ) : (
-                <Typography variant="body1" align="center" sx={{ marginTop: 2 }}>
-                    No group members found.
-                </Typography>
-            )}
+            </div>
 
+            {/* Schedule Grid */}
             <div className="schedule-grid">
                 <div className="time-column">
                     <div className="time-header">Time</div>
@@ -179,8 +221,8 @@ const GroupSchedule = () => {
                                             <span className="block-title">{block.description}</span>
                                             <br />
                                             <span className="block-time">
-                        {block.start_time} - {block.end_time}
-                      </span>
+                                                {block.start_time} - {block.end_time}
+                                            </span>
                                         </div>
                                     );
                                 })}
@@ -188,7 +230,7 @@ const GroupSchedule = () => {
                                 .filter((block) => parseInt(block.dow) === dayIdx + 1)
                                 .map((block) => {
                                     const style = calculateBlockStyle(block.start_time, block.end_time);
-                                    const blockColor = '#A5D6A7'; // A distinct color for the user's own blocks
+                                    const blockColor = classColorMap[block.userid] || '#A5D6A7';
 
                                     return (
                                         <div
@@ -199,11 +241,11 @@ const GroupSchedule = () => {
                                                 backgroundColor: blockColor,
                                             }}
                                         >
-                                            <span className="block-title">{block.description} (You)</span>
+                                            <span className="block-title">{block.description}</span>
                                             <br />
                                             <span className="block-time">
-                        {block.start_time} - {block.end_time}
-                      </span>
+                                                {block.start_time} - {block.end_time}
+                                            </span>
                                         </div>
                                     );
                                 })}
