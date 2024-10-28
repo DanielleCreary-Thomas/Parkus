@@ -1,3 +1,6 @@
+/* src/components/GroupSchedule/GroupSchedule.css */
+
+/* Reset and base styles */
 * {
     box-sizing: border-box;
 }
@@ -7,35 +10,85 @@ body {
     background-color: #f9f9f9;
 }
 
-.content-container {
-    max-width: 1200px; /* Adjust as needed */
-    margin: 0 auto; /* Center horizontally */
-    padding: 0 20px; /* Horizontal padding */
-}
-
+/* Header Container */
 .header-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+    position: relative;
 }
 
-.page-title {
-    flex: 1;
-    margin: 0 20px;
-    color: #1D3557; /* Optional: Change color for better visibility */
+/* Back Button Container */
+.back-button-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Group Members Box */
+.group-members-box {
+    width: 100%;
+    max-width: 1200px;
+    padding: 10px;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin: 0 auto 20px auto;
+}
+
+.group-members-title {
+    font-family: 'Orelega One', sans-serif;
+    font-size: 1.5em;
+    margin-bottom: 10px;
     text-align: center;
 }
 
+/* Group Members Container */
+.group-members-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+    position: relative; /* For positioning the join button */
+}
+
+/* Group Members List */
+.group-members-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Center the group members */
+    align-items: center;
+}
+
+/* Group Member Card */
+.group-member-card {
+    color: #000000;
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 8px;
+    min-width: 80px;
+    text-align: center;
+    font-weight: bold;
+    font-family: 'Orelega One', sans-serif;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Join Button Container */
+.join-button-container {
+    position: absolute;
+    right: 10px;
+}
+
+/* Schedule Grid */
 .schedule-grid {
     display: flex;
     background-color: #ffffff;
     border: 1px solid #ccc;
-    margin-top: 20px;
+    margin: 20px auto;
     border-radius: 8px;
     overflow: hidden;
+    width: 100%;
+    max-width: 1200px;
 }
 
+/* Time Column and Day Columns */
 .time-column,
 .day-column {
     flex: 1;
@@ -47,6 +100,7 @@ body {
     background-color: #f5f5f5;
 }
 
+/* Headers */
 .time-header,
 .day-header {
     background-color: #C0D7D8;
@@ -59,6 +113,7 @@ body {
     border-bottom: 1px solid #ccc;
 }
 
+/* Time Slots */
 .time-slot {
     padding: 0;
     height: 60px;
@@ -70,18 +125,36 @@ body {
     color: #333333;
 }
 
+/* Day Column */
 .day-column {
+    position: relative;
     border-left: 1px solid #ccc;
 }
 
+/* Day Content */
 .day-content {
     position: relative;
     height: 960px;
     background-color: #fafafa;
 }
 
+/* Add horizontal lines */
+.day-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-image: linear-gradient(to bottom, transparent 59px, #ccc 60px);
+    background-size: 100% 60px;
+    pointer-events: none;
+}
+
+/* Schedule Blocks */
 .schedule-block {
     position: absolute;
+    z-index: 1;
     left: 5px;
     right: 5px;
     overflow: hidden;
@@ -95,7 +168,7 @@ body {
     align-items: center;
     text-align: center;
     transition: transform 0.2s, box-shadow 0.2s;
-    color: #000000; /* Ensured text is dark for contrast */
+    color: #000000;
 }
 
 .schedule-block:hover {
@@ -135,13 +208,13 @@ body {
         padding: 0 10px;
     }
 
-    .header-container {
+    .group-members-container {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
     }
 
-    .page-title {
-        margin: 10px 0;
-        text-align: left;
+    .join-button-container {
+        position: static;
+        margin-top: 20px;
     }
 }
