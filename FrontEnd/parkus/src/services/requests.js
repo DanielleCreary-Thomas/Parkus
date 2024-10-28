@@ -76,6 +76,42 @@ export async function uploadETransfer(formData){
     return data;
 }
 
+export async function uploadPermitProof(formData){
+    /**
+     * Using the current user's id tries uploading their image proof url
+     */
+    console.log("uploading image form", formData)
+
+    //values for the image url and user id
+    var proofImageUrl = formData.get('proofImageUrl');
+    var userId = formData.get('userid')
+    console.log("uploading image URL", proofImageUrl)
+    let body = {
+        "userId" : userId,
+        "proofImageUrl" : proofImageUrl
+    }
+    body = JSON.stringify(body);
+
+    // const cacheBuster = `?cb=${new Date().getTime()}`;
+    // ${cacheBuster}
+    var data = await fetch(
+        `http://127.0.0.1:5000/users/permitImageProof`,
+    {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: body
+        })
+        .then((response) => response.json())
+        .then((data) => data)
+        .catch((error) => console.log(error));
+    return data;
+}
+
+
+
+
 //Profile
 export async function addParkingPermit(permitData) {
     var data = await fetch('http://127.0.0.1:5000/parking-permit',
@@ -103,46 +139,7 @@ export async function getPermitId({ userid, permit_number }) {
 }
 
 
-export async function isPermitExpired({ userid, permit_number }) {
-    /**
-     * Checks if the permit for the given user and permit number is expired
-     * @param {string} userid - The ID of the user
-     * @param {string} permit_number - The permit number for the user
-     * @returns {boolean} - Returns true if the permit is expired, false otherwise
-     */
-    try {
-        // Step 1: Get permit ID using the existing getPermitId function
-        const permitIdData = await getPermitId({ userid, permit_number });
-        const permitId = permitIdData.permitid;
 
-        if (!permitId) {
-            console.error("Permit ID not found.");
-            return false; // If permit ID is not found, assume not expired
-        }
-
-        // Step 2: Fetch the expiration date of the permit using the permit ID
-        const permitResponse = await fetch(`http://127.0.0.1:5000/permits/${permitId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-        const permitData = await permitResponse.json();
-        const expirationDate = new Date(permitData.expiration_date);
-
-        if (!expirationDate) {
-            console.error("Expiration date not found.");
-            return false; // Assume not expired if expiration date is missing
-        }
-
-        // Step 3: Compare expiration date with the current date
-        const currentDate = new Date();
-        return expirationDate < currentDate; // Return true if expired
-    } catch (error) {
-        console.error("Error checking permit expiration:", error);
-        return false; // Default to not expired in case of an error
-    }
-}
 
 
 export async function fetchGroupId({ permitId }) {
@@ -379,6 +376,26 @@ export async function addCar(carData) {
     }
 }
 
+export async function updateUserInfo(userData) {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/user/update-user-info', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userData),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to update car information.');
+        }
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Error updating car:', error);
+        throw error;
+    }
+}
+
 export async function updatePermit(permitData) {
     try {
         const response = await fetch('http://127.0.0.1:5000/update_permit', {
@@ -428,6 +445,72 @@ export async function addUserData(userData) {
         throw error;
     }
 }
+
+
+
+
+
+
+export async function checkPermitExpiration(groupId) {
+    /**
+     * Checks if the permit for the given group is expired or expiring soon and deactivates the group if expired.
+     * @param {string} groupId - The ID of the group
+     * @returns {object} - Returns an object with { status: 'valid' | 'expiring_soon' | 'expired', expiration_date }
+     */
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/permits/expiration_check/${groupId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            console.error("Failed to fetch permit expiration info. Status:", response.status);
+            return { status: 'error' };
+        }
+
+        const data = await response.json();
+        if (data.status === 'expired') {
+            await deactivateGroup(groupId);
+        }
+
+        return data;
+    } catch (error) {
+        console.error("Error checking permit expiration:", error);
+        return { status: 'error' };
+    }
+}
+
+export async function deactivateGroup(groupId) {
+    /**
+     * Deactivates the group by calling the backend API.
+     * @param {string} groupId - The ID of the group to deactivate
+     * @returns {boolean} - Returns true if the deactivation is successful, false otherwise
+     */
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/group/deactivate/${groupId}`, {
+            method: 'POST',  // Use POST since we are modifying data
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            console.log("Group successfully deactivated.");
+            return true;
+        } else {
+            console.error("Failed to deactivate group.");
+            return false;
+        }
+    } catch (error) {
+        console.error("Error deactivating group:", error);
+        return false;
+    }
+}
+
+
+
 
 
 export async function isGroupLeader(userId, groupId) {

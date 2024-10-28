@@ -207,7 +207,6 @@ def add_parking_group():
     else:
         return jsonify({"error": "Failed to add parking group"}), 500
 
-
 @app.route('/parking-permits/<user_id>', methods=['GET'])
 def get_user_permits(user_id):
     """API endpoint to fetch all parking permits for a given user ID."""
@@ -323,6 +322,21 @@ def image_proof_upload():
     response = data_store.upload_etransfer_image(image_url, userid)
     return jsonify(response)
 
+##POST Endpoints
+@app.route('/users/permitImageProof', methods=['POST'])
+def permit_image_proof_upload():
+    """uploads a user's image proof url
+    :return: the user's image proof url
+    """
+    #assert formData == request.form
+    print(request.data)
+    json_data = request.get_json()
+    print(json_data)
+    image_url = json_data["proofImageUrl"]
+    userid = json_data['userId']
+    response = data_store.upload_etransfer_image(image_url, userid)
+    return jsonify(response)
+
 
 # RAM GROUP-SCHEDULE
 @app.route('/group-schedule', methods=['POST'])
@@ -408,7 +422,27 @@ def update_car():
 
     return jsonify({"message": "Car information updated successfully"}), 201
 
+# POST Endpoint to update user info
+@app.route('/user/update-user-info', methods=['POST'])
+def update_user_info():
+    """
+    API endpoint to update the user information based on the userid.
+    """
+    data = request.json
+    userid = data.get('userid')
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    studentid = data.get('studentid')
+    phone_number = data.get('phone_number')
+    email = data.get('email')
 
+    # Call the data_store to update the user information
+    result = data_store.update_user_info(userid, first_name, last_name, studentid, phone_number, email)
+
+    if 'error' in result:
+        return jsonify({'error': result['error']}), 400
+
+    return jsonify({"message": "Car information updated successfully"}), 201
 
 @app.route('/users/setgroupidnull/<user_id>', methods=['POST', 'OPTIONS'])
 def set_groupid_to_null(user_id):
@@ -442,6 +476,64 @@ def deactivate_user(user_id):
         return jsonify({'success': False, 'message': 'User cannot be deactivated.'}), 400
 
 
+
+@app.route('/permits/expiration/<group_id>', methods=['GET'])
+def get_permit_expiration(group_id):
+    """
+    API endpoint to retrieve the expiration date of the permit associated with the group.
+    :param group_id: The ID of the group
+    :return: JSON response containing expiration_date or an error message
+    """
+    print(f"Group ID received: {group_id}")
+    try:
+        expiration_date = data_store.get_permit_expiration(group_id)
+        if expiration_date:
+            return jsonify({"expiration_date": expiration_date}), 200
+        else:
+            return jsonify({"error": "Permit not found or no expiration date"}), 404
+    except Exception as e:
+        print(f"Error in get_permit_expiration: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+
+
+@app.route('/permits/expiration_check/<group_id>', methods=['GET'])
+def check_permit_expiration_and_group_status(group_id):
+    """
+    API endpoint to check if the permit for a group is expiring soon or expired and deactivate the group if expired.
+    :param group_id: The ID of the group
+    :return: JSON response with expiration information and deactivation status
+    """
+    try:
+        expiration_date, is_expiring_soon, is_expired = data_store.get_permit_and_check_expiration(group_id)
+        
+        if is_expired:
+            deactivation_success = data_store.deactivate_group(group_id)
+            return jsonify({"status": "expired", "deactivation_success": deactivation_success}), 200
+        elif is_expiring_soon:
+            return jsonify({"status": "expiring_soon", "expiration_date": expiration_date}), 200
+        else:
+            return jsonify({"status": "valid", "expiration_date": expiration_date}), 200
+    except Exception as e:
+        print(f"Error in check_permit_expiration_and_group_status: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+
+
+@app.route('/group/deactivate/<group_id>', methods=['POST'])
+def deactivate_group(group_id):
+    """
+    API endpoint to deactivate a group.
+    :param group_id: The ID of the group to deactivate
+    :return: JSON response indicating success or failure
+    """
+    try:
+        deactivation_success = data_store.deactivate_group(group_id)
+        if deactivation_success:
+            return jsonify({"success": True, "message": "Group successfully deactivated."}), 200
+        else:
+            return jsonify({"success": False, "message": "Failed to deactivate group."}), 500
+    except Exception as e:
+        print(f"Error in deactivate_group: {e}")
+        return jsonify({"success": False, "error": "Internal Server Error"}), 500
 
 
 
@@ -584,7 +676,7 @@ def insert_schedule_block():
 @app.route('/group-size/<groupid>', methods=['GET'])
 def get_group_size(groupid):
     """API endpoint to get the size of the group."""
-    group_size = data_store.get_group_size(groupid)
+    group_size = data_store.get_group_sizes(groupid)
     
     # Assuming group_size is an integer, you can return it directly
     return jsonify({'group_size': group_size}), 200
@@ -615,4 +707,3 @@ def check_user_group(user_id):
 
 if __name__ == '__main__':
     app.run()
-

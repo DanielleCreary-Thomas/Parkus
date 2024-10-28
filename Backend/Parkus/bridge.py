@@ -537,7 +537,7 @@ def fetch_permit_id(user_id, permit_number):
     response = supabase.table("parking_permits").select("permitid").eq("userid", user_id).eq("permit_number", permit_number).execute()
 
     print("Supabase response:", response)  # Log the entire response for debugging
-
+    
     # Check if the response contains data and log it
     if response.data and len(response.data) > 0:
         print("Permit Data:", response.data[0])  # Log the permit data
@@ -559,14 +559,14 @@ def fetch_group_id(permit_id):
     response = supabase.table("parking_groups").select("groupid").eq("permitid", permit_id).execute()
 
     print("Supabase response:", response)  # Log the entire response for debugging
-
+    
     # Check if the response contains data and log it
     if response.data and len(response.data) > 0:
         print("group id Data:", response.data[0])  # Log the group data
         return response.data[0]['groupid']
     else:
         return None  # Return None if no data is found
-
+    
 def update_user_groupid(userid, groupid):
     """Updates the user's group ID in the users table."""
     response = supabase.table("users").update({"groupid": groupid}).eq("userid", userid).execute()
@@ -601,7 +601,7 @@ def update_permit_info(permitid, userid, permit_number, active_status, permit_ty
 
         # Print response for debugging purposes
         print("Supabase response:", response)
-
+        
         return response
     except Exception as e:
         print(f"Error updating car information: {str(e)}")
@@ -654,9 +654,9 @@ def fetch_car_by_userid(user_id):
         user_response = supabase.table("users").select("license_plate_number").eq("userid", user_id).execute()
         if not user_response.data or not user_response.data[0]["license_plate_number"]:
             return None
-
+        
         license_plate_number = user_response.data[0]["license_plate_number"]
-
+        
         # Fetch car info using the license plate number
         car_response = supabase.table("cars").select("*").eq("license_plate_number", license_plate_number).execute()
         if car_response.data:
@@ -685,12 +685,34 @@ def update_car_info(license_plate_number, province, year, make, model, color):
 
         # Print response for debugging purposes
         print("Supabase response:", response)
-
+        
         return response
     except Exception as e:
         print(f"Error updating car information: {str(e)}")
         return {'error': str(e)}
 
+def update_user_info(userid, first_name, last_name, studentid, phone_number, email):
+    """
+    Updates the user information in the 'users' table where the user id matches.
+    """
+    try:
+        # Ensure the column names are correct and targeting the right row
+        print(f"Updating user with user id: {userid}")
+        response = supabase.table("users").update({
+            "first_name": first_name,
+            "last_name": last_name,
+            "studentid": studentid,
+            "phone_number": phone_number,
+            "email": email
+        }).eq('userid', userid).execute()  # Ensure userid matches
+
+        # Print response for debugging purposes
+        print("Supabase response:", response)
+        
+        return response
+    except Exception as e:
+        print(f"Error updating car information: {str(e)}")
+        return {'error': str(e)}
 
 def insert_user_data(user_id, first_name, last_name, email, student_id, phone_number, license_plate_number):
     """
@@ -706,7 +728,7 @@ def insert_user_data(user_id, first_name, last_name, email, student_id, phone_nu
             'phone_number': phone_number,
             'license_plate_number': license_plate_number
         }]).execute()
-
+        
         return response
     except Exception as e:
         return {'error': str(e)}
@@ -726,10 +748,15 @@ def insert_license_plate_number(license_plate_number):
             'model': '',
             'color': ''
         }]).execute()
-
+        
         return response
     except Exception as e:
         return {'error': str(e)}
+    
+def get_scheduleblocks(user_id):
+    """Fetch schedule blocks for a specific user id."""
+    response = supabase.table('schedule_blocks').select('*').eq('userid', user_id).execute()
+    return response
 
 def get_scheduleblocks(user_id):
     """Fetch schedule blocks for a specific user id."""
@@ -841,10 +868,10 @@ def insert_schedule_block(userid, description, dow, start_time, end_time, block_
     except Exception as e:
         return {'error': str(e)}
 
-
 if __name__ == "__main__":
     ##Testing has member paid
     print(check_paid_member('33d6127f-3a9e-4681-83a2-92c98db0881c'))
+    print(get_scheduleblocks('3ad62301-57a9-4d68-b094-5e1dfb15622b'))
 
     ##Testing Get Car info
     print(get_car_info('ABC123'))
@@ -902,6 +929,92 @@ def validate_groupid(group_id):
     return len(response.data) > 0
 
 
+ 
+
+
+def deactivate_group(group_id):
+    """
+    Deactivates a group by setting users' groupid to NULL, clearing image_proof_url,
+    and deleting parking permits and the group itself.
+    :param group_id: The ID of the group
+    :return: True if the operation is successful, False otherwise
+    """
+    try:
+        print(f"Attempting to deactivate group: {group_id}")
+
+        # Fetch the permit for the group
+        permit_response = supabase.table("parking_groups").select("permitid").eq("groupid", group_id).execute()
+        if len(permit_response.data) == 0:
+            print(f"Permit not found for the group: {group_id}")
+            return False
+
+        permit_id = permit_response.data[0]["permitid"]
+        print(f"Fetched permit ID: {permit_id} for group: {group_id}")
+
+        # Fetch all members of the group
+        members_response = supabase.table("users").select("userid", "first_name", "last_name").eq("groupid", group_id).execute()
+        if len(members_response.data) == 0:
+            print(f"No members found for the group: {group_id}")
+            return False
+
+        print(f"Members found for group {group_id}: {members_response.data}")
+
+        # Step 1: Set groupid and image_proof_url to NULL for all users
+        update_response = supabase.table("users").update({"groupid": None, "image_proof_url": None}).eq("groupid", group_id).execute()
+        print(f"Updated users to remove group association and cleared image proof for group {group_id}. Update response: {update_response}")
+
+        # Step 2: Delete the group from parking_groups table
+        delete_group_response = supabase.table("parking_groups").delete().eq("groupid", group_id).execute()
+        print(f"Deleted group from parking_groups table: {group_id}. Delete response: {delete_group_response}")
+
+        # Step 3: After the group has been deleted, delete the associated permit
+        delete_permit_response = supabase.table("parking_permits").delete().eq("permitid", permit_id).execute()
+        print(f"Deleted permit with permit ID: {permit_id} for group {group_id}. Delete response: {delete_permit_response}")
+
+        return True
+
+    except Exception as e:
+        print(f"Error deactivating group {group_id}: {str(e)}")
+        return False
+
+
+
+from datetime import datetime
+
+def fetch_permit_and_check_expiration(groupid):
+    """
+    Fetch the expiration date of the permit associated with the given groupid and handle expiration logic.
+    :param groupid: The ID of the group
+    :return: Tuple with (expiration_date, is_expiring_soon, is_expired)
+    """
+    try:
+        # Fetch permitid from parking_groups using groupid
+        group_response = supabase.table('parking_groups').select('permitid').eq('groupid', groupid).execute()
+        if not group_response.data or len(group_response.data) == 0:
+            return None, False, False  # No permit found for the group
+
+        permitid = group_response.data[0]['permitid']
+
+        # Fetch expiration_date from parking_permits using permitid
+        permit_response = supabase.table('parking_permits').select('expiration_date').eq('permitid', permitid).execute()
+        if not permit_response.data or len(permit_response.data) == 0:
+            return None, False, False  # No expiration date found
+
+        expiration_date_str = permit_response.data[0]['expiration_date']
+        expiration_date = datetime.strptime(expiration_date_str, '%Y-%m-%d').date()
+        current_date = datetime.now().date()
+
+        # Determine if the permit is expiring soon or expired
+        days_until_expiration = (expiration_date - current_date).days
+        is_expiring_soon = 0 < days_until_expiration <= 7
+        is_expired = days_until_expiration <= 0
+
+        return expiration_date_str, is_expiring_soon, is_expired
+    except Exception as e:
+        print(f"Error fetching permit expiration date: {e}")
+        return None, False, False
+
+
 
 
 def setGroupidTobeNull(userid):
@@ -915,8 +1028,8 @@ def setGroupidTobeNull(userid):
         response = (
             supabase.table("users")
             .update({'groupid': None})  # Set groupid to null
-            .eq('userid', userid)
-            .execute()
+            .eq('userid', userid) 
+            .execute() 
         )
 
         # Print response for debugging purposes
@@ -978,15 +1091,3 @@ def delete_user_and_data(user_id):
     except Exception as e:
         print(f"Error deleting user data: {str(e)}")
         return False
-
-
-
-
-
-
-
-
-
-
-
-

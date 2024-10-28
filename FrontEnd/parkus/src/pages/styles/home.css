@@ -206,9 +206,9 @@
   }
 
 
- /* Notification Banner Styling */
+/* Original Notification Banner Styling */
 .notification-banner {
-  width: 250px;
+  width: 500px;
   display: flex;
   align-items: center;
   background-color: #f8d7da;
@@ -228,10 +228,23 @@
   font-weight: bold;
   padding: 5px 15px;
   border-radius: 50%;
-  margin-right: 8px; /* Reduced margin */
+  margin-right: 8px;
 }
 
 .notification-text {
   font-size: 19px;
   margin-left: 20px;
 }
+
+.deactivate-notification-text {
+  font-size: 14px;
+  margin-left: 20px;
+}
+
+/* Extended Styling for Deactivate Group Notification */
+.deactivate-banner {
+  width: 90%;
+  max-width: 800px; /* Extend max-width for deactivation message */
+}
+
+
