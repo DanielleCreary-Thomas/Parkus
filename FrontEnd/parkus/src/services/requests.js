@@ -417,7 +417,6 @@ export async function checkPermitExpiration(groupId) {
         const data = await response.json();
         if (data.status === 'expired') {
             await deactivateGroup(groupId);
-
         }
 
         return data;
@@ -426,8 +425,6 @@ export async function checkPermitExpiration(groupId) {
         return { status: 'error' };
     }
 }
-
-
 
 export async function deactivateGroup(groupId) {
     /**

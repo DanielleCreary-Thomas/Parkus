@@ -5,7 +5,7 @@ import { hasMemberPaid, getCurrUser, getGroupId, setGroupidTobeNull, deactivateU
 import './styles/settings.css';
 
 function Settings() {
-    const [isPaid, setIsPaid] = useState(false); // Track if the user has paid (via eTransfer, etc.)
+    const [isPaid, setIsPaid] = useState(false);
     const [hasGroupId, setHasGroupId] = useState(false); // Track if the user has a group ID
     const [loading, setLoading] = useState(true); // Track loading state
     const [userId, setUserId] = useState(''); // Store user ID

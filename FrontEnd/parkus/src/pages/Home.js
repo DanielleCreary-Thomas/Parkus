@@ -1,39 +1,35 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getCurrUser, fetchUser, getGroupMembers, fetchUserSchedule, fetchGroupMembersSchedules, hasMemberPaid, isGroupLeader, checkPermitExpiration } from '../services/requests'; // Import the necessary functions
+import { getCurrUser, fetchUser, getGroupMembers, fetchUserSchedule, fetchGroupMembersSchedules, hasMemberPaid, isGroupLeader, checkPermitExpiration } from '../services/requests';
 import './styles/home.css';
-
-
 
 // Notification banner for permit expiring soon
 function ExpiringSoonBanner() {
   return (
-      <div className="notification-banner expiring-soon">
+      <div className="notification-banner deactivate-banner">
         <div className="notification-icon">⚠</div>
-        <div className="notification-text">Your parking permit is expiring soon!</div>
+        <div className="deactivate-notification-text">Your parking permit is expiring soon! Your group will be automatically deactivated when it expires.</div>
       </div>
   );
 }
 
-// Notification component
-function NotificationBanner({ message }) {
+// Notification component for showing a message
+function NotificationBanner({ message, isDeactivation }) {
   return (
-      <div className="notification-banner">
+      <div className={`notification-banner ${isDeactivation ? 'deactivate-banner' : ''}`}>
         <div className="notification-icon">!</div>
         <div className="notification-text">{message}</div>
       </div>
   );
 }
 
+// Function to format the current date in the desired format
 function formatCurrentDate(date) {
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
   const formattedDate = date.toLocaleDateString(undefined, options);
 
-  // Custom reordering of the date components
   const parts = formattedDate.split(" ");
   return `${parts[0]} ${parts[2]} ${parts[1]} ${parts[3]}`; // Reorder the day and month
 }
-
 
 function Home() {
   const [firstName, setFirstName] = useState('');
@@ -46,9 +42,8 @@ function Home() {
   const [error, setError] = useState('');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showNotification, setShowNotification] = useState(false);
-  const [notificationMessage, setNotificationMessage] = useState(''); // New state for the notification message
+  const [notificationMessage, setNotificationMessage] = useState('');
   const [showExpiringSoonNotification, setShowExpiringSoonNotification] = useState(false);
-  const navigate = useNavigate();  // Initialize the navigate hook
   const getCurrentDayOfWeek = () => currentDate.getDay();
 
   const normalizeDow = (dow) => {
@@ -68,7 +63,7 @@ function Home() {
   const checkUserPaymentStatus = async (userId) => {
     try {
       const data = await hasMemberPaid(userId);
-      return data; // Return the payment status from hasMemberPaid
+      return data;
     } catch (err) {
       console.error("Error fetching user payment status:", err);
       return true; // Assume paid in case of an error
@@ -89,43 +84,27 @@ function Home() {
           if (userData.groupid) {
             setGroupId(userData.groupid);
 
-            // Check the permit expiration status
             const permitStatus = await checkPermitExpiration(userData.groupid);
-
-            // Console logs for debugging the expiration date and current date
-            console.log("Current Date:", new Date());
-            if (permitStatus.expiration_date) {
-              console.log("Expiration Date:", new Date(permitStatus.expiration_date));
-            }
-
             if (permitStatus.status === 'expired') {
-              console.log("Group deactivated because the permit has expired.");
               alert("Your group's permit has expired, and the group has been deactivated.");
-              navigate("/signin");
-              return; // Stop further processing as the group is deactivated
+              window.location.reload();
             } else if (permitStatus.status === 'expiring_soon') {
-              setShowExpiringSoonNotification(true);  // Show expiring soon banner
-              setNotificationMessage("Your parking permit is expiring soon!");
-            } else {
-              console.log("Permit is valid.");
+              setShowExpiringSoonNotification(true);
+              setNotificationMessage("Your parking permit is expiring soon! Your account will be automatically deactivated when it expires.");
             }
 
-            // Check if the current user is the group leader
             const isLeader = await isGroupLeader(userId, userData.groupid);
-            console.log("is a leader?" + isLeader);
             if (!isLeader) {
               const hasUserPaid = await checkUserPaymentStatus(userId);
               if (!hasUserPaid) {
-                // If payment is pending, show the notification for payment
                 setNotificationMessage("Payment Pending");
                 setShowNotification(true);
               }
             } else {
-              setShowNotification(false); // If leader, no payment notification
+              setShowNotification(false);
             }
           }
 
-          // Fetch the user's schedule
           const userScheduleData = await fetchUserSchedule(userId);
           if (userScheduleData) {
             const currentDay = getCurrentDayOfWeek();
@@ -135,7 +114,6 @@ function Home() {
             setGroupSchedules(todayUserSchedules);
           }
 
-          // Fetch group members and schedules if the user is in a group
           if (userData.groupid) {
             const membersData = await getGroupMembers(userData.groupid);
             if (membersData) {
@@ -174,12 +152,15 @@ function Home() {
         <div className="home-header-panel">
           <div className="home-header">
             <h1>Welcome, {firstName} {lastName}</h1>
-            {showNotification && <NotificationBanner message={notificationMessage} />}
-            {showExpiringSoonNotification && <ExpiringSoonBanner />} {/* Show expiring soon banner if set */}
+            {showNotification && (
+                <NotificationBanner
+                    message={notificationMessage}
+                    isDeactivation={notificationMessage === "Your parking permit is expiring soon! Your account will be automatically deactivated when it expires."}
+                />
+            )}
+            {showExpiringSoonNotification && <ExpiringSoonBanner />}
           </div>
         </div>
-
-
 
         <div className="home-main-content">
           <div className="home-left-panel">
@@ -204,7 +185,6 @@ function Home() {
           </div>
 
           <div className="home-right-panel">
-            {/* Display the current date as part of the header */}
             <h2>{formatCurrentDate(currentDate)}</h2>
             <div className="home-calendar">
               <div className="home-calendar-timeline">
