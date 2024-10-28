@@ -691,6 +691,28 @@ def update_car_info(license_plate_number, province, year, make, model, color):
         print(f"Error updating car information: {str(e)}")
         return {'error': str(e)}
 
+def update_user_info(userid, first_name, last_name, studentid, phone_number, email):
+    """
+    Updates the user information in the 'users' table where the user id matches.
+    """
+    try:
+        # Ensure the column names are correct and targeting the right row
+        print(f"Updating user with user id: {userid}")
+        response = supabase.table("users").update({
+            "first_name": first_name,
+            "last_name": last_name,
+            "studentid": studentid,
+            "phone_number": phone_number,
+            "email": email
+        }).eq('userid', userid).execute()  # Ensure userid matches
+
+        # Print response for debugging purposes
+        print("Supabase response:", response)
+        
+        return response
+    except Exception as e:
+        print(f"Error updating car information: {str(e)}")
+        return {'error': str(e)}
 
 def insert_user_data(user_id, first_name, last_name, email, student_id, phone_number, license_plate_number):
     """
