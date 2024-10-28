@@ -16,25 +16,6 @@ import {Person} from '@mui/icons-material';
 import React from "react";
 import {getCurrUser} from "../../../services/requests";
 
-class car {
-    licensePlateNumber:number
-    province:string
-    year:string
-    make:string
-    model:string
-    color:string
-}
-
-class member {
-    id: number
-    firstName:string
-    lastName:string
-    licensePlateNumber:string
-    email:string
-    imageUrl: string
-    car : car
-}
-
 export default function LeaderCard({data, permitData, currUserID}) {
     console.log("leader card data", data)//a group id
 
@@ -56,6 +37,7 @@ export default function LeaderCard({data, permitData, currUserID}) {
 
     const MemberCard = ({memberData})=>
     {
+        const cacheBustedMemberData = `${memberData['image_proof_url']}?cachebuster=${new Date().getTime()}`;
         console.log("memberData:", memberData)//data for a single member
 
         return (
@@ -74,7 +56,7 @@ export default function LeaderCard({data, permitData, currUserID}) {
                     <CardMedia
                         component="img"
                         height="140"
-                        src = {memberData['image_proof_url']}
+                        src = {cacheBustedMemberData}
                         alt="eTransfer Image"
                         title="eTransfer Proof"
                     >
@@ -139,12 +121,13 @@ export default function LeaderCard({data, permitData, currUserID}) {
     }
 
     const PermitCard = ()=>{
+        const cacheBustedPermitData = `${permitData}?cachebuster=${new Date().getTime()}`;
         return (
             <Card sx={{ maxWidth: 345, minWidth:600  }}>
                 <CardMedia
                     component="img"
                     height="140"
-                    src = {permitData}
+                    src = {cacheBustedPermitData}
                     alt="Permit Image"
                     title="eTransfer Proof"
                 />
