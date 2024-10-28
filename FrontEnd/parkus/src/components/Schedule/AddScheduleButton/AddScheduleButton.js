@@ -408,7 +408,11 @@ const AddScheduleButton = ({ onSave, onDelete, selectedTime, selectedDay, isModa
 
             )}
 
-            <Dialog open={isConfirmDeleteOpen} onClose={() => setIsConfirmDeleteOpen(false)}>
+            <Dialog open={isConfirmDeleteOpen} onClose={() => setIsConfirmDeleteOpen(false)} PaperProps={{
+                        style: {
+                            marginLeft: '30%', // This adds the 70% margin to the left
+                        }
+                    }}>
                 <DialogTitle>Confirm Delete</DialogTitle>
                 <DialogContent>
                     <Typography>Are you sure you want to delete this schedule block?</Typography>

@@ -15,9 +15,6 @@ function SpotSharing() {
     const [notMemberOfGroup, setNotMemberOfGroup] = useState(false);
     const [noAvailableGroups, setNoAvailableGroups] = useState(false);
 
-    const [noAvailableGroups, setNoAvailableGroups] = useState(false);
-
-
     async function handleMatchmakeClick() {
         const currUser = await getCurrUser();
         if (currUser) {

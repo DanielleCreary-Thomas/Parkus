@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabase.ts';
-import { fetchUser, checkParkingPermit, checkUserImageProof, getGroupId, getCurrUser, addParkingPermit, fetchParkingPermits, fetchCarByUserId, addCar, getPermitId, addParkingGroup, uploadETransfer, fetchGroupId, updatePermit, updateUserGroupId } from '../services/requests.js'; // Importing all functions
+import { fetchUser, checkParkingPermit, checkUserImageProof, getGroupId, getCurrUser, addParkingPermit, fetchParkingPermits, fetchCarByUserId, addCar, getPermitId, addParkingGroup, uploadPermitProof, fetchGroupId, updatePermit, updateUserGroupId, updateUserInfo } from '../services/requests.js'; // Importing all functions
 import { Box, Card, Typography, Tabs, Tab, Button, TextField, Checkbox, Modal } from '@mui/material';
 import ProfileTitle from '../components/Profile/ProfileTitle/ProfileTitle.js';
 import EditPermitModal from '../components/Profile/EditPermitModal/EditPermitModal.js';
@@ -9,6 +9,7 @@ import CarInfo from '../components/Profile/CarInfo/CarInfo.js';
 import PermitInfo from '../components/Profile/PermitInfo/PermitInfo.js';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import EditUserModal from '../components/Profile/EditUserModal/EditUserModal.js';
 
 function TabPanel({ children, value, index }) {
   return (
@@ -47,7 +48,17 @@ const Profile = () => {
     model: '',
     color: ''
   });
+  const [userData, setUserData] = useState({
+    first_name: '',
+    last_name: '',
+    studentid: '',
+    phone_number: '',
+    email: ''
+
+  });
+
   const [fetchedCarData, setFetchedCarData] = useState(null);
+  const [FetchedUserData, setFetchedUserData] = useState(null);
   const [error, setError] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
@@ -142,6 +153,26 @@ const Profile = () => {
     }
   };
 
+  const fetchUserInfo = async (userId) => {
+    try {
+      const user = await fetchUser(userId); // Fetch the latest user data
+      setFetchedUserData(user);
+      if (user) {
+        setUserData({
+          first_name: user.first_name,
+          last_name: user.last_name,
+          studentid: user.studentid,
+          phone_number: user.phone_number,
+          email: user.email
+        });
+        setUser(user); // Update the main `user` state with the latest data
+      }
+    } catch (error) {
+      setError('Failed to fetch user information.');
+    }
+  };
+  
+
   useEffect(() => {
     if (!userId) return;
 
@@ -164,6 +195,8 @@ const Profile = () => {
         console.error('Error checking parking permit:', error);
         setError('Failed to check parking permit.');
       });
+
+    fetchUserInfo(userId);
   }, [userId]);
 
   const fetchUserPermits = async () => {
@@ -282,6 +315,26 @@ const Profile = () => {
     setCarData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleUserSubmit = async () => {
+    if (!userId) {
+      toast.error('User ID is missing.');
+      return;
+    }
+    try {
+      await updateUserInfo({ userid: userId, ...userData });
+      toast.success('User information updated successfully!');
+      fetchUserInfo(userId); // Refresh car data
+    } catch (error) {
+      console.error('Error updating user information:', error);
+      toast.error('Failed to update user information.');
+    }
+  };
+
+  const handleUserInputChange = (e) => {
+    const { name, value } = e.target;
+    setUserData(prev => ({ ...prev, [name]: value }));
+  };
+
   const handlePermitUpdate = async () => {
 
     if (new Date(permitData.activate_date) >= new Date(permitData.expiration_date)) {
@@ -302,39 +355,40 @@ const Profile = () => {
 
 
   const handleSubmit = async () => {
-    if (!selectedImage) {
-      alert('Please select an image to upload.');
-      return;
-    }
-
-    const url = await uploadProof(selectedImage);
-
-    console.log("outside", url)
-
-    if (url !== undefined) {
-      const formData = new FormData();
-      formData.append('proofImageUrl', url);
-      formData.append('userid', userId)
-      try {
-        const response = await uploadETransfer(formData);
-        console.log(response);
-        if (response['urlUploaded'] === true) {
-          console.log("image uploaded successfully")
-          // Reset the form
-          setSelectedImage(null);
-          setImagePreviewUrl(null);
-          setUploadImageUrl(null);
-          toast.success("Image uploaded successfully")
-        }
-
-      } catch (error) {
-        console.log("error uploading image", error);
-        toast.error("An error occurred while uploading image, Try Again", error);
+    let imageUrl = user?.image_proof_url; // Retain the current image URL by default
+  
+    if (selectedImage) {
+      // Only upload if a new image is selected
+      imageUrl = await uploadProof(selectedImage);
+  
+      if (!imageUrl) {
+        toast.error("An error occurred while uploading the image. Please try again.");
+        return;
       }
-    } else {
-      toast.error("An error occurred while uploading image, Try Again");
+    }
+  
+    // Proceed to submit the permit data with the image URL (new or existing)
+    const formData = new FormData();
+    formData.append("proofImageUrl", imageUrl);
+    formData.append("userid", userId);
+  
+    try {
+      const response = await uploadPermitProof(formData);
+      if (response?.urlUploaded) {
+        //commented it out so no duplicated toast message
+        // toast.success("Permit information updated successfully!");
+  
+        // Refresh user data to display updated image proof URL
+        await fetchUserInfo(userId);
+        setSelectedImage(null); // Reset image selection state
+        setImagePreviewUrl(null); // Clear preview
+      }
+    } catch (error) {
+      console.error("Error submitting permit data:", error);
+      toast.error("Failed to submit permit data. Please try again.");
     }
   };
+  
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -380,8 +434,23 @@ const Profile = () => {
         </Tabs>
 
         <TabPanel value={value} index={0}>
-          {user ? <UserInfo user={user} /> : <p>Loading user data...</p>}
+          {user ? (
+            <UserInfo
+              user={user}
+              userData={userData}
+              setUserData={setUserData}  // Add this to set data before opening modal
+              handleUserSubmit={handleUserSubmit}
+              handleUserInputChange={handleUserInputChange}
+              openModal={() => {
+                setUserData(user); // Preload user data
+                setOpenModal(true); // Open modal
+              }}
+            />
+          ) : (
+            <p>Loading user data...</p>
+          )}
         </TabPanel>
+
 
         <TabPanel value={value} index={1}>
           <CarInfo
@@ -389,6 +458,8 @@ const Profile = () => {
             fetchedCarData={fetchedCarData}
             handleCarInputChange={handleCarInputChange}
             handleCarSubmit={handleCarSubmit}
+            openModal={openModal}
+            handleCloseModal={handleCloseModal}
           />
         </TabPanel>
 
@@ -413,12 +484,26 @@ const Profile = () => {
         </TabPanel>
       </Card>
 
+      <EditUserModal
+        openModal={openModal}
+        handleCloseModal={() => setOpenModal(false)}
+        userData={userData}
+        handleUserInputChange={handleUserInputChange}
+        handleUserSubmit={handleUserSubmit}
+      />
+
+
       <EditPermitModal
+        handleImageUpload={handleImageUpload}
+        imagePreviewUrl={imagePreviewUrl}
+        selectedImage={selectedImage}
         openModal={openModal}
         handleCloseModal={handleCloseModal}
         permitData={permitData}
         handlePermitInputChange={handlePermitInputChange}
         handlePermitUpdate={handlePermitUpdate}
+        handleSubmit={handleSubmit}
+        user={user}
       />
 
       <ToastContainer />
