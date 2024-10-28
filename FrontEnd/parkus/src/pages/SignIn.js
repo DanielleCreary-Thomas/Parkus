@@ -37,10 +37,13 @@ const SignIn = () => {
                 <img 
                     src={`${process.env.PUBLIC_URL}/1.jpg`} 
                     alt="illustration" 
-                    style={{ width: '50px', cursor: 'pointer' }} // Add cursor pointer for clickability
+                    style={{ width: '50px', height: '50px', cursor: 'pointer' }} // Add cursor pointer for clickability
                     onClick={handleLogoClick} // Add click event handler
                 />
-                <h1>Sign In</h1>
+                <Typography variant="h1" component="div" fontFamily={"Orelega One"} color={'#84b5d3'}
+                            fontSize={80}>
+                    Sign In
+                </Typography>
                 <TextField
                     label="Email"
                     variant="outlined"

@@ -10,6 +10,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 const theme = createTheme({
     typography: {
         fontFamily: "'Orelega One', sans-serif"
+
     }
 })
 root.render(
