@@ -540,12 +540,16 @@ def get_permit_expiration(groupid):
     return bridge.fetch_permit_expiration(groupid)
 
 
-
-
 def deactivate_group(groupid):
+    """
+    Calls the bridge function to deactivate the group.
+    """
     return bridge.deactivate_group(groupid)
 
 def get_permit_and_check_expiration(groupid):
+    """
+    Fetches the permit expiration and checks if it is expiring soon or expired.
+    """
     return bridge.fetch_permit_and_check_expiration(groupid)
 
 

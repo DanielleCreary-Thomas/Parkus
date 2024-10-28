@@ -484,11 +484,10 @@ def check_permit_expiration_and_group_status(group_id):
         return jsonify({"error": "Internal Server Error"}), 500
 
 
-
 @app.route('/group/deactivate/<group_id>', methods=['POST'])
 def deactivate_group(group_id):
     """
-    API endpoint to deactivate a group by deleting all its data.
+    API endpoint to deactivate a group.
     :param group_id: The ID of the group to deactivate
     :return: JSON response indicating success or failure
     """
@@ -501,7 +500,6 @@ def deactivate_group(group_id):
     except Exception as e:
         print(f"Error in deactivate_group: {e}")
         return jsonify({"success": False, "error": "Internal Server Error"}), 500
-
 
 
 

@@ -907,65 +907,47 @@ def validate_groupid(group_id):
 
 def deactivate_group(group_id):
     """
-    Deletes a group and all its members' related data from the database and Supabase Auth system.
+    Deactivates a group by setting users' groupid to NULL, clearing image_proof_url,
+    and deleting parking permits and the group itself.
     :param group_id: The ID of the group
-    :return: True if deletion is successful, False otherwise
+    :return: True if the operation is successful, False otherwise
     """
     try:
-        print(f"Attempting to delete group: {group_id}")
+        print(f"Attempting to deactivate group: {group_id}")
 
         # Fetch the permit for the group
         permit_response = supabase.table("parking_groups").select("permitid").eq("groupid", group_id).execute()
         if len(permit_response.data) == 0:
-            print("Permit not found for the group.")
+            print(f"Permit not found for the group: {group_id}")
             return False
 
         permit_id = permit_response.data[0]["permitid"]
+        print(f"Fetched permit ID: {permit_id} for group: {group_id}")
 
         # Fetch all members of the group
         members_response = supabase.table("users").select("userid", "first_name", "last_name").eq("groupid", group_id).execute()
         if len(members_response.data) == 0:
-            print("No members found for the group.")
+            print(f"No members found for the group: {group_id}")
             return False
 
-        members = members_response.data
+        print(f"Members found for group {group_id}: {members_response.data}")
 
-        # Step 1: Set groupid to NULL for all users to avoid foreign key conflict
-        supabase.table("users").update({"groupid": None}).eq("groupid", group_id).execute()
-        print(f"Updated users to remove group association for group: {group_id}")
+        # Step 1: Set groupid and image_proof_url to NULL for all users
+        update_response = supabase.table("users").update({"groupid": None, "image_proof_url": None}).eq("groupid", group_id).execute()
+        print(f"Updated users to remove group association and cleared image proof for group {group_id}. Update response: {update_response}")
 
         # Step 2: Delete the group from parking_groups table
-        supabase.table("parking_groups").delete().eq("groupid", group_id).execute()
-        print(f"Deleted group from parking_groups table: {group_id}")
+        delete_group_response = supabase.table("parking_groups").delete().eq("groupid", group_id).execute()
+        print(f"Deleted group from parking_groups table: {group_id}. Delete response: {delete_group_response}")
 
         # Step 3: After the group has been deleted, delete the associated permit
-        supabase.table("parking_permits").delete().eq("permitid", permit_id).execute()
-        print(f"Deleted permit for group: {group_id}")
-
-        # Step 4: Loop through all members and delete their data
-        for member in members:
-            user_id = member["userid"]
-            print(f"Deleting data for user: {user_id}, {member['first_name']} {member['last_name']}")
-
-            # Delete all associated data for each member
-            supabase.table("schedule_blocks").delete().eq("userid", user_id).execute()
-            print(f"Deleted schedule blocks for user: {user_id}")
-
-            supabase.table("cars").delete().eq("license_plate_number", user_id).execute()
-            print(f"Deleted car info for user: {user_id}")
-
-            # Delete user from custom users table
-            supabase.table("users").delete().eq("userid", user_id).execute()
-            print(f"Deleted user from users table: {user_id}")
-
-            # Delete user from Supabase Auth using the Admin API (service key)
-            supabase_service.auth.admin.delete_user(user_id)  # Use the Admin API to delete the user from Auth
-            print(f"Deleted user from Supabase Auth: {user_id}")
+        delete_permit_response = supabase.table("parking_permits").delete().eq("permitid", permit_id).execute()
+        print(f"Deleted permit with permit ID: {permit_id} for group {group_id}. Delete response: {delete_permit_response}")
 
         return True
 
     except Exception as e:
-        print(f"Error deleting group and members data: {str(e)}")
+        print(f"Error deactivating group {group_id}: {str(e)}")
         return False
 
 
