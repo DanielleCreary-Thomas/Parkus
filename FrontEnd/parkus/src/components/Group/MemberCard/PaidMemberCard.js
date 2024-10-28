@@ -6,12 +6,14 @@ import React from "react";
 export default function PaidMemberCard({memberData, permitData}){
 
     const PermitCard = ()=>{
+        const cacheBustedPermitData = `${permitData}?cachebuster=${new Date().getTime()}`;
+
         return (
             <Card sx={{ maxWidth: 345, minWidth:600 }}>
                 <CardMedia
                     component="img"
                     height="140"
-                    src = {permitData}
+                    src = {cacheBustedPermitData}
                     alt="Permit Image"
                     title="eTransfer Proof"
                 />
@@ -27,6 +29,8 @@ export default function PaidMemberCard({memberData, permitData}){
 
     const MemberCard = ()=>
     {
+        const cacheBustedMemberData = `${memberData['image_proof_url']}?cachebuster=${new Date().getTime()}`;
+
         console.log("memberData:", memberData)//data for a single member
 
         return (
@@ -45,7 +49,7 @@ export default function PaidMemberCard({memberData, permitData}){
                     <CardMedia
                         component="img"
                         height="140"
-                        src = {memberData['image_proof_url']}
+                        src = {cacheBustedMemberData}
                         alt="eTransfer Image"
                         title="eTransfer Proof"
                     >
