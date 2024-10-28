@@ -76,6 +76,42 @@ export async function uploadETransfer(formData){
     return data;
 }
 
+export async function uploadPermitProof(formData){
+    /**
+     * Using the current user's id tries uploading their image proof url
+     */
+    console.log("uploading image form", formData)
+
+    //values for the image url and user id
+    var proofImageUrl = formData.get('proofImageUrl');
+    var userId = formData.get('userid')
+    console.log("uploading image URL", proofImageUrl)
+    let body = {
+        "userId" : userId,
+        "proofImageUrl" : proofImageUrl
+    }
+    body = JSON.stringify(body);
+
+    // const cacheBuster = `?cb=${new Date().getTime()}`;
+    // ${cacheBuster}
+    var data = await fetch(
+        `http://127.0.0.1:5000/users/permitImageProof`,
+    {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: body
+        })
+        .then((response) => response.json())
+        .then((data) => data)
+        .catch((error) => console.log(error));
+    return data;
+}
+
+
+
+
 //Profile
 export async function addParkingPermit(permitData) {
     var data = await fetch('http://127.0.0.1:5000/parking-permit',
@@ -367,6 +403,26 @@ export async function addCar(carData) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(carData),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to update car information.');
+        }
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Error updating car:', error);
+        throw error;
+    }
+}
+
+export async function updateUserInfo(userData) {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/user/update-user-info', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userData),
         });
         if (!response.ok) {
             throw new Error('Failed to update car information.');

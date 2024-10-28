@@ -1,14 +1,16 @@
 // components/EditPermitModal.js
 import React from 'react';
 import { Modal, Box, Typography, Button, TextField } from '@mui/material';
+import { getCurrUser } from '../../../services/requests';
 
-const EditPermitModal = ({ openModal, handleCloseModal, permitData, handlePermitInputChange, handlePermitUpdate }) => {
+const EditPermitModal = ({ openModal, handleCloseModal, permitData, handlePermitInputChange, handlePermitUpdate, handleImageUpload,
+  handleSubmit }) => {
   return (
     <Modal open={openModal} onClose={handleCloseModal}>
       <Box sx={{
         position: 'absolute',
         top: '50%',
-        left: '50%',
+        left: '60%',
         transform: 'translate(-50%, -50%)',
         width: 400,
         bgcolor: 'background.paper',
@@ -32,7 +34,16 @@ const EditPermitModal = ({ openModal, handleCloseModal, permitData, handlePermit
           <option value="TRUE">Active</option>
           <option value="FALSE">Inactive</option>
         </TextField>
-        <Button variant="contained" onClick={handlePermitUpdate} sx={{ mt: 2 }}>
+        {/* File Upload Section */}
+        <section>
+          <Typography variant={"h6"}>Upload your proof of permit</Typography>
+          <input type="file" accept="image/*" onChange={handleImageUpload} aria-label="Upload proof of permit" />
+        </section>
+        <Button variant="contained" onClick={async () => {
+                await handlePermitUpdate();
+                await getCurrUser();
+                await handleSubmit();
+              }} sx={{ mt: 2 }}>
           Save Changes
         </Button>
       </Box>

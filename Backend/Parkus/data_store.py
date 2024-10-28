@@ -252,6 +252,11 @@ def upload_etransfer_image(image_url, userid):
         return {"urlUploaded": result}
     return None
 
+def upload_permit_image(image_url, userid):
+    if bridge.validate_userid(userid):
+        result = bridge.upload_image_proof(image_url, userid)
+        return {"urlUploaded": result}
+    return None
 
 def check_image_proof(user_id):
     """
@@ -355,6 +360,23 @@ def update_car_info(license_plate_number, province, year, make, model, color):
 
     return result
 
+def update_user_info(userid, first_name, last_name, studentid, phone_number, email):
+    """
+    Handles updating the car information in the 'cars' table.
+    """
+    result = bridge.update_user_info(
+        userid=userid,
+        first_name=first_name,
+        last_name=last_name,
+        studentid=studentid,
+        phone_number=phone_number,
+        email=email
+    )
+
+    if 'error' in result:
+        return {'error': result['error']}
+
+    return result
 
 def update_permit_info(permitid, userid, permit_number, active_status, permit_type, activate_date, expiration_date, campus_location):
     """
@@ -381,8 +403,6 @@ def is_user_permit_holder(user_id, group_id):
     Wrapper function to check if the user is the permit holder for their group.
     """
     return bridge.is_user_permit_holder(user_id, group_id)
-
-
 
 
 def set_groupid_to_null(user_id):
@@ -533,6 +553,8 @@ def insert_schedule_block(userid, description, dow, start_time, end_time, block_
     """
     return bridge.insert_schedule_block(userid, description, dow, start_time, end_time, block_color)
 
+def get_group_sizes(group_id):
+    return bridge.get_group_sizes(group_id)
 
 if __name__ == '__main__':
     ##Test get members

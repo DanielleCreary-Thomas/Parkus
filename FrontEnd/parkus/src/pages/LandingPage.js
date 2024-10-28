@@ -72,7 +72,7 @@ export default function LandingPage() {
 
 
             {/* First section */}
-            <Box sx={{ backgroundColor: 'white', minHeight: '100vh', paddingTop: '200px', paddingBottom: '100px', display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ backgroundColor: '#84B5D3', minHeight: '100vh', paddingTop: '200px', paddingBottom: '100px', display: 'flex', alignItems: 'center' }}>
                 <Container maxWidth="lg">
                     <Grid container spacing={4} alignItems="center">
                         <Grid item xs={12} md={6}>
